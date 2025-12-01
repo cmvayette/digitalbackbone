@@ -30,43 +30,43 @@ The SOM is built on three fundamental primitives:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    External Systems                          │
-│  (NSIPS, DRRS, Training Systems, Logistics, etc.)          │
+│                    External Systems                         │
+│  (NSIPS, DRRS, Training Systems, Logistics, etc.)           │
 └────────────────────┬────────────────────────────────────────┘
                      │
                      ▼
 ┌─────────────────────────────────────────────────────────────┐
-│              Semantic Access Layer (SAL)                     │
-│  • ID Mapping Service                                        │
-│  • Event Transformer                                         │
-│  • Validation Gateway                                        │
+│              Semantic Access Layer (SAL)                    │
+│  • ID Mapping Service                                       │
+│  • Event Transformer                                        │
+│  • Validation Gateway                                       │
 └────────────────────┬────────────────────────────────────────┘
                      │
                      ▼
 ┌─────────────────────────────────────────────────────────────┐
 │                  Tier-0 SOM Core                            │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐     │
-│  │ Event Store  │  │ Constraint   │  │  Document    │     │
-│  │ (Immutable)  │  │   Engine     │  │  Registry    │     │
-│  └──────────────┘  └──────────────┘  └──────────────┘     │
-│  ┌──────────────┐  ┌──────────────┐                        │
-│  │    State     │  │   Semantic   │                        │
-│  │  Projection  │  │ Graph Store  │                        │
-│  └──────────────┘  └──────────────┘                        │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐       │
+│  │ Event Store  │  │ Constraint   │  │  Document    │       │
+│  │ (Immutable)  │  │   Engine     │  │  Registry    │       │
+│  └──────────────┘  └──────────────┘  └──────────────┘       │
+│  ┌──────────────┐  ┌──────────────┐                         │
+│  │    State     │  │   Semantic   │                         │
+│  │  Projection  │  │ Graph Store  │                         │
+│  └──────────────┘  └──────────────┘                         │
 └────────────────────┬────────────────────────────────────────┘
                      │
                      ▼
 ┌─────────────────────────────────────────────────────────────┐
-│                    Query Layer                               │
-│  • Current State Queries                                     │
-│  • Temporal Queries (as-of)                                  │
-│  • Pattern Matching                                          │
-│  • Causal Chain Tracing                                      │
+│                    Query Layer                              │
+│  • Current State Queries                                    │
+│  • Temporal Queries (as-of)                                 │
+│  • Pattern Matching                                         │
+│  • Causal Chain Tracing                                     │
 └────────────────────┬────────────────────────────────────────┘
                      │
                      ▼
 ┌─────────────────────────────────────────────────────────────┐
-│                  Tier-1 Systems                              │
+│                  Tier-1 Systems                             │
 │  (Identity, Objectives, Initiatives, Measures, Reasoning)   │
 └─────────────────────────────────────────────────────────────┘
 ```
