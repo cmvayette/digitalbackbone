@@ -378,9 +378,6 @@ docker run -p 3000:3000 som:latest
 
 ## Documentation
 
-- **Requirements**: `.kiro/specs/semantic-operating-model/requirements.md`
-- **Design**: `.kiro/specs/semantic-operating-model/design.md`
-- **Tasks**: `.kiro/specs/semantic-operating-model/tasks.md`
 - **API Specification**: `src/api/openapi.yaml`
 - **API Documentation**: `src/api/README.md`
 - **Monitoring**: `src/monitoring/README.md`
