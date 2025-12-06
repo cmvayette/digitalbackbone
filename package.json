@@ -1,27 +1,12 @@
 {
-  "name": "semantic-operating-model",
-  "version": "0.1.0",
-  "description": "Tier-0 Semantic Operating Model for NSW",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "scripts": {
-    "build": "tsc",
-    "test": "vitest --run",
-    "test:watch": "vitest",
-    "test:coverage": "vitest --coverage"
-  },
-  "keywords": [
-    "semantic-model",
-    "event-sourcing",
-    "graph-database"
+  "name": "digital-backbone-monorepo",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
   ],
-  "author": "",
-  "license": "MIT",
-  "devDependencies": {
-    "@types/node": "^20.10.0",
-    "@vitest/coverage-v8": "^1.0.0",
-    "fast-check": "^3.15.0",
-    "typescript": "^5.3.0",
-    "vitest": "^1.0.0"
+  "scripts": {
+    "build": "npm run build --workspaces",
+    "test": "npm run test --workspaces"
   }
 }

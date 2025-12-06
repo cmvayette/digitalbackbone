@@ -1,0 +1,1084 @@
+openapi: 3.0.3
+info:
+  title: Semantic Operating Model API
+  description: |
+    REST API for Tier-1 system integration with the Tier-0 Semantic Operating Model (SOM).
+    
+    The SOM provides a unified, computable representation of organizational structure, behavior, 
+    intent, and constraints through holons (persistent entities), relationships (first-class connections), 
+    and events (immutable change records).
+    
+    ## Authentication
+    All endpoints (except /health) require authentication using an API key passed in the Authorization header:
+    ```
+    Authorization: Bearer <your-api-key>
+    ```
+    
+    ## Rate Limiting
+    API requests are rate-limited to 100 requests per minute per client.
+    
+    ## Access Control
+    Results are filtered based on user roles and clearances. The `filtered` field in response metadata 
+    indicates if some results were hidden due to access control.
+  version: 0.1.0
+  contact:
+    name: SOM API Support
+  license:
+    name: MIT
+
+servers:
+  - url: http://localhost:3000
+    description: Local development server
+  - url: https://api.som.example.com
+    description: Production server
+
+security:
+  - BearerAuth: []
+
+tags:
+  - name: Holons
+    description: Query and manage holons (persistent entities)
+  - name: Relationships
+    description: Query and manage relationships between holons
+  - name: Events
+    description: Submit and query events (immutable change records)
+  - name: Temporal
+    description: Temporal queries and historical state reconstruction
+  - name: Patterns
+    description: Graph pattern matching
+  - name: Schema
+    description: Schema management and versioning
+  - name: External
+    description: External system integration
+  - name: System
+    description: System health and metrics
+
+paths:
+  # ==================== Holon Endpoints ====================
+  /api/v1/holons/query:
+    post:
+      tags: [Holons]
+      summary: Query holons by type
+      description: Query holons of a specific type with optional filters and pagination
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueryHolonsRequest'
+      responses:
+        '200':
+          description: Successful query
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HolonQueryResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /api/v1/holons/{id}:
+    get:
+      tags: [Holons]
+      summary: Get holon by ID
+      description: Retrieve a specific holon by its ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Holon ID
+      responses:
+        '200':
+          description: Holon found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HolonResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/v1/holons/{id}/relationships:
+    get:
+      tags: [Relationships]
+      summary: Get holon relationships
+      description: Get all relationships for a specific holon
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Holon ID
+        - name: type
+          in: query
+          schema:
+            type: string
+          description: Filter by relationship type
+        - name: direction
+          in: query
+          schema:
+            type: string
+            enum: [outgoing, incoming, both]
+            default: both
+          description: Relationship direction
+      responses:
+        '200':
+          description: Relationships found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RelationshipQueryResponse'
+
+  /api/v1/holons/{id}/connected:
+    get:
+      tags: [Relationships]
+      summary: Get connected holons
+      description: Get holons connected to a specific holon through relationships
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Holon ID
+        - name: type
+          in: query
+          schema:
+            type: string
+          description: Filter by relationship type
+        - name: direction
+          in: query
+          schema:
+            type: string
+            enum: [outgoing, incoming, both]
+            default: both
+      responses:
+        '200':
+          description: Connected holons found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HolonQueryResponse'
+
+  /api/v1/holons/{id}/history:
+    get:
+      tags: [Events]
+      summary: Get holon event history
+      description: Get complete event history for a holon
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: startTime
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: endTime
+          in: query
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Event history retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventHistoryResponse'
+
+  # ==================== Relationship Endpoints ====================
+  /api/v1/relationships/query:
+    post:
+      tags: [Relationships]
+      summary: Query relationships by type
+      description: Query relationships of a specific type with optional filters
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueryRelationshipsRequest'
+      responses:
+        '200':
+          description: Successful query
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RelationshipQueryResponse'
+
+  # ==================== Event Endpoints ====================
+  /api/v1/events:
+    post:
+      tags: [Events]
+      summary: Submit an event
+      description: Submit a single event to the event store
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubmitEventRequest'
+      responses:
+        '200':
+          description: Event submitted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventSubmissionResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+
+  /api/v1/events/batch:
+    post:
+      tags: [Events]
+      summary: Submit events in batch
+      description: Submit multiple events in a single batch operation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BatchSubmitEventsRequest'
+      responses:
+        '200':
+          description: Batch processed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BatchEventSubmissionResponse'
+
+  /api/v1/events/query:
+    post:
+      tags: [Events]
+      summary: Query events
+      description: Query events with filters
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueryEventsRequest'
+      responses:
+        '200':
+          description: Events found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventQueryResponse'
+
+  /api/v1/events/{id}:
+    get:
+      tags: [Events]
+      summary: Get event by ID
+      description: Retrieve a specific event by its ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Event found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventResponse'
+
+  /api/v1/events/causal-chain:
+    post:
+      tags: [Events]
+      summary: Trace causal chain
+      description: Trace the causal chain of events leading to a specific event
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CausalChainRequest'
+      responses:
+        '200':
+          description: Causal chain traced
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CausalChainResponse'
+
+  # ==================== Temporal Query Endpoints ====================
+  /api/v1/temporal/holons:
+    post:
+      tags: [Temporal]
+      summary: Query holons as-of timestamp
+      description: Query holons as they existed at a specific point in time
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TemporalQueryRequest'
+      responses:
+        '200':
+          description: Historical holons retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HolonQueryResponse'
+
+  /api/v1/temporal/relationships:
+    post:
+      tags: [Temporal]
+      summary: Query relationships as-of timestamp
+      description: Query relationships as they existed at a specific point in time
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TemporalQueryRequest'
+      responses:
+        '200':
+          description: Historical relationships retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RelationshipQueryResponse'
+
+  /api/v1/temporal/holons/{id}:
+    get:
+      tags: [Temporal]
+      summary: Get holon state as-of timestamp
+      description: Get a holon's state as it existed at a specific point in time
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: asOfTimestamp
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Historical holon state retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HolonResponse'
+
+  /api/v1/temporal/organizations/structure:
+    post:
+      tags: [Temporal]
+      summary: Get organizational structure as-of timestamp
+      description: Reconstruct organizational structure at a specific point in time
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrganizationStructureRequest'
+      responses:
+        '200':
+          description: Organizational structure retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationStructureResponse'
+
+  # ==================== Pattern Matching Endpoints ====================
+  /api/v1/patterns/match:
+    post:
+      tags: [Patterns]
+      summary: Match graph patterns
+      description: Find matches for a graph pattern across the semantic graph
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatternMatchRequest'
+      responses:
+        '200':
+          description: Pattern matches found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatternMatchResponse'
+
+  # ==================== Schema Management Endpoints ====================
+  /api/v1/schema/proposals:
+    post:
+      tags: [Schema]
+      summary: Submit schema proposal
+      description: Submit a proposal for a schema change
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SchemaProposalRequest'
+      responses:
+        '200':
+          description: Proposal submitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SchemaProposalResponse'
+
+  /api/v1/schema/versions:
+    post:
+      tags: [Schema]
+      summary: Get schema versions
+      description: Get available schema versions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SchemaVersionRequest'
+      responses:
+        '200':
+          description: Schema versions retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SchemaVersionResponse'
+
+  /api/v1/schema/current:
+    get:
+      tags: [Schema]
+      summary: Get current schema
+      description: Get the current active schema version
+      responses:
+        '200':
+          description: Current schema retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SchemaResponse'
+
+  # ==================== External System Integration Endpoints ====================
+  /api/v1/external/data:
+    post:
+      tags: [External]
+      summary: Submit external system data
+      description: Submit data from an external system for transformation into SOM events
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExternalDataSubmissionRequest'
+      responses:
+        '200':
+          description: Data transformed and submitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExternalDataSubmissionResponse'
+
+  /api/v1/external/mappings:
+    post:
+      tags: [External]
+      summary: Query ID mapping
+      description: Query the mapping between external system IDs and SOM holon IDs
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IDMappingRequest'
+      responses:
+        '200':
+          description: Mapping found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IDMappingResponse'
+
+  # ==================== System Health Endpoints ====================
+  /api/v1/health:
+    get:
+      tags: [System]
+      summary: Health check
+      description: Get system health status (public endpoint, no authentication required)
+      security: []
+      responses:
+        '200':
+          description: System health status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthCheckResponse'
+
+  /api/v1/metrics:
+    get:
+      tags: [System]
+      summary: Get system metrics
+      description: Get detailed system metrics (requires elevated permissions)
+      responses:
+        '200':
+          description: System metrics retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MetricsResponse'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      description: API key authentication
+
+  schemas:
+    # Request schemas
+    QueryHolonsRequest:
+      type: object
+      required: [type]
+      properties:
+        type:
+          type: string
+          description: Holon type to query
+        filters:
+          type: object
+          additionalProperties: true
+        includeRelationships:
+          type: boolean
+        relationshipTypes:
+          type: array
+          items:
+            type: string
+        pagination:
+          $ref: '#/components/schemas/PaginationParams'
+
+    QueryRelationshipsRequest:
+      type: object
+      required: [type]
+      properties:
+        type:
+          type: string
+        sourceHolonID:
+          type: string
+        targetHolonID:
+          type: string
+        filters:
+          type: object
+        pagination:
+          $ref: '#/components/schemas/PaginationParams'
+
+    SubmitEventRequest:
+      type: object
+      required: [eventType, subjects, payload, sourceSystem]
+      properties:
+        eventType:
+          type: string
+        subjects:
+          type: array
+          items:
+            type: string
+        payload:
+          type: object
+          additionalProperties: true
+        sourceSystem:
+          type: string
+        sourceDocument:
+          type: string
+        validityWindow:
+          type: object
+          properties:
+            start:
+              type: string
+              format: date-time
+            end:
+              type: string
+              format: date-time
+        causalLinks:
+          type: object
+          properties:
+            precededBy:
+              type: array
+              items:
+                type: string
+            causedBy:
+              type: array
+              items:
+                type: string
+            groupedWith:
+              type: array
+              items:
+                type: string
+
+    BatchSubmitEventsRequest:
+      type: object
+      required: [events]
+      properties:
+        events:
+          type: array
+          items:
+            $ref: '#/components/schemas/SubmitEventRequest'
+        atomic:
+          type: boolean
+          default: true
+
+    QueryEventsRequest:
+      type: object
+      properties:
+        holonID:
+          type: string
+        eventType:
+          type: string
+        timeRange:
+          type: object
+          properties:
+            start:
+              type: string
+              format: date-time
+            end:
+              type: string
+              format: date-time
+        pagination:
+          $ref: '#/components/schemas/PaginationParams'
+
+    TemporalQueryRequest:
+      type: object
+      required: [type, asOfTimestamp]
+      properties:
+        type:
+          type: string
+        asOfTimestamp:
+          type: string
+          format: date-time
+        filters:
+          type: object
+        includeRelationships:
+          type: boolean
+        pagination:
+          $ref: '#/components/schemas/PaginationParams'
+
+    OrganizationStructureRequest:
+      type: object
+      required: [organizationID]
+      properties:
+        organizationID:
+          type: string
+        asOfTimestamp:
+          type: string
+          format: date-time
+        includeSubOrganizations:
+          type: boolean
+          default: true
+        maxDepth:
+          type: integer
+
+    CausalChainRequest:
+      type: object
+      required: [eventID]
+      properties:
+        eventID:
+          type: string
+        maxDepth:
+          type: integer
+
+    PatternMatchRequest:
+      type: object
+      required: [pattern]
+      properties:
+        pattern:
+          type: object
+          properties:
+            holonTypes:
+              type: array
+              items:
+                type: string
+            relationshipTypes:
+              type: array
+              items:
+                type: string
+            constraints:
+              type: object
+        maxResults:
+          type: integer
+          default: 100
+
+    SchemaProposalRequest:
+      type: object
+      required: [proposalType, name, description, definition, referenceDocuments, exampleUseCases]
+      properties:
+        proposalType:
+          type: string
+          enum: [holon_type, relationship_type, constraint, measure, lens]
+        name:
+          type: string
+        description:
+          type: string
+        definition:
+          type: object
+        referenceDocuments:
+          type: array
+          items:
+            type: string
+        exampleUseCases:
+          type: array
+          items:
+            type: string
+        impactAnalysis:
+          type: string
+
+    SchemaVersionRequest:
+      type: object
+      properties:
+        version:
+          type: string
+        includeDeprecated:
+          type: boolean
+          default: false
+
+    ExternalDataSubmissionRequest:
+      type: object
+      required: [externalSystem, externalID, dataType, payload]
+      properties:
+        externalSystem:
+          type: string
+        externalID:
+          type: string
+        dataType:
+          type: string
+        payload:
+          type: object
+        sourceDocument:
+          type: string
+
+    IDMappingRequest:
+      type: object
+      required: [externalSystem, externalID]
+      properties:
+        externalSystem:
+          type: string
+        externalID:
+          type: string
+
+    PaginationParams:
+      type: object
+      properties:
+        page:
+          type: integer
+          minimum: 1
+          default: 1
+        pageSize:
+          type: integer
+          minimum: 1
+          maximum: 1000
+          default: 50
+
+    # Response schemas
+    APIResponse:
+      type: object
+      required: [success]
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+        error:
+          $ref: '#/components/schemas/APIError'
+        metadata:
+          $ref: '#/components/schemas/ResponseMetadata'
+
+    APIError:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+        validationErrors:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
+
+    ValidationError:
+      type: object
+      properties:
+        field:
+          type: string
+        message:
+          type: string
+        constraint:
+          type: string
+
+    ResponseMetadata:
+      type: object
+      properties:
+        filtered:
+          type: boolean
+        totalCount:
+          type: integer
+        pageSize:
+          type: integer
+        page:
+          type: integer
+        timestamp:
+          type: string
+          format: date-time
+
+    HolonQueryResponse:
+      allOf:
+        - $ref: '#/components/schemas/APIResponse'
+        - type: object
+          properties:
+            data:
+              type: array
+              items:
+                type: object
+
+    HolonResponse:
+      allOf:
+        - $ref: '#/components/schemas/APIResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+
+    RelationshipQueryResponse:
+      allOf:
+        - $ref: '#/components/schemas/APIResponse'
+        - type: object
+          properties:
+            data:
+              type: array
+              items:
+                type: object
+
+    EventSubmissionResponse:
+      allOf:
+        - $ref: '#/components/schemas/APIResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                eventId:
+                  type: string
+                event:
+                  type: object
+
+    BatchEventSubmissionResponse:
+      allOf:
+        - $ref: '#/components/schemas/APIResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                results:
+                  type: array
+                  items:
+                    type: object
+                summary:
+                  type: object
+                  properties:
+                    total:
+                      type: integer
+                    succeeded:
+                      type: integer
+                    failed:
+                      type: integer
+
+    EventQueryResponse:
+      allOf:
+        - $ref: '#/components/schemas/APIResponse'
+        - type: object
+          properties:
+            data:
+              type: array
+              items:
+                type: object
+
+    EventResponse:
+      allOf:
+        - $ref: '#/components/schemas/APIResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+
+    EventHistoryResponse:
+      allOf:
+        - $ref: '#/components/schemas/APIResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                subjectId:
+                  type: string
+                events:
+                  type: array
+                  items:
+                    type: object
+                startDate:
+                  type: string
+                  format: date-time
+                endDate:
+                  type: string
+                  format: date-time
+
+    CausalChainResponse:
+      allOf:
+        - $ref: '#/components/schemas/APIResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+
+    OrganizationStructureResponse:
+      allOf:
+        - $ref: '#/components/schemas/APIResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+
+    PatternMatchResponse:
+      allOf:
+        - $ref: '#/components/schemas/APIResponse'
+        - type: object
+          properties:
+            data:
+              type: array
+              items:
+                type: object
+
+    SchemaProposalResponse:
+      allOf:
+        - $ref: '#/components/schemas/APIResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+
+    SchemaVersionResponse:
+      allOf:
+        - $ref: '#/components/schemas/APIResponse'
+        - type: object
+          properties:
+            data:
+              type: array
+              items:
+                type: object
+
+    SchemaResponse:
+      allOf:
+        - $ref: '#/components/schemas/APIResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+
+    ExternalDataSubmissionResponse:
+      allOf:
+        - $ref: '#/components/schemas/APIResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                holonID:
+                  type: string
+                events:
+                  type: array
+                  items:
+                    type: object
+
+    IDMappingResponse:
+      allOf:
+        - $ref: '#/components/schemas/APIResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                externalSystem:
+                  type: string
+                externalID:
+                  type: string
+                holonID:
+                  type: string
+
+    HealthCheckResponse:
+      allOf:
+        - $ref: '#/components/schemas/APIResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [healthy, degraded, unhealthy]
+                version:
+                  type: string
+                components:
+                  type: object
+                timestamp:
+                  type: string
+                  format: date-time
+
+    MetricsResponse:
+      allOf:
+        - $ref: '#/components/schemas/APIResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/APIResponse'
+
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/APIResponse'
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/APIResponse'
+
+    ValidationError:
+      description: Validation error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/APIResponse'
+
+    InternalError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/APIResponse'
