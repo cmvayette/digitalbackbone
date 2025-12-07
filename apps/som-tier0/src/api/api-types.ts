@@ -232,3 +232,24 @@ export interface ComponentHealth {
   message?: string;
   latency?: number; // milliseconds
 }
+
+/**
+ * Unified Search Request
+ */
+export interface UnifiedSearchRequest {
+  query: string;
+  types?: HolonType[];
+  limit?: number;
+}
+
+/**
+ * Unified Search Response Item
+ */
+export interface UnifiedSearchResult {
+  id: HolonID;
+  type: HolonType;
+  label: string;
+  subtitle?: string;
+  relevance: number;
+  properties?: Record<string, any>;
+}

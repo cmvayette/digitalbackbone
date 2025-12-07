@@ -25,7 +25,8 @@ export enum HolonType {
   Task = 'Task',
   MeasureDefinition = 'MeasureDefinition',
   LensDefinition = 'LensDefinition',
-  Constraint = 'Constraint'
+  Constraint = 'Constraint',
+  Process = 'Process'
 }
 
 export interface Holon {
@@ -71,6 +72,18 @@ export interface Organization extends Holon {
     type: string;
     echelonLevel: string;
     missionStatement: string;
+    isTigerTeam: boolean;
+  };
+}
+
+export interface Process extends Holon {
+  type: HolonType.Process;
+  properties: {
+    name: string;
+    description: string;
+    inputs: string[];
+    outputs: string[];
+    estimatedDuration: number; // in milliseconds
   };
 }
 

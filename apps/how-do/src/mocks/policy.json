@@ -1,0 +1,32 @@
+[
+    {
+        "id": "pol_1",
+        "title": "Instruction 101: Initial Onboarding",
+        "obligations": [
+            {
+                "id": "obl_1",
+                "statement": "All personnel must complete Cyber Awareness Training within 30 days of arrival.",
+                "assignedToType": "RoleTag",
+                "assignedToId": "role_new_joiner"
+            },
+            {
+                "id": "obl_2",
+                "statement": "Department Heads must verify subordinate GTCC activation.",
+                "assignedToType": "Position",
+                "assignedToId": "pos_dh_ops"
+            }
+        ]
+    },
+    {
+        "id": "pol_2",
+        "title": "SOP 200: Incident Reporting",
+        "obligations": [
+            {
+                "id": "obl_3",
+                "statement": "Submit OPREP-3 within 1 hour of incident.",
+                "assignedToType": "Position",
+                "assignedToId": "pos_cdo"
+            }
+        ]
+    }
+]

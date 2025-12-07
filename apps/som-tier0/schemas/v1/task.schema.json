@@ -1,0 +1,86 @@
+{
+    "type": "object",
+    "properties": {
+        "type": {
+            "type": "string",
+            "const": "Task"
+        },
+        "properties": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "priority": {
+                    "type": "string",
+                    "enum": [
+                        "critical",
+                        "high",
+                        "medium",
+                        "low"
+                    ]
+                },
+                "dueDate": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "status": {
+                    "type": "string",
+                    "enum": [
+                        "created",
+                        "assigned",
+                        "started",
+                        "blocked",
+                        "completed",
+                        "cancelled"
+                    ]
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "description",
+                "priority",
+                "dueDate",
+                "status"
+            ]
+        },
+        "id": {
+            "type": "string"
+        },
+        "createdAt": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "createdBy": {
+            "type": "string"
+        },
+        "status": {
+            "enum": [
+                "active",
+                "inactive"
+            ],
+            "type": "string"
+        },
+        "sourceDocuments": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "createdAt",
+        "createdBy",
+        "id",
+        "properties",
+        "sourceDocuments",
+        "status",
+        "type"
+    ],
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "http://som.tier0/schemas/v1/task.schema.json"
+}

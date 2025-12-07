@@ -11,6 +11,10 @@
 The project is organized into workspaces managed by npm:
 
 - **`apps/som-tier0`**: The core Tier-0 Semantic Operating Model application (source code in `apps/som-tier0/src`).
+- **`apps/how-do`**: Operational process definition and execution tool.
+- **`apps/policy-governance`**: Editor for Policy documents and constraints.
+- **`apps/org-chart`**: interactive Organization, Position, and Person visualizer.
+- **`apps/task-management`**: Task and Initiative management interface.
 - **`packages/som-shared-types`**: Shared TypeScript type definitions and interfaces.
 
 
@@ -156,7 +160,8 @@ POST /api/v1/temporal/holons
 For more specific details, please refer to the documentation within the workspaces:
 - [Tier-0 SOM Application](apps/som-tier0/README.md)
 - [Shared Types](packages/som-shared-types/README.md) (if available)
-- [Design Documentation](docs/design/specs/design.md)
+- [Design Documentation](docs/design/system_architecture.md)
+- [Product Specifications](docs/product_specs.md)
 
 
 ## License

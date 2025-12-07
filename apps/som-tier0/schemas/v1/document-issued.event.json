@@ -1,0 +1,68 @@
+{
+    "$id": "http://som.tier0/schemas/v1/document-issued.event.json",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "string"
+        },
+        "timestamp": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "type": {
+            "type": "string",
+            "const": "DocumentIssued"
+        },
+        "payload": {
+            "type": "object",
+            "properties": {
+                "title": {
+                    "type": "string"
+                },
+                "content": {
+                    "type": "string"
+                },
+                "documentType": {
+                    "type": "string",
+                    "enum": [
+                        "Policy",
+                        "Order",
+                        "Plan",
+                        "SOP",
+                        "Instruction",
+                        "Manual",
+                        "Charter"
+                    ]
+                },
+                "status": {
+                    "type": "string",
+                    "enum": [
+                        "active",
+                        "draft",
+                        "archived"
+                    ]
+                },
+                "version": {
+                    "type": "string"
+                },
+                "authorId": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "title",
+                "documentType",
+                "status"
+            ],
+            "additionalProperties": false
+        }
+    },
+    "required": [
+        "id",
+        "timestamp",
+        "type",
+        "payload"
+    ],
+    "additionalProperties": false
+}

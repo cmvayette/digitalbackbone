@@ -1,0 +1,39 @@
+{
+    "organizations": [
+        {
+            "id": "org_nsw_1",
+            "name": "NSW Group ONE"
+        },
+        {
+            "id": "org_log_sup",
+            "name": "Logistics Support Unit"
+        }
+    ],
+    "positions": [
+        {
+            "id": "pos_cdo",
+            "title": "Command Duty Officer",
+            "orgId": "org_nsw_1"
+        },
+        {
+            "id": "pos_dh_ops",
+            "title": "Operations Dept Head",
+            "orgId": "org_nsw_1"
+        },
+        {
+            "id": "pos_sup_o",
+            "title": "Supply Officer",
+            "orgId": "org_log_sup"
+        }
+    ],
+    "roleTags": [
+        {
+            "id": "role_new_joiner",
+            "title": "New Joiner"
+        },
+        {
+            "id": "role_approver_l1",
+            "title": "Level 1 Approver"
+        }
+    ]
+}

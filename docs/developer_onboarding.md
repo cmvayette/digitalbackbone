@@ -102,9 +102,24 @@ npm test
 npm run test:integration
 ```
 
+### Running Frontend Apps
+Each frontend application is a separate workspace. You can run them individually:
+```bash
+# Run the Org Chart app
+npm run dev -w apps/org-chart
+
+# Run the detailed Process app
+npm run dev -w apps/how-do
+
+# Run the Policy Editor
+npm run dev -w apps/policy-governance
+```
+
+
 ### Key Directories
 *   `apps/som-tier0/src/core`: The brain. Interfaces for Repositories and base types.
 *   `apps/som-tier0/src/api`: The face. REST API endpoints.
+*   `apps/how-do`, `apps/policy-governance`, etc.: Tier-1 Frontend Applications (React/Vite).
 *   `packages/som-shared-types`: The contract. Shared interfaces between Frontend/Backend.
 
 ---

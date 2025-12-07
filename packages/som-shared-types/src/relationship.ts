@@ -14,49 +14,50 @@ export enum RelationshipType {
   MEMBER_OF = 'MEMBER_OF',
   BELONGS_TO = 'BELONGS_TO',
   PART_OF = 'PART_OF',
-  
+
   // Responsibility
   RESPONSIBLE_FOR = 'RESPONSIBLE_FOR',
   OWNED_BY = 'OWNED_BY',
   OPERATED_BY = 'OPERATED_BY',
-  
+
   // Alignment
   GROUPED_UNDER = 'GROUPED_UNDER',
   ALIGNED_TO = 'ALIGNED_TO',
-  
+
   // Support
   SUPPORTS = 'SUPPORTS',
   ENABLES = 'ENABLES',
   USES = 'USES',
-  
+
   // Qualification
   HELD_BY = 'HELD_BY',
   REQUIRED_FOR = 'REQUIRED_FOR',
   HAS_QUAL = 'HAS_QUAL',
-  
+
   // Governance
   DEFINES = 'DEFINES',
   AUTHORIZES = 'AUTHORIZES',
   SUPERSEDES = 'SUPERSEDES',
   DERIVED_FROM = 'DERIVED_FROM',
-  
+
   // Temporal/Causal
   CAUSED_BY = 'CAUSED_BY',
   FOLLOWS = 'FOLLOWS',
   GROUPED_WITH = 'GROUPED_WITH',
-  
+
   // Location
   LOCATED_AT = 'LOCATED_AT',
   HOSTS = 'HOSTS',
   STAGING_FOR = 'STAGING_FOR',
   OCCURS_AT = 'OCCURS_AT',
-  
+
   // Work
   ASSIGNED_TO = 'ASSIGNED_TO',
   PARTICIPATES_IN = 'PARTICIPATES_IN',
   PRODUCES = 'PRODUCES',
+  PROVIDES = 'PROVIDES',
   DEPENDS_ON = 'DEPENDS_ON',
-  
+
   // Measurement
   MEASURED_BY = 'MEASURED_BY',
   EMITS_MEASURE = 'EMITS_MEASURE',

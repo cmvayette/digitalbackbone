@@ -47,10 +47,8 @@ export class SchemaRegistry {
                     const schemaId = schema.$id || file;
                     this.ajv.addSchema(schema, schemaId);
 
-                    // Map HolonType to validator if possible
-                    // The generator creates files like 'person.schema.json'
-                    // We can try to infer the type from the filename or schema content
-                    this.registerValidatorForType(file, schemaId);
+                    // Map HolonType into validator if possible
+                    this.registerValidatorForType(file, schema, schemaId);
 
                     console.log(`Loaded schema: ${schemaId}`);
                 }
@@ -63,18 +61,34 @@ export class SchemaRegistry {
         }
     }
 
-    private registerValidatorForType(filename: string, schemaId: string) {
-        // Mapping convention: person.schema.json -> HolonType.Person
-        const typeName = filename.replace('.schema.json', '');
+    private registerValidatorForType(filename: string, schema: any, schemaId: string) {
+        let typeName: string | undefined;
 
-        // Find matching HolonType enum key (case-insensitive)
-        const holonTypes = Object.values(HolonType);
-        const matchedType = holonTypes.find(t => t.toLowerCase() === typeName.toLowerCase());
+        // 1. Try to get type from schema properties.type.const
+        if (schema.properties?.type?.const) {
+            typeName = schema.properties.type.const;
+        }
 
-        if (matchedType) {
+        // 2. Fallback: filename mapping
+        if (!typeName) {
+            typeName = filename
+                .replace('.schema.json', '')
+                .replace('.event.json', '');
+
+            // Capitalize first letter if needed (heuristic)
+            typeName = typeName!.charAt(0).toUpperCase() + typeName!.slice(1);
+        }
+
+        if (typeName) {
             const validator = this.ajv.getSchema(schemaId);
             if (validator) {
-                this.validators.set(matchedType, validator);
+                this.validators.set(typeName, validator);
+                // Also register generic lookup if it matches a known HolonType (case-insensitive)
+                const holonTypes = Object.values(HolonType);
+                const matchedType = holonTypes.find(t => t.toLowerCase() === typeName!.toLowerCase());
+                if (matchedType && matchedType !== typeName) {
+                    this.validators.set(matchedType, validator);
+                }
             }
         }
     }
@@ -82,7 +96,7 @@ export class SchemaRegistry {
     /**
      * Validate data against a specific holon type schema
      */
-    validate(type: HolonType, data: any): ValidationResult {
+    validate(type: HolonType | string, data: any): ValidationResult {
         if (!this.schemasLoaded) {
             throw new Error('SchemaRegistry not initialized. Call initialize() first.');
         }

@@ -71,6 +71,129 @@ describe('QueryLayer', () => {
     };
   });
 
+  describe('Unified Search', () => {
+    it('should search across multiple holon types with ranking', async () => {
+      // 1. Setup Test Data
+      const doc = documentRegistry.registerDocument({
+        referenceNumbers: ['SEARCH-TEST'],
+        title: 'Search Test Doc',
+        documentType: 'Policy' as any,
+        version: '1.0',
+        effectiveDates: { start: new Date('2024-01-01') },
+        classificationMetadata: 'Unclassified',
+      }, 'event-search');
+
+      // Add Person "John Searchable"
+      eventStore.submitEvent({
+        type: EventType.OrganizationCreated,
+        occurredAt: new Date('2024-01-01'),
+        actor: 'system',
+        subjects: ['person-search'],
+        payload: {
+          holonType: HolonType.Person,
+          properties: { name: 'John Searchable', rank: 'Captain' }
+        },
+        sourceSystem: 'test',
+        sourceDocument: doc.id,
+        causalLinks: {},
+      });
+
+      // Add Org "Searchable Operations"
+      eventStore.submitEvent({
+        type: EventType.OrganizationCreated,
+        occurredAt: new Date('2024-01-01'),
+        actor: 'system',
+        subjects: ['org-search'],
+        payload: {
+          holonType: HolonType.Organization,
+          properties: { name: 'Searchable Operations', uics: ['V1234'] }
+        },
+        sourceSystem: 'test',
+        sourceDocument: doc.id,
+        causalLinks: {},
+      });
+
+      // Add Position "Searchable Officer"
+      eventStore.submitEvent({
+        type: EventType.OrganizationCreated,
+        occurredAt: new Date('2024-01-01'),
+        actor: 'system',
+        subjects: ['pos-search'],
+        payload: {
+          holonType: HolonType.Position,
+          properties: { title: 'Searchable Officer' }
+        },
+        sourceSystem: 'test',
+        sourceDocument: doc.id,
+        causalLinks: {},
+      });
+
+      stateProjection.replayAllEvents();
+      await graphStore.rebuildIndices();
+
+      // 2. Perform Search for "Searchable"
+      const results = await queryLayer.unifiedSearch(adminUser, 'searchable');
+
+      // 3. Verify Results
+      expect(results.data).toHaveLength(3);
+
+      // Verify Types
+      const types = results.data.map(r => r.type);
+      expect(types).toContain(HolonType.Person);
+      expect(types).toContain(HolonType.Organization);
+      expect(types).toContain(HolonType.Position);
+
+      // Verify Relevance Ranking - Exact name match (10) vs just partial? 
+      // "John Searchable" (Person) should match name (+10)
+      // "Searchable Operations" (Org) should match name (+10)
+      // "Searchable Officer" (Pos) should match title (+10)
+      // All have score 10 basically.
+      // Let's test a subtitle match.
+      const personSubtitle = results.data.find(r => r.id === 'person-search');
+      expect(personSubtitle?.relevance).toBeGreaterThanOrEqual(10);
+      expect(personSubtitle?.subtitle).toBe('Captain');
+    });
+
+    it('should filter search results based on access control', async () => {
+      const secretDoc = documentRegistry.registerDocument({
+        referenceNumbers: ['SEARCH-SECRET'],
+        title: 'Secret Doc',
+        documentType: 'Policy' as any,
+        version: '1.0',
+        effectiveDates: { start: new Date('2024-01-01') },
+        classificationMetadata: 'Secret',
+      }, 'event-secret');
+
+      eventStore.submitEvent({
+        type: EventType.OrganizationCreated,
+        occurredAt: new Date('2024-01-01'),
+        actor: 'system',
+        subjects: ['person-secret-search'],
+        payload: {
+          holonType: HolonType.Person,
+          properties: { name: 'Secret Searchable' }
+        },
+        sourceSystem: 'test',
+        sourceDocument: secretDoc.id,
+        causalLinks: {},
+      });
+
+      stateProjection.replayAllEvents();
+      await graphStore.rebuildIndices();
+
+      // Admin (TopSecret) should see it
+      const adminResults = await queryLayer.unifiedSearch(adminUser, 'secret');
+      const foundAdmin = adminResults.data.find(r => r.id === 'person-secret-search');
+      expect(foundAdmin).toBeDefined();
+
+      // Viewer (Unclassified) should NOT see it
+      const viewerResults = await queryLayer.unifiedSearch(viewerUser, 'secret');
+      const foundViewer = viewerResults.data.find(r => r.id === 'person-secret-search');
+      expect(foundViewer).toBeUndefined();
+      expect(viewerResults.filtered).toBe(true);
+    });
+  });
+
   describe('Current State Queries', () => {
     it('should query current holons by type with access control', async () => {
       const doc = documentRegistry.registerDocument({

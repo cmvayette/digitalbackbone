@@ -1,0 +1,63 @@
+{
+    "$id": "http://som.tier0/schemas/v1/process-executed.event.json",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "string"
+        },
+        "timestamp": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "type": {
+            "type": "string",
+            "const": "ProcessExecuted"
+        },
+        "payload": {
+            "type": "object",
+            "properties": {
+                "executionId": {
+                    "type": "string"
+                },
+                "processId": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string",
+                    "enum": [
+                        "started",
+                        "completed",
+                        "failed",
+                        "cancelled"
+                    ]
+                },
+                "triggeredBy": {
+                    "type": "string"
+                },
+                "startTime": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "endTime": {
+                    "type": "string",
+                    "format": "date-time"
+                }
+            },
+            "required": [
+                "executionId",
+                "processId",
+                "status",
+                "startTime"
+            ],
+            "additionalProperties": false
+        }
+    },
+    "required": [
+        "id",
+        "timestamp",
+        "type",
+        "payload"
+    ],
+    "additionalProperties": false
+}

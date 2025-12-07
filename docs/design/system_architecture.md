@@ -88,3 +88,10 @@ Shared definitions ensuring type safety across the monorepo.
 - **event.ts**: `EventType` enums and `Event` interfaces.
 - **holon.ts**: `HolonType` enums and specific Holon interfaces (Person, Position, etc.).
 - **relationship.ts**: `RelationshipType` enums and interfaces.
+
+### Tier-1 Applications (Frontend)
+These applications consume the SOM Tier-0 via the API to provide user-facing functionality.
+- **apps/org-chart**: Visual explorer for the Organization, Position, and Person graph.
+- **apps/policy-governance**: editor for Policy documents and governance constraints.
+- **apps/how-do**: Operational process definition and execution tool (Process/Task management).
+- **apps/task-management**: User interface for managing Tasks and Initiatives.

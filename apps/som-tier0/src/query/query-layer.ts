@@ -221,6 +221,90 @@ export class QueryLayer {
   }
 
   /**
+   * Unified Search across multiple holon types
+   */
+  async unifiedSearch(
+    user: UserContext,
+    query: string,
+    types: HolonType[] = [HolonType.Organization, HolonType.Position, HolonType.Person, HolonType.Process],
+    limit: number = 20
+  ): Promise<QueryResult<{ id: HolonID; type: HolonType; label: string; subtitle?: string; relevance: number, properties?: any }[]>> {
+    const term = query.toLowerCase();
+    const results: { id: HolonID; type: HolonType; label: string; subtitle?: string; relevance: number, properties?: any }[] = [];
+    let totalFiltered = false;
+
+    // Search each type
+    for (const type of types) {
+      // Get all holons of type (filtered by simple property match logic)
+      // Note: In a real DB, this would be a specific search query.
+      // Here we fetch all and filter in memory since we are in-memory.
+      const holons = this.graphStore.queryHolonsByType(type);
+
+      const filteredHolons = this.accessControl.filterHolons(user, holons);
+      if (filteredHolons.length < holons.length) totalFiltered = true;
+
+      for (const holon of filteredHolons) {
+        let matchScore = 0;
+        let label = '';
+        let subtitle: string | undefined;
+
+        // Type-specific matching logic
+        switch (type) {
+          case HolonType.Person:
+            label = holon.properties.name || 'Unknown Person';
+            subtitle = holon.properties.rank || holon.properties.category;
+            if (label.toLowerCase().includes(term)) matchScore += 10;
+            if (holon.properties.email?.toLowerCase().includes(term)) matchScore += 5;
+            break;
+          case HolonType.Organization:
+            label = holon.properties.name || 'Unknown Org';
+            subtitle = holon.properties.uics?.join(', ');
+            if (label.toLowerCase().includes(term)) matchScore += 10;
+            if (subtitle?.toLowerCase().includes(term)) matchScore += 5;
+            break;
+          case HolonType.Position:
+            label = holon.properties.title || 'Unknown Position';
+            subtitle = holon.properties.billetIDs?.join(', ');
+            if (label.toLowerCase().includes(term)) matchScore += 10;
+            if (subtitle?.toLowerCase().includes(term)) matchScore += 5;
+            break;
+          case HolonType.Process:
+            label = holon.properties.name || 'Unknown Process';
+            subtitle = holon.properties.description?.substring(0, 50);
+            if (label.toLowerCase().includes(term)) matchScore += 10;
+            break;
+          default:
+            // Generic fallback
+            label = holon.id;
+            if (JSON.stringify(holon.properties).toLowerCase().includes(term)) matchScore += 1;
+        }
+
+        if (matchScore > 0) {
+          results.push({
+            id: holon.id,
+            type: holon.type,
+            label,
+            subtitle,
+            relevance: matchScore,
+            properties: holon.properties
+          });
+        }
+      }
+    }
+
+    // Sort by relevance
+    results.sort((a, b) => b.relevance - a.relevance);
+
+    // Limit
+    const limitedResults = results.slice(0, limit);
+
+    return {
+      data: limitedResults,
+      filtered: totalFiltered
+    };
+  }
+
+  /**
    * Query holons as of a specific timestamp with access control
    */
   queryHolonsAsOf(

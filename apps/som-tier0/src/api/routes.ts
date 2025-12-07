@@ -33,6 +33,7 @@ import {
   ExternalDataSubmissionRequest,
   IDMappingRequest,
   HealthCheckResponse,
+  UnifiedSearchRequest,
 } from './api-types';
 
 /**
@@ -141,6 +142,51 @@ export class APIRoutes {
         filtered: result.filtered,
         timestamp: new Date(),
       },
+    };
+  }
+
+  /**
+   * GET /api/v1/search
+   * Unified search across multiple holon types
+   */
+  async unifiedSearch(request: APIRequest<UnifiedSearchRequest>): Promise<APIResponse> {
+    // Extract parameters from query string if GET, or body if POST
+    const query = request.query?.q || request.body?.query;
+    const limit = request.query?.limit ? parseInt(request.query.limit) : (request.body?.limit || 20);
+    const typesStr = request.query?.types;
+
+    if (!query) {
+      return {
+        success: false,
+        error: {
+          code: 'INVALID_REQUEST',
+          message: 'Query parameter "q" is required'
+        }
+      };
+    }
+
+    let types: HolonType[] | undefined;
+    if (typesStr) {
+      types = typesStr.split(',').map(t => t.trim()) as HolonType[];
+    } else if (request.body?.types) {
+      types = request.body.types;
+    }
+
+    const result = await this.queryLayer.unifiedSearch(
+      request.user,
+      query,
+      types,
+      limit
+    );
+
+    return {
+      success: true,
+      data: result.data,
+      metadata: {
+        filtered: result.filtered,
+        totalCount: result.data.length,
+        timestamp: new Date()
+      }
     };
   }
 
