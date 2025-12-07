@@ -6,9 +6,14 @@ import type { Process } from '@som/shared-types';
 
 const { policies, agents } = mockData;
 
-export const SwimlaneEditor: React.FC = () => {
+interface SwimlaneEditorProps {
+    initialProcess?: Process;
+    onBack?: () => void;
+}
+
+export const SwimlaneEditor: React.FC<SwimlaneEditorProps> = ({ initialProcess, onBack }) => {
     // Basic Process State
-    const [process, setProcess] = useState<Process>({
+    const [process, setProcess] = useState<Process>(initialProcess || {
         id: 'new-process',
         type: HolonType.Process,
         createdAt: new Date(),
@@ -69,6 +74,7 @@ export const SwimlaneEditor: React.FC = () => {
     return (
         <div className="swimlane-editor">
             <div className="toolbar">
+                {onBack && <button className="secondary-btn" onClick={onBack}>← Back</button>}
                 <h1>Process Designer</h1>
                 <div className="actions">
                     <button className="primary-btn" onClick={addStep}>+ Add Step</button>
