@@ -35,47 +35,44 @@ The SOM is built on three fundamental primitives:
 
 ### High-Level Components
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    External Systems                         │
-│  (NSIPS, DRRS, Training Systems, Logistics, etc.)           │
-└────────────────────┬────────────────────────────────────────┘
-                     │
-                     ▼
-┌─────────────────────────────────────────────────────────────┐
-│              Semantic Access Layer (SAL)                    │
-│  • ID Mapping Service                                       │
-│  • Event Transformer                                        │
-│  • Validation Gateway                                       │
-└────────────────────┬────────────────────────────────────────┘
-                     │
-                     ▼
-┌─────────────────────────────────────────────────────────────┐
-│                  Tier-0 SOM Core                            │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐       │
-│  │ Event Store  │  │ Constraint   │  │  Document    │       │
-│  │ (Immutable)  │  │   Engine     │  │  Registry    │       │
-│  └──────────────┘  └──────────────┘  └──────────────┘       │
-│  ┌──────────────┐  ┌──────────────┐                         │
-│  │    State     │  │   Semantic   │                         │
-│  │  Projection  │  │ Graph Store  │                         │
-│  └──────────────┘  └──────────────┘                         │
-└────────────────────┬────────────────────────────────────────┘
-                     │
-                     ▼
-┌─────────────────────────────────────────────────────────────┐
-│                    Query Layer                              │
-│  • Current State Queries                                    │
-│  • Temporal Queries (as-of)                                 │
-│  • Pattern Matching                                         │
-│  • Causal Chain Tracing                                     │
-└────────────────────┬────────────────────────────────────────┘
-                     │
-                     ▼
-┌─────────────────────────────────────────────────────────────┐
-│                  Tier-1 Systems                             │
-│  (Identity, Objectives, Initiatives, Measures, Reasoning)   │
-└─────────────────────────────────────────────────────────────┘
+```mermaid
+graph TD
+    ext["External Systems<br/>(NSIPS, DRRS, Training Systems, Logistics)"]
+
+    subgraph SAL [Semantic Access Layer]
+        direction TB
+        idmap[ID Mapping Service]
+        trans[Event Transformer]
+        valid[Validation Gateway]
+    end
+
+    subgraph Tier0 [Tier-0 SOM Core]
+        direction TB
+        es[Event Store<br/>(Immutable)]
+        ce[Constraint Engine]
+        dr[Document Registry]
+        sp[State Projection]
+        gs[Semantic Graph Store]
+    end
+
+    subgraph Query [Query Layer]
+        direction TB
+        q1[Current State Queries]
+        q2[Temporal Queries]
+        q3[Pattern Matching]
+        q4[Causal Chain Tracing]
+    end
+
+    tier1["Tier-1 Systems<br/>(Identity, Objectives, Initiatives, Measures, Reasoning)"]
+
+    ext --> SAL
+    SAL --> Tier0
+    Tier0 --> Query
+    Query --> tier1
+
+    %% Class Styling
+    classDef box fill:#f9f9f9,stroke:#333,stroke-width:1px;
+    class SAL,Tier0,Query box;
 ```
 
 ## Getting Started
