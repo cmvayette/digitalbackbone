@@ -1,25 +1,46 @@
 {
-    "obligations": [
+    "policies": {
+        "obligations": [
+            {
+                "id": "obl-1",
+                "statement": "The Operations Officer must review all mission plans within 24 hours of submission.",
+                "assignedTo": "pos-2",
+                "sourceDocId": "doc-policy-101",
+                "criticality": "high"
+            },
+            {
+                "id": "obl-2",
+                "statement": "The Training Officer is responsible for certifying all new personnel on safety procedures.",
+                "assignedTo": "pos-4",
+                "sourceDocId": "doc-policy-102",
+                "criticality": "medium"
+            },
+            {
+                "id": "obl-3",
+                "statement": "Logistics must provide a supply status report weekly.",
+                "assignedTo": "pos-3",
+                "sourceDocId": "doc-policy-101",
+                "criticality": "low"
+            }
+        ]
+    },
+    "agents": [
         {
-            "id": "obl-1",
-            "statement": "The Operations Officer must review all mission plans within 24 hours of submission.",
-            "assignedTo": "pos-2",
-            "sourceDocId": "doc-policy-101",
-            "criticality": "high"
+            "id": "agent-logistics",
+            "type": "Agent",
+            "name": "Logistics Bot",
+            "capabilities": [
+                "Inventory Check",
+                "Supply Request"
+            ]
         },
         {
-            "id": "obl-2",
-            "statement": "The Training Officer is responsible for certifying all new personnel on safety procedures.",
-            "assignedTo": "pos-4",
-            "sourceDocId": "doc-policy-102",
-            "criticality": "medium"
-        },
-        {
-            "id": "obl-3",
-            "statement": "Logistics must provide a supply status report weekly.",
-            "assignedTo": "pos-3",
-            "sourceDocId": "doc-policy-101",
-            "criticality": "low"
+            "id": "agent-scheduler",
+            "type": "Agent",
+            "name": "Scheduling Assistant",
+            "capabilities": [
+                "Calendar Mgmt"
+            ]
         }
     ]
 }

@@ -1,0 +1,385 @@
+/**
+ * Blueprint Design System
+ * Shared styles for all Tier-1 applications
+ *
+ * Design Philosophy:
+ * - Minimal UI, maximal clarity
+ * - Blueprint aesthetic: dark canvas, monoline geometry
+ * - Functional accents only
+ * - High contrast for readability
+ */
+
+/* ================================
+   CSS Variables (Design Tokens)
+   ================================ */
+
+:root {
+  /* Background colors */
+  --bg-canvas: #0f172a;      /* slate-900 - main dark background */
+  --bg-panel: #1e293b;       /* slate-800 - sidebar/card background */
+  --bg-surface: #334155;     /* slate-700 - elevated surfaces */
+  --bg-hover: #475569;       /* slate-600 - hover states */
+
+  /* Border colors */
+  --border-color: #475569;   /* slate-600 - default borders */
+  --border-subtle: #334155;  /* slate-700 - subtle borders */
+  --border-focus: #3b82f6;   /* blue-500 - focus rings */
+
+  /* Text colors */
+  --text-primary: #f8fafc;   /* slate-50 - primary text */
+  --text-secondary: #94a3b8; /* slate-400 - secondary text */
+  --text-muted: #64748b;     /* slate-500 - muted text */
+  --text-inverse: #0f172a;   /* slate-900 - text on light backgrounds */
+
+  /* Accent colors (functional only) */
+  --accent-green: #10b981;   /* emerald-500 - healthy/success */
+  --accent-yellow: #f59e0b;  /* amber-500 - warning/at-risk */
+  --accent-red: #ef4444;     /* red-500 - error/critical */
+  --accent-blue: #3b82f6;    /* blue-500 - info/links */
+  --accent-orange: #f97316;  /* orange-500 - positions */
+  --accent-purple: #a855f7;  /* purple-500 - special/tiger teams */
+
+  /* Typography */
+  --font-sans: ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, 'Cascadia Code', 'Source Code Pro', monospace;
+
+  /* Sizing */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.3), 0 2px 4px -2px rgb(0 0 0 / 0.3);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.3), 0 4px 6px -4px rgb(0 0 0 / 0.3);
+
+  /* Blueprint-specific */
+  --line-width: 1.25px;
+  --grid-gap: 20px;
+}
+
+/* ================================
+   Base Styles
+   ================================ */
+
+.som-app {
+  font-family: var(--font-sans);
+  background-color: var(--bg-canvas);
+  color: var(--text-primary);
+  min-height: 100vh;
+}
+
+/* ================================
+   Component: Panel / Card
+   ================================ */
+
+.som-panel {
+  background-color: var(--bg-panel);
+  border: var(--line-width) solid var(--border-color);
+  border-radius: var(--radius-md);
+}
+
+.som-card {
+  background-color: var(--bg-panel);
+  border: var(--line-width) solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+}
+
+.som-card:hover {
+  border-color: var(--border-focus);
+}
+
+/* ================================
+   Component: Sidebar Panel
+   ================================ */
+
+.som-sidebar {
+  position: fixed;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 400px;
+  max-width: 90vw;
+  background-color: var(--bg-panel);
+  border-left: var(--line-width) solid var(--border-color);
+  box-shadow: var(--shadow-lg);
+  z-index: 50;
+  overflow-y: auto;
+  transform: translateX(100%);
+  transition: transform 0.2s ease-out;
+}
+
+.som-sidebar.open {
+  transform: translateX(0);
+}
+
+.som-sidebar-header {
+  padding: 1rem;
+  border-bottom: var(--line-width) solid var(--border-subtle);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.som-sidebar-content {
+  padding: 1rem;
+}
+
+/* ================================
+   Component: Health Badge
+   ================================ */
+
+.som-health-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.som-health-badge--healthy {
+  background-color: rgba(16, 185, 129, 0.1);
+  color: var(--accent-green);
+  border: 1px solid var(--accent-green);
+}
+
+.som-health-badge--at-risk {
+  background-color: rgba(245, 158, 11, 0.1);
+  color: var(--accent-yellow);
+  border: 1px solid var(--accent-yellow);
+}
+
+.som-health-badge--critical {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: var(--accent-red);
+  border: 1px solid var(--accent-red);
+}
+
+.som-health-badge--unknown {
+  background-color: rgba(100, 116, 139, 0.1);
+  color: var(--text-muted);
+  border: 1px solid var(--text-muted);
+}
+
+/* Health dot (small indicator) */
+.som-health-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.som-health-dot--healthy { background-color: var(--accent-green); }
+.som-health-dot--at-risk { background-color: var(--accent-yellow); }
+.som-health-dot--critical { background-color: var(--accent-red); }
+.som-health-dot--unknown { background-color: var(--text-muted); }
+
+/* ================================
+   Component: Search Bar
+   ================================ */
+
+.som-search {
+  position: relative;
+  width: 100%;
+  max-width: 600px;
+}
+
+.som-search-input {
+  width: 100%;
+  padding: 0.75rem 1rem 0.75rem 2.5rem;
+  background-color: var(--bg-surface);
+  border: var(--line-width) solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.som-search-input::placeholder {
+  color: var(--text-muted);
+}
+
+.som-search-input:focus {
+  border-color: var(--border-focus);
+}
+
+.som-search-icon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  width: 1rem;
+  height: 1rem;
+}
+
+.som-search-shortcut {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 0.125rem 0.375rem;
+  background-color: var(--bg-hover);
+  border-radius: var(--radius-sm);
+  font-size: 0.625rem;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+/* ================================
+   Component: Button
+   ================================ */
+
+.som-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border: var(--line-width) solid transparent;
+}
+
+.som-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.som-btn--primary {
+  background-color: var(--accent-blue);
+  color: white;
+}
+
+.som-btn--primary:hover:not(:disabled) {
+  background-color: #2563eb;
+}
+
+.som-btn--secondary {
+  background-color: var(--bg-surface);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+.som-btn--secondary:hover:not(:disabled) {
+  background-color: var(--bg-hover);
+}
+
+.som-btn--ghost {
+  background-color: transparent;
+  color: var(--text-secondary);
+}
+
+.som-btn--ghost:hover:not(:disabled) {
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
+}
+
+/* ================================
+   Component: Empty State
+   ================================ */
+
+.som-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.som-empty-state-icon {
+  width: 3rem;
+  height: 3rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.som-empty-state-title {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+}
+
+.som-empty-state-description {
+  font-size: 0.875rem;
+  max-width: 300px;
+}
+
+/* ================================
+   Component: Loading State
+   ================================ */
+
+.som-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.som-spinner {
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 2px solid var(--border-color);
+  border-top-color: var(--accent-blue);
+  border-radius: 50%;
+  animation: som-spin 0.8s linear infinite;
+}
+
+@keyframes som-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ================================
+   Component: Holon Link
+   ================================ */
+
+.som-holon-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: var(--accent-blue);
+  text-decoration: none;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.som-holon-link:hover {
+  text-decoration: underline;
+}
+
+.som-holon-link-icon {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+/* ================================
+   Utility Classes
+   ================================ */
+
+.som-text-primary { color: var(--text-primary); }
+.som-text-secondary { color: var(--text-secondary); }
+.som-text-muted { color: var(--text-muted); }
+
+.som-bg-canvas { background-color: var(--bg-canvas); }
+.som-bg-panel { background-color: var(--bg-panel); }
+.som-bg-surface { background-color: var(--bg-surface); }
+
+.som-border { border: var(--line-width) solid var(--border-color); }
+.som-border-subtle { border: var(--line-width) solid var(--border-subtle); }
+
+.som-rounded { border-radius: var(--radius-md); }
+.som-rounded-sm { border-radius: var(--radius-sm); }
+.som-rounded-lg { border-radius: var(--radius-lg); }
+
+.som-shadow { box-shadow: var(--shadow-md); }
+.som-shadow-lg { box-shadow: var(--shadow-lg); }

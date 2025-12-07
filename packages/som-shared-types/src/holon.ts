@@ -26,7 +26,22 @@ export enum HolonType {
   MeasureDefinition = 'MeasureDefinition',
   LensDefinition = 'LensDefinition',
   Constraint = 'Constraint',
-  Process = 'Process'
+
+  Process = 'Process',
+  Agent = 'Agent'
+}
+
+export type Actor = Person | Agent | Position | System;
+
+export interface Agent extends Holon {
+  type: HolonType.Agent;
+  properties: {
+    name: string;
+    description: string;
+    version: string;
+    capabilities: string[];
+    model?: string;
+  };
 }
 
 export interface Holon {
@@ -83,6 +98,15 @@ export interface Process extends Holon {
     description: string;
     inputs: string[];
     outputs: string[];
+    steps: Array<{
+      id: string;
+      title: string;
+      description: string;
+      owner: string;
+      source?: 'native' | 'external';
+      externalId?: string;
+      externalSource?: string;
+    }>;
     estimatedDuration: number; // in milliseconds
   };
 }
@@ -129,9 +153,13 @@ export interface Objective extends Holon {
   type: HolonType.Objective;
   properties: {
     description: string;
+    statement: string;
     level: 'strategic' | 'operational' | 'tactical';
     timeHorizon: Date;
     status: 'proposed' | 'approved' | 'active' | 'achieved' | 'abandoned' | 'revised';
+    source?: 'native' | 'external';
+    externalId?: string;
+    externalSource?: string; // e.g., 'jira', 'trello'
   };
 }
 
@@ -159,11 +187,17 @@ export interface Initiative extends Holon {
 export interface Task extends Holon {
   type: HolonType.Task;
   properties: {
+    title: string;
     description: string;
     type: string;
+    assigneeId: string;
     priority: 'critical' | 'high' | 'medium' | 'low';
     dueDate: Date;
+
     status: 'created' | 'assigned' | 'started' | 'blocked' | 'completed' | 'cancelled';
+    source?: 'native' | 'external';
+    externalId?: string;
+    externalSource?: string; // e.g., 'jira', 'trello'
   };
 }
 

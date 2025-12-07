@@ -6,6 +6,9 @@ interface PolicyEditorProps {
     onSave?: (content: string) => void;
 }
 
+import { EventType } from '@som/shared-types';
+import type { DocumentIssuedPayload } from '@som/shared-types';
+
 export const PolicyEditor: React.FC<PolicyEditorProps> = ({ initialContent = '', onSave }) => {
     const [content, setContent] = useState(initialContent);
 
@@ -15,17 +18,17 @@ export const PolicyEditor: React.FC<PolicyEditorProps> = ({ initialContent = '',
 
     const handlePublish = () => {
         console.log('Publishing Policy...');
-        // In a real implementation, this would trigger the extraction logic
-        // and emit DocumentIssued and ObligationDefined events.
+
+        const payload: DocumentIssuedPayload = {
+            title: 'Draft Policy',
+            content: content,
+            status: 'active',
+            documentType: 'Policy'
+        };
 
         const mockEvent = {
-            type: 'DocumentIssued',
-            payload: {
-                title: 'Draft Policy',
-                content: content,
-                status: 'active',
-                documentType: 'Policy'
-            }
+            type: EventType.DocumentIssued,
+            payload
         };
         console.log('Event Emitted:', mockEvent);
 

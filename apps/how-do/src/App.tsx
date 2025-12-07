@@ -1,5 +1,5 @@
 import './App.css'
-import { SwimlaneEditor } from './components/SwimlaneEditor'
+import { SwimlaneEditor } from './components/SwimlaneEditorComponent'
 
 function App() {
   return (

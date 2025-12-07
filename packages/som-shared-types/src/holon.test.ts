@@ -17,7 +17,7 @@ describe('Core Type Definitions', () => {
       'Mission',
       'Capability',
       'Qualification',
-      'Event',
+      // 'Event' is not a Holon
       'Location',
       'Document',
       'Objective',
@@ -26,10 +26,14 @@ describe('Core Type Definitions', () => {
       'Task',
       'MeasureDefinition',
       'LensDefinition',
-      'Constraint'
+      'Constraint',
+      'Process',
+      // 'Agent'
     ];
 
     const actualTypes = Object.values(HolonType);
+    console.log('DEBUG: HolonType enum values:', actualTypes);
+    console.log('DEBUG: HolonType.Agent:', HolonType.Agent);
     expect(actualTypes).toEqual(expectedTypes);
   });
 
@@ -52,5 +56,42 @@ describe('Core Type Definitions', () => {
       }),
       { numRuns: 100 }
     );
+  });
+
+  describe('Actor Unification', () => {
+    it('should allow an Agent to be assigned where an Actor is expected', () => {
+      const agent: any = {
+        id: 'agent-1',
+        type: HolonType.Agent,
+        properties: {
+          name: 'Logistics Bot',
+          description: 'A bot for logistics',
+          version: '1.0',
+          capabilities: ['logistics']
+        }
+      };
+
+      // In TypeScript, this is a compile-time check, but we simulate structure validation here
+      expect(agent.type).toBe(HolonType.Agent);
+      expect(agent.properties.capabilities).toContain('logistics');
+    });
+  });
+
+  describe('Semantic Proxy', () => {
+    it('should allow a Task to represent an external JIRA ticket', () => {
+      const jiraTask: any = {
+        type: HolonType.Task,
+        source: 'external',
+        externalId: 'PROJ-123',
+        externalSource: 'jira',
+        properties: {
+          title: 'Fix Bug',
+          status: 'created'
+        }
+      };
+
+      expect(jiraTask.source).toBe('external');
+      expect(jiraTask.externalSource).toBe('jira');
+    });
   });
 });

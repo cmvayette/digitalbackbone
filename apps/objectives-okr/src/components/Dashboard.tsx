@@ -44,14 +44,14 @@ export const Dashboard: React.FC = () => {
                     <div className="obj-list">
                         {MOCK_OBJECTIVES.map(obj => (
                             <div key={obj.id} className="obj-item">
-                                <div className="obj-statement">{obj.statement}</div>
+                                <div className="obj-statement">{obj.properties.statement}</div>
                                 <div className="progress-bar-container">
                                     <div
                                         className="progress-bar-fill"
-                                        style={{ width: `${obj.progress}%` }}
+                                        style={{ width: `60%` }}
                                     ></div>
                                 </div>
-                                <div className="progress-text">{obj.progress}% Complete</div>
+                                <div className="progress-text">Status: {obj.properties.status} (Simulated Progress)</div>
                             </div>
                         ))}
                     </div>

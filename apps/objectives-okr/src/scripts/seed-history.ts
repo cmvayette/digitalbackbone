@@ -1,3 +1,6 @@
+import { HolonType } from '@som/shared-types';
+import type { Objective } from '@som/shared-types';
+
 // Simulates a history of completed tasks to populate performance graphs
 
 export interface HistoricalEvent {
@@ -24,23 +27,50 @@ export const generateTaskHistory = (days: number = 30): HistoricalEvent[] => {
     return history;
 };
 
-export const MOCK_OBJECTIVES = [
+export const MOCK_OBJECTIVES: Objective[] = [
     {
         id: "obj-1",
-        statement: "Achieve Operational Readiness for Q4",
-        progress: 75,
-        status: "active"
+        type: HolonType.Objective,
+        createdAt: new Date(),
+        createdBy: 'seed',
+        status: 'active',
+        sourceDocuments: [],
+        properties: {
+            statement: "Achieve Operational Readiness for Q4",
+            description: "Main effort for Q4",
+            level: 'operational',
+            timeHorizon: new Date('2025-12-31'),
+            status: 'active'
+        }
     },
     {
         id: "obj-2",
-        statement: "Modernize Digital Backbone Infrastructure",
-        progress: 40,
-        status: "active"
+        type: HolonType.Objective,
+        createdAt: new Date(),
+        createdBy: 'seed',
+        status: 'active',
+        sourceDocuments: [],
+        properties: {
+            statement: "Modernize Digital Backbone Infrastructure",
+            description: "Tech refresh",
+            level: 'strategic',
+            timeHorizon: new Date('2026-06-30'),
+            status: 'active'
+        }
     },
     {
         id: "obj-3",
-        statement: "Ensure Personnel Compliance",
-        progress: 90,
-        status: "active"
+        type: HolonType.Objective,
+        createdAt: new Date(),
+        createdBy: 'seed',
+        status: 'active',
+        sourceDocuments: [],
+        properties: {
+            statement: "Ensure Personnel Compliance",
+            description: "Training compliance",
+            level: 'tactical',
+            timeHorizon: new Date('2025-01-01'),
+            status: 'active'
+        }
     }
 ];

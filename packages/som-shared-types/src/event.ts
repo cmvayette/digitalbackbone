@@ -69,7 +69,10 @@ export enum EventType {
 
   // Measurement
   MeasureEmitted = 'MeasureEmitted',
-  LensEvaluated = 'LensEvaluated'
+  LensEvaluated = 'LensEvaluated',
+
+  // Process
+  ProcessDefined = 'ProcessDefined'
 }
 
 export interface Event {

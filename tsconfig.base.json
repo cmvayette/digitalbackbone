@@ -1,0 +1,22 @@
+{
+    "compilerOptions": {
+        "strict": true,
+        "target": "ESNext",
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+        "allowImportingTsExtensions": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true,
+        "noFallthroughCasesInSwitch": true,
+        "noUncheckedSideEffectImports": false,
+        /* Relaxed for monorepo usage with shared types */
+        "verbatimModuleSyntax": false,
+        /* Path Aliases */
+        "baseUrl": ".",
+        "paths": {
+            "@som/shared-types": [
+                "./packages/som-shared-types/dist/index.d.ts"
+            ]
+        }
+    }
+}

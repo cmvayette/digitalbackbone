@@ -5,3 +5,6 @@
 export * from './holon';
 export * from './relationship';
 export * from './event';
+export * from './event-payloads';
+export * from './operation-result';
+export * from './audit-params';

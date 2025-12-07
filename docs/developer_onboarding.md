@@ -145,3 +145,14 @@ npm run lint:semantic
 3.  **Event Integrity**: Ensuring events match the canonical event model.
 
 > **Tip**: If you see a failure in CI for `lint:semantic`, it means you defined a new Type (e.g., in an Enum) but forgot to define its Shape (Interface).
+
+---
+
+## 8. Agentic Workflow
+If you are an AI Agent (or a human acting like one), you must follow the **[Agent Implementation Protocol](file:///Users/baxter/devProject/digital_backbone/docs/plan/agent_implementation_protocol.md)**.
+This defines the **Review-Verify-Task** cycle required to convert Strategy into Code.
+
+1.  **Context Alignment**: Read Strategy.
+2.  **Gap Analysis**: Check Specs vs Code.
+3.  **Verification**: Write Test Plans.
+4.  **Execution**: Write Code.

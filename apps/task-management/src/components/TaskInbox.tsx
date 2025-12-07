@@ -1,23 +1,29 @@
 import React, { useState } from 'react';
 import './TaskInbox.css';
 import { generateMockTasks } from '../mocks/traffic-generator';
-import type { MockTask } from '../mocks/traffic-generator';
+import type { Task } from '@som/shared-types';
 
 export const TaskInbox: React.FC = () => {
-    const [tasks, setTasks] = useState<MockTask[]>([]);
+    const [tasks, setTasks] = useState<Task[]>([]);
 
     const handleGenerateTraffic = () => {
         const newTasks = generateMockTasks(3);
         console.log('Emitting TaskCreated Events:', newTasks.map(t => ({
             type: 'TaskCreated',
-            payload: t
+            payload: {
+                taskId: t.id,
+                ...t.properties
+            }
         })));
         setTasks(prev => [...newTasks, ...prev]);
     };
 
     const handleComplete = (taskId: string) => {
         setTasks(prev => prev.map(t =>
-            t.id === taskId ? { ...t, status: 'completed' } : t
+            t.id === taskId ? {
+                ...t,
+                properties: { ...t.properties, status: 'completed' }
+            } : t
         ));
 
         const task = tasks.find(t => t.id === taskId);
@@ -33,8 +39,8 @@ export const TaskInbox: React.FC = () => {
         }
     };
 
-    const activeTasks = tasks.filter(t => t.status === 'pending');
-    const completedTasks = tasks.filter(t => t.status === 'completed');
+    const activeTasks = tasks.filter(t => t.properties.status !== 'completed');
+    const completedTasks = tasks.filter(t => t.properties.status === 'completed');
 
     return (
         <div className="task-inbox">
@@ -62,13 +68,13 @@ export const TaskInbox: React.FC = () => {
                 {activeTasks.map(task => (
                     <div key={task.id} className="task-card">
                         <div className="task-info">
-                            <div className="task-title">{task.title}</div>
+                            <div className="task-title">{task.properties.title}</div>
                             <div className="task-meta">
-                                <span className={`priority-badge priority-${task.priority}`}>
-                                    {task.priority} Priority
+                                <span className={`priority-badge priority-${task.properties.priority}`}>
+                                    {task.properties.priority} Priority
                                 </span>
-                                <span>Due: {new Date(task.dueDate).toLocaleDateString()}</span>
-                                <span>Source: {task.source}</span>
+                                <span>Due: {new Date(task.properties.dueDate).toLocaleDateString()}</span>
+                                <span>Source: {task.properties.type}</span>
                             </div>
                         </div>
                         <div className="task-actions">
