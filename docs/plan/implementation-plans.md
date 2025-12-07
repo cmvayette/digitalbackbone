@@ -170,10 +170,11 @@ This document provides detailed implementation plans for each Tier-1 frontend ap
 - ✅ Add step functionality (prompt-based)
 - ✅ Basic obligation linking (keyword match)
 - ✅ ProcessDefined event emission (console)
+- ✅ Process Discovery (Search UI)
+- ✅ Process Viewer (Read-only Swimlane)
+- ✅ Agent Assignment (Semantic Proxy)
 
 **Not Yet Implemented:**
-- ❌ Process Discovery (search)
-- ❌ Process Viewer (read-only, swimlane layout)
 - ❌ Linear Timeline Layout
 - ❌ Step card enhancements (attachments, SLA, decision logic)
 - ❌ Drag-and-drop step reordering

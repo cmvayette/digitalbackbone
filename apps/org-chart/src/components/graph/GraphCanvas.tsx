@@ -12,19 +12,21 @@ import type { Node, Edge, Connection } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { OrganizationNode } from '../nodes/OrganizationNode';
 import { PositionNode } from '../nodes/PositionNode';
+import { PersonNode } from '../nodes/PersonNode';
 
 const nodeTypes = {
     organization: OrganizationNode,
     position: PositionNode,
+    person: PersonNode,
 };
 
 interface GraphCanvasProps {
     initialNodes: Node[];
     initialEdges: Edge[];
+    onNodeClick?: (event: React.MouseEvent, node: Node) => void;
 }
 
-
-export function GraphCanvas({ initialNodes, initialEdges }: GraphCanvasProps) {
+export function GraphCanvas({ initialNodes, initialEdges, onNodeClick }: GraphCanvasProps) {
     const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
     const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
@@ -46,6 +48,7 @@ export function GraphCanvas({ initialNodes, initialEdges }: GraphCanvasProps) {
                 onNodesChange={onNodesChange}
                 onEdgesChange={onEdgesChange}
                 onConnect={onConnect}
+                onNodeClick={onNodeClick}
                 fitView
                 className="bg-bg-canvas"
                 colorMode="dark"

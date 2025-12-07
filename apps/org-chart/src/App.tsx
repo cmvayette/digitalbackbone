@@ -7,15 +7,20 @@ import { useEffect, useState } from 'react'
 
 const queryClient = new QueryClient()
 
+import { SidebarPanel } from './components/sidebar/SidebarPanel';
+
 function OrgChartApp() {
   // 1. Fetch Data (Hardcoded Root ID for now)
-  const { data, isLoading } = useOrgStructure('org-root'); // Matches mock ID from transformer test logic if we had one
+  const { data, isLoading } = useOrgStructure('org-root');
 
   // 2. State for Layouted Elements
   const [layoutedNodes, setLayoutedNodes] = useState<Node[]>([]);
   const [layoutedEdges, setLayoutedEdges] = useState<Edge[]>([]);
 
-  // 3. Run Layout when data arrives
+  // 3. Selection State
+  const [selectedNode, setSelectedNode] = useState<Node | null>(null);
+
+  // 4. Run Layout when data arrives
   useEffect(() => {
     if (data && data.nodes.length > 0) {
       const { nodes, edges } = getLayoutedElements(
@@ -28,6 +33,14 @@ function OrgChartApp() {
     }
   }, [data]);
 
+  const onNodeClick = (_: React.MouseEvent, node: Node) => {
+    setSelectedNode(node);
+  };
+
+  const onCloseSidebar = () => {
+    setSelectedNode(null);
+  };
+
   return (
     <div className="flex h-screen w-screen bg-bg-canvas text-text-primary font-ui overflow-hidden">
 
@@ -38,7 +51,11 @@ function OrgChartApp() {
             Loading Structure...
           </div>
         ) : (
-          <GraphCanvas initialNodes={layoutedNodes} initialEdges={layoutedEdges} />
+          <GraphCanvas
+            initialNodes={layoutedNodes}
+            initialEdges={layoutedEdges}
+            onNodeClick={onNodeClick}
+          />
         )}
 
         {/* Discovery Bar Overlay */}
@@ -47,11 +64,8 @@ function OrgChartApp() {
         </div>
       </main>
 
-      {/* Side Panel Placeholder */}
-      <aside className="w-[400px] h-full bg-bg-panel border-l border-border-color p-4 hidden lg:block z-10">
-        <h2 className="text-lg font-bold text-text-primary mb-4 border-b border-border-color pb-2">Inspector</h2>
-        <div className="text-text-secondary text-sm">Select an entity to view details</div>
-      </aside>
+      {/* Side Panel */}
+      <SidebarPanel selectedNode={selectedNode} onClose={onCloseSidebar} />
 
     </div>
   )
