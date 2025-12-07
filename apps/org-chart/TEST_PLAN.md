@@ -29,4 +29,18 @@
 
 - [ ] **Keyboard Interaction**:
     - Action: Select a node. Press `Escape`.
-    - Check: `selectedNode` becomes null.
+
+## 4. Discovery Bar (Phase 2)
+**Goal**: Verify search and navigation functionality.
+
+- [ ] **Search Interaction**:
+    - Action: Press `/`.
+    - Check: Search input gains focus.
+    - Action: Type "Supp".
+    - Check: Results list appears with matches (e.g., "Logistics Support Unit").
+
+- [ ] **Navigation**:
+    - Action: Click a search result.
+    - Check: Graph centers on the target node.
+    - Check: Sidebar opens for the target node.
+

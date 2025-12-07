@@ -9,25 +9,24 @@ const queryClient = new QueryClient()
 
 import { SidebarPanel } from './components/sidebar/SidebarPanel';
 
-function OrgChartApp() {
-  // 1. Fetch Data (Hardcoded Root ID for now)
-  const { data, isLoading } = useOrgStructure('org-root');
+import { DiscoveryBar } from './components/discovery/DiscoveryBar';
+import { useGraphNavigation } from './hooks/useGraphNavigation';
+import type { SearchResult } from './hooks/useSearch';
+import { ReactFlowProvider } from '@xyflow/react';
 
-  // 2. State for Layouted Elements
+// Inner component to access ReactFlow Context
+function OrgChartContent() {
+  const { data, isLoading } = useOrgStructure('org-root');
   const [layoutedNodes, setLayoutedNodes] = useState<Node[]>([]);
   const [layoutedEdges, setLayoutedEdges] = useState<Edge[]>([]);
-
-  // 3. Selection State
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
 
-  // 4. Run Layout when data arrives
+  // Navigation Hook (MUST be inside ReactFlowProvider)
+  const { focusNode } = useGraphNavigation();
+
   useEffect(() => {
     if (data && data.nodes.length > 0) {
-      const { nodes, edges } = getLayoutedElements(
-        data.nodes,
-        data.edges,
-        'TB' // Top-to-Bottom
-      );
+      const { nodes, edges } = getLayoutedElements(data.nodes, data.edges, 'TB');
       setLayoutedNodes(nodes);
       setLayoutedEdges(edges);
     }
@@ -35,21 +34,19 @@ function OrgChartApp() {
 
   const onNodeClick = (_: React.MouseEvent, node: Node) => {
     setSelectedNode(node);
+    focusNode(node.id);
   };
 
-  const onCloseSidebar = () => {
-    setSelectedNode(null);
+  const handleSearchResult = (result: SearchResult) => {
+    setSelectedNode(result.node);
+    focusNode(result.id);
   };
 
   return (
     <div className="flex h-screen w-screen bg-bg-canvas text-text-primary font-ui overflow-hidden">
-
-      {/* Main Canvas Area */}
       <main className="flex-1 relative h-full">
         {isLoading ? (
-          <div className="flex items-center justify-center h-full text-text-secondary">
-            Loading Structure...
-          </div>
+          <div className="flex items-center justify-center h-full text-text-secondary">Loading...</div>
         ) : (
           <GraphCanvas
             initialNodes={layoutedNodes}
@@ -58,23 +55,20 @@ function OrgChartApp() {
           />
         )}
 
-        {/* Discovery Bar Overlay */}
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 w-[400px] h-12 bg-bg-panel border border-border-color rounded-lg shadow-lg flex items-center px-4 z-50">
-          <span className="text-text-secondary text-sm">Search organizations, people, positions...</span>
-        </div>
+        {/* Discovery Bar */}
+        <DiscoveryBar nodes={layoutedNodes} onResultSelect={handleSearchResult} />
       </main>
-
-      {/* Side Panel */}
-      <SidebarPanel selectedNode={selectedNode} onClose={onCloseSidebar} />
-
+      <SidebarPanel selectedNode={selectedNode} onClose={() => setSelectedNode(null)} />
     </div>
-  )
+  );
 }
 
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <OrgChartApp />
+      <ReactFlowProvider>
+        <OrgChartContent />
+      </ReactFlowProvider>
     </QueryClientProvider>
   )
 }
