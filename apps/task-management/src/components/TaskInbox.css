@@ -1,0 +1,145 @@
+.task-inbox {
+    padding: 2rem;
+    max-width: 1000px;
+    margin: 0 auto;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.inbox-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.title-area h1 {
+    font-size: 2rem;
+    margin: 0;
+    color: #111827;
+}
+
+.sub-title {
+    color: #6b7280;
+    margin-top: 0.5rem;
+}
+
+.simulator-controls {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    background-color: #f3f4f6;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+}
+
+.sim-btn {
+    background-color: #4f46e5;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.sim-btn:hover {
+    background-color: #4338ca;
+}
+
+.task-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.task-card {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    padding: 1rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease;
+}
+
+.task-card:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.task-card.completed {
+    opacity: 0.6;
+    background-color: #f9fafb;
+    border-color: #e5e7eb;
+}
+
+.task-info {
+    flex-grow: 1;
+}
+
+.task-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 0.25rem;
+}
+
+.task-meta {
+    font-size: 0.875rem;
+    color: #6b7280;
+    display: flex;
+    gap: 1rem;
+}
+
+.priority-badge {
+    text-transform: capitalize;
+    font-weight: 500;
+}
+
+.priority-critical {
+    color: #dc2626;
+}
+
+.priority-high {
+    color: #ea580c;
+}
+
+.priority-medium {
+    color: #eab308;
+}
+
+.priority-low {
+    color: #059669;
+}
+
+.task-actions {
+    margin-left: 2rem;
+}
+
+.complete-btn {
+    border: 1px solid #d1d5db;
+    background: white;
+    color: #374151;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    font-size: 0.875rem;
+    transition: all 0.15s;
+}
+
+.complete-btn:hover {
+    background-color: #f3f4f6;
+    border-color: #9ca3af;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 4rem;
+    color: #9ca3af;
+    background: #f9fafb;
+    border-radius: 0.5rem;
+    border: 2px dashed #e5e7eb;
+}

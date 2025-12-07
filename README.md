@@ -15,6 +15,7 @@ The project is organized into workspaces managed by npm:
 - **`apps/policy-governance`**: Editor for Policy documents and constraints.
 - **`apps/org-chart`**: interactive Organization, Position, and Person visualizer.
 - **`apps/task-management`**: Task and Initiative management interface.
+- **`apps/objectives-okr`**: Strategy dashboard for Objectives and Key Results.
 - **`packages/som-shared-types`**: Shared TypeScript type definitions and interfaces.
 
 

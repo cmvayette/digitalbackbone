@@ -1,0 +1,66 @@
+{
+    "$id": "http://som.tier0/schemas/v1/objective-set.event.json",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "string"
+        },
+        "timestamp": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "type": {
+            "type": "string",
+            "const": "ObjectiveSet"
+        },
+        "payload": {
+            "type": "object",
+            "properties": {
+                "objectiveId": {
+                    "type": "string"
+                },
+                "statement": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "ownerId": {
+                    "type": "string",
+                    "description": "Entity ID (likely an Org or Position)"
+                },
+                "timeHorizon": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "parentObjectiveId": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string",
+                    "enum": [
+                        "draft",
+                        "active",
+                        "completed",
+                        "cancelled"
+                    ]
+                }
+            },
+            "required": [
+                "objectiveId",
+                "statement",
+                "ownerId",
+                "status"
+            ],
+            "additionalProperties": false
+        }
+    },
+    "required": [
+        "id",
+        "timestamp",
+        "type",
+        "payload"
+    ],
+    "additionalProperties": false
+}

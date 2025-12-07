@@ -1,67 +1,34 @@
-export interface Task {
+// This script generates mock events to simulate a busy task environment
+
+export interface MockTask {
     id: string;
     title: string;
-    type: 'ProcessStep' | 'Obligation';
-    source: string; // e.g. "Instruction 101" or "Daily Standup Process"
-    dueDate: Date;
-    priority: 'High' | 'Medium' | 'Low';
-    status: 'Pending' | 'Completed';
-    assignedTo: string; // Position ID
+    assigneeId: string; // Position ID
+    priority: 'low' | 'medium' | 'high' | 'critical';
+    dueDate: string;
+    source: string;
+    status: 'pending' | 'completed';
 }
 
-export function generateTasks(): Task[] {
-    const today = new Date();
+const MOCK_TITLES = [
+    "Review Daily SitRep",
+    "Approve Leave Request #402",
+    "Update Logistics Forecast",
+    "Prepare Briefing for Commander",
+    "Verify Inventory Audit",
+    "Sign off on Safety Report"
+];
 
-    return [
-        {
-            id: 'task_001',
-            title: 'Submit Weekly Sitrep',
-            type: 'ProcessStep',
-            source: 'Weekly Reporting Flow',
-            dueDate: new Date(today.getTime() + 2 * 60 * 60 * 1000), // +2 hours
-            priority: 'High',
-            status: 'Pending',
-            assignedTo: 'pos_dh_ops'
-        },
-        {
-            id: 'task_002',
-            title: 'Verify Subordinate GTCC Status',
-            type: 'Obligation',
-            source: 'Instruction 101: Initial Onboarding',
-            dueDate: new Date(today.getTime() - 24 * 60 * 60 * 1000), // Yesterday (Overdue)
-            priority: 'Medium',
-            status: 'Pending',
-            assignedTo: 'pos_dh_ops'
-        },
-        {
-            id: 'task_003',
-            title: 'Command Duty Officer Handover',
-            type: 'ProcessStep',
-            source: 'CDO Watchbill',
-            dueDate: new Date(today.getTime() + 4 * 60 * 60 * 1000),
-            priority: 'Medium',
-            status: 'Pending',
-            assignedTo: 'pos_dh_ops'
-        },
-        {
-            id: 'task_004',
-            title: 'Approve Leave Request #492',
-            type: 'ProcessStep',
-            source: 'Leave & Liberty',
-            dueDate: new Date(today.getTime() + 48 * 60 * 60 * 1000),
-            priority: 'Low',
-            status: 'Pending',
-            assignedTo: 'pos_dh_ops'
-        },
-        {
-            id: 'task_005',
-            title: 'Quarterly Cyber Awareness',
-            type: 'Obligation',
-            source: 'DoD Cyber Policy',
-            dueDate: new Date(today.getTime() + 10 * 24 * 60 * 60 * 1000),
-            priority: 'Medium',
-            status: 'Completed', // Historical
-            assignedTo: 'pos_dh_ops'
-        }
-    ];
-}
+const MOCK_POSITIONS = ["pos-1", "pos-2", "pos-3", "pos-4"];
+
+export const generateMockTasks = (count: number = 10): MockTask[] => {
+    return Array.from({ length: count }).map((_, i) => ({
+        id: `task-${Date.now()}-${i}`,
+        title: MOCK_TITLES[Math.floor(Math.random() * MOCK_TITLES.length)],
+        assigneeId: MOCK_POSITIONS[Math.floor(Math.random() * MOCK_POSITIONS.length)],
+        priority: ['low', 'medium', 'high', 'critical'][Math.floor(Math.random() * 4)] as any,
+        dueDate: new Date(Date.now() + Math.random() * 86400000 * 5).toISOString(),
+        source: Math.random() > 0.5 ? "Policy Obligation" : "Standard Process",
+        status: 'pending'
+    }));
+};

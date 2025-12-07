@@ -1,0 +1,66 @@
+{
+    "$id": "http://som.tier0/schemas/v1/lens-evaluated.event.json",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "string"
+        },
+        "timestamp": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "type": {
+            "type": "string",
+            "const": "LensEvaluated"
+        },
+        "payload": {
+            "type": "object",
+            "properties": {
+                "lensId": {
+                    "type": "string"
+                },
+                "lensName": {
+                    "type": "string"
+                },
+                "scopeId": {
+                    "type": "string",
+                    "description": "ID of the entity being evaluated (Org, Process, etc)"
+                },
+                "score": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                },
+                "rating": {
+                    "type": "string",
+                    "enum": [
+                        "Red",
+                        "Amber",
+                        "Green"
+                    ]
+                },
+                "rationale": {
+                    "type": "string"
+                },
+                "evaluatorId": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "lensId",
+                "scopeId",
+                "score",
+                "rating"
+            ],
+            "additionalProperties": false
+        }
+    },
+    "required": [
+        "id",
+        "timestamp",
+        "type",
+        "payload"
+    ],
+    "additionalProperties": false
+}

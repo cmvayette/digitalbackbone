@@ -1,10 +1,14 @@
-import React from 'react';
-import TaskInbox from './TaskInbox';
+import './App.css'
+import { TaskInbox } from './components/TaskInbox'
 
 function App() {
   return (
-    <TaskInbox />
-  );
+    <>
+      <div className="app-container">
+        <TaskInbox />
+      </div>
+    </>
+  )
 }
 
 export default App;
