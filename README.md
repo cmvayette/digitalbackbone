@@ -10,10 +10,9 @@
 
 The project is organized into workspaces managed by npm:
 
-- **`apps/som-tier0`**: The core Tier-0 Semantic Operating Model application.
+- **`apps/som-tier0`**: The core Tier-0 Semantic Operating Model application (source code in `apps/som-tier0/src`).
 - **`packages/som-shared-types`**: Shared TypeScript type definitions and interfaces.
 
-*(The root `src/` directory is legacy code. Please refer to `apps/som-tier0` for the current codebase.)*
 
 ## Overview
 
