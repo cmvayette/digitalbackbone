@@ -41,26 +41,26 @@ graph TD
 
     subgraph SAL [Semantic Access Layer]
         direction TB
-        idmap[ID Mapping Service]
-        trans[Event Transformer]
-        valid[Validation Gateway]
+        idmap["ID Mapping Service"]
+        trans["Event Transformer"]
+        valid["Validation Gateway"]
     end
 
     subgraph Tier0 [Tier-0 SOM Core]
         direction TB
-        es[Event Store<br/>(Immutable)]
-        ce[Constraint Engine]
-        dr[Document Registry]
-        sp[State Projection]
-        gs[Semantic Graph Store]
+        es["Event Store<br/>(Immutable)"]
+        ce["Constraint Engine"]
+        dr["Document Registry"]
+        sp["State Projection"]
+        gs["Semantic Graph Store"]
     end
 
     subgraph Query [Query Layer]
         direction TB
-        q1[Current State Queries]
-        q2[Temporal Queries]
-        q3[Pattern Matching]
-        q4[Causal Chain Tracing]
+        q1["Current State Queries"]
+        q2["Temporal Queries"]
+        q3["Pattern Matching"]
+        q4["Causal Chain Tracing"]
     end
 
     tier1["Tier-1 Systems<br/>(Identity, Objectives, Initiatives, Measures, Reasoning)"]
