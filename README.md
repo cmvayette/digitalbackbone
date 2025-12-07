@@ -97,7 +97,16 @@ npm run build
 Run tests across all workspaces:
 
 ```bash
+```bash
 npm run test
+```
+
+### Governance (Linting)
+
+Run the semantic linter to verify architectural compliance:
+
+```bash
+npm run lint:semantic
 ```
 
 ## detailed System Capabilities

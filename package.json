@@ -7,6 +7,7 @@
   ],
   "scripts": {
     "build": "npm run build --workspaces",
-    "test": "npm run test --workspaces"
+    "test": "npm run test --workspaces",
+    "lint:semantic": "npm run start -w packages/semantic-linter -- audit"
   }
 }

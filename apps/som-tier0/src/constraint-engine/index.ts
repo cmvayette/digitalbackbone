@@ -9,7 +9,7 @@ import {
   Timestamp,
   HolonType,
   ConstraintType,
-  ConstraintHolon,
+  Constraint as ConstraintModel,
   Holon,
 } from '@som/shared-types';
 import { JsonLogicRule, jsonLogicEvaluator } from './json-logic-evaluator';

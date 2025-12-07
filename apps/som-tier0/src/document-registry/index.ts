@@ -3,7 +3,7 @@
  * Manages authoritative documents that define semantics, constraints, and measures
  */
 
-import { DocumentID, HolonID, Timestamp, HolonType, DocumentHolon, DocumentType } from '@som/shared-types';
+import { DocumentID, HolonID, Timestamp, HolonType, Document, DocumentType } from '@som/shared-types';
 import { randomUUID } from 'crypto';
 
 export interface RegisterDocumentParams {
@@ -30,7 +30,7 @@ export interface DocumentLinkage {
  * DocumentRegistry manages the lifecycle and storage of authoritative documents
  */
 export class DocumentRegistry {
-  private documents: Map<DocumentID, DocumentHolon>;
+  private documents: Map<DocumentID, Document>;
   private documentsByType: Map<DocumentType, Set<DocumentID>>;
   private supersessionChains: Map<DocumentID, DocumentID[]>; // Maps document to documents it supersedes
   private linkages: Map<DocumentID, DocumentLinkage>;
@@ -40,7 +40,7 @@ export class DocumentRegistry {
     this.documentsByType = new Map();
     this.supersessionChains = new Map();
     this.linkages = new Map();
-    
+
     // Initialize type index for all document types
     Object.values(DocumentType).forEach(type => {
       this.documentsByType.set(type, new Set());
@@ -61,11 +61,11 @@ export class DocumentRegistry {
    * @param createdBy - Event ID that created this document
    * @returns The created document holon
    */
-  registerDocument(params: RegisterDocumentParams, createdBy: string): DocumentHolon {
+  registerDocument(params: RegisterDocumentParams, createdBy: string): Document {
     const id = this.generateDocumentID();
     const now = new Date();
 
-    const document: DocumentHolon = {
+    const document: Document = {
       id,
       type: HolonType.Document,
       properties: {
@@ -87,7 +87,7 @@ export class DocumentRegistry {
 
     // Store document
     this.documents.set(id, document);
-    
+
     // Update type index
     const typeSet = this.documentsByType.get(params.documentType);
     if (typeSet) {
@@ -116,7 +116,7 @@ export class DocumentRegistry {
    * @param documentId - The ID of the document to retrieve
    * @returns The document if found, undefined otherwise
    */
-  getDocument(documentId: DocumentID): DocumentHolon | undefined {
+  getDocument(documentId: DocumentID): Document | undefined {
     return this.documents.get(documentId);
   }
 
@@ -125,13 +125,13 @@ export class DocumentRegistry {
    * @param documentType - The document type to query
    * @returns Array of documents matching the type
    */
-  getDocumentsByType(documentType: DocumentType): DocumentHolon[] {
+  getDocumentsByType(documentType: DocumentType): Document[] {
     const typeSet = this.documentsByType.get(documentType);
     if (!typeSet) {
       return [];
     }
 
-    const documents: DocumentHolon[] = [];
+    const documents: Document[] = [];
     for (const id of typeSet) {
       const doc = this.documents.get(id);
       if (doc) {
@@ -147,12 +147,12 @@ export class DocumentRegistry {
    * @param timestamp - The timestamp to query
    * @returns Array of documents in force at the given timestamp
    */
-  getDocumentsInForce(timestamp: Timestamp): DocumentHolon[] {
-    const documentsInForce: DocumentHolon[] = [];
+  getDocumentsInForce(timestamp: Timestamp): Document[] {
+    const documentsInForce: Document[] = [];
 
     for (const document of this.documents.values()) {
       const { start, end } = document.properties.effectiveDates;
-      
+
       // Check if timestamp falls within the effective date range
       if (timestamp >= start && (!end || timestamp <= end)) {
         documentsInForce.push(document);
@@ -270,8 +270,8 @@ export class DocumentRegistry {
    * @param holonType - The holon type
    * @returns Array of documents that define this holon type
    */
-  getDocumentsDefiningHolonType(holonType: HolonType): DocumentHolon[] {
-    const documents: DocumentHolon[] = [];
+  getDocumentsDefiningHolonType(holonType: HolonType): Document[] {
+    const documents: Document[] = [];
 
     for (const [docId, linkage] of this.linkages.entries()) {
       if (linkage.linkedHolonTypes?.includes(holonType)) {
@@ -290,8 +290,8 @@ export class DocumentRegistry {
    * @param constraintId - The constraint ID
    * @returns Array of documents that define this constraint
    */
-  getDocumentsDefiningConstraint(constraintId: string): DocumentHolon[] {
-    const documents: DocumentHolon[] = [];
+  getDocumentsDefiningConstraint(constraintId: string): Document[] {
+    const documents: Document[] = [];
 
     for (const [docId, linkage] of this.linkages.entries()) {
       if (linkage.linkedConstraintIds?.includes(constraintId)) {
@@ -309,7 +309,7 @@ export class DocumentRegistry {
    * Get all documents (for testing/debugging)
    * @returns Array of all documents in the registry
    */
-  getAllDocuments(): DocumentHolon[] {
+  getAllDocuments(): Document[] {
     return Array.from(this.documents.values());
   }
 

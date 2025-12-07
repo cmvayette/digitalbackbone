@@ -113,3 +113,20 @@ npm run test:integration
 *   **Specs**: `docs/design/specs/` (The "Bible" of requirements).
 *   **Architecture**: `docs/design/system_architecture.md` (Detailed diagrams).
 *  **UI Design System**: `docs/design/ui/design-sys.md` (If building frontends).
+
+---
+
+## 7. Semantic Governance (The Linter)
+We use a custom CLI tool to enforce architectural rules on our TypeScript definitions. This prevents "Ontology Drift" where the code diverges from the design.
+
+### Running the Linter
+```bash
+npm run lint:semantic
+```
+
+### What it checks
+1.  **Holon Completeness**: Every `HolonType` enum must have a matching Interface.
+2.  **Relationship Integrity**: Ensuring relationships are properly defined with required metadata.
+3.  **Event Integrity**: Ensuring events match the canonical event model.
+
+> **Tip**: If you see a failure in CI for `lint:semantic`, it means you defined a new Type (e.g., in an Enum) but forgot to define its Shape (Interface).

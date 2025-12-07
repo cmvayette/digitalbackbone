@@ -31,10 +31,10 @@ const symbols = [
     'Position',
     'Organization',
     'Mission',
-    'SystemHolon',
+    'System',
     'Asset',
-    'DocumentHolon',
-    'ConstraintHolon'
+    'Document',
+    'Constraint'
 ];
 
 async function generate() {

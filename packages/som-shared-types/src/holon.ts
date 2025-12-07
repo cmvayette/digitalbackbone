@@ -16,7 +16,7 @@ export enum HolonType {
   Mission = 'Mission',
   Capability = 'Capability',
   Qualification = 'Qualification',
-  Event = 'Event',
+  // Event = 'Event', // Events are not Holons
   Location = 'Location',
   Document = 'Document',
   Objective = 'Objective',
@@ -183,7 +183,7 @@ export interface LensDefinition extends Holon {
   };
 }
 
-export interface SystemHolon extends Holon {
+export interface System extends Holon {
   type: HolonType.System;
   properties: {
     systemName: string;
@@ -203,7 +203,7 @@ export interface Asset extends Holon {
   };
 }
 
-export interface LocationHolon extends Holon {
+export interface Location extends Holon {
   type: HolonType.Location;
   properties: {
     name: string;
@@ -212,7 +212,7 @@ export interface LocationHolon extends Holon {
   };
 }
 
-export interface DocumentHolon extends Holon {
+export interface Document extends Holon {
   type: HolonType.Document;
   properties: {
     referenceNumbers: string[];
@@ -242,7 +242,7 @@ export enum DocumentType {
   EXORD = 'EXORD'
 }
 
-export interface ConstraintHolon extends Holon {
+export interface Constraint extends Holon {
   type: HolonType.Constraint;
   properties: {
     constraintType: ConstraintType;
