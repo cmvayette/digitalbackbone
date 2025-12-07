@@ -14,8 +14,8 @@ import {
 } from './index';
 import { DocumentRegistry } from '../document-registry';
 import { SchemaVersioningEngine } from '../schema-versioning';
-import { HolonType, DocumentID } from '../core/types/holon';
-import { RelationshipType } from '../core/types/relationship';
+import { HolonType, DocumentID } from '@som/shared-types';
+import { RelationshipType } from '@som/shared-types';
 
 describe('Governance Engine - Property-Based Tests', () => {
   let engine: GovernanceEngine;

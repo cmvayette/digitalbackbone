@@ -7,15 +7,15 @@ import { QueryLayer, createQueryLayer } from './query-layer';
 import { TemporalQueryEngine, createTemporalQueryEngine } from './temporal-query-engine';
 import { GraphStore, createGraphStore } from '../graph-store';
 import { AccessControlEngine, createAccessControlEngine, Role, ClassificationLevel, UserContext } from '../access-control';
-import { EventStore, createEventStore } from '../event-store';
+import { IEventStore as EventStore, createEventStore } from '../event-store';
 import { StateProjectionEngine, createStateProjectionEngine } from '../state-projection';
-import { HolonRegistry } from '../core/holon-registry';
+import { InMemoryHolonRepository as HolonRegistry } from '../core/holon-registry';
 import { RelationshipRegistry } from '../relationship-registry';
 import { DocumentRegistry } from '../document-registry';
 import { ConstraintEngine } from '../constraint-engine';
-import { HolonType, Timestamp } from '../core/types/holon';
-import { RelationshipType } from '../core/types/relationship';
-import { EventType } from '../core/types/event';
+import { HolonType, Timestamp } from '@som/shared-types';
+import { RelationshipType } from '@som/shared-types';
+import { EventType } from '@som/shared-types';
 
 describe('QueryLayer', () => {
   let queryLayer: QueryLayer;
@@ -34,7 +34,7 @@ describe('QueryLayer', () => {
   let viewerUser: UserContext;
   let analystUser: UserContext;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     // Create core components
     eventStore = createEventStore();
     holonRegistry = new HolonRegistry();
@@ -72,7 +72,7 @@ describe('QueryLayer', () => {
   });
 
   describe('Current State Queries', () => {
-    it('should query current holons by type with access control', () => {
+    it('should query current holons by type with access control', async () => {
       const doc = documentRegistry.registerDocument({
         referenceNumbers: ['DOC-001'],
         title: 'Test Document',
@@ -114,7 +114,7 @@ describe('QueryLayer', () => {
       });
 
       stateProjection.replayAllEvents();
-      graphStore.rebuildIndices();
+      await graphStore.rebuildIndices();
 
       const adminResult = queryLayer.queryCurrentHolons(adminUser, HolonType.Person);
       expect(adminResult.data).toHaveLength(2);
@@ -125,7 +125,7 @@ describe('QueryLayer', () => {
       expect(viewerResult.filtered).toBe(false);
     });
 
-    it('should filter holons based on classification level', () => {
+    it('should filter holons based on classification level', async () => {
       const classifiedDoc = documentRegistry.registerDocument({
         referenceNumbers: ['DOC-SECRET-001'],
         title: 'Secret Document',
@@ -175,7 +175,7 @@ describe('QueryLayer', () => {
       });
 
       stateProjection.replayAllEvents();
-      graphStore.rebuildIndices();
+      await graphStore.rebuildIndices();
 
       const adminResult = queryLayer.queryCurrentHolons(adminUser, HolonType.Person);
       expect(adminResult.data).toHaveLength(2);
@@ -273,9 +273,9 @@ describe('QueryLayer', () => {
       expect(allEvents.length).toBeGreaterThan(0);
 
       // Query directly from event store to verify time range works
-      const directEvents = eventStore.getEventsByTimeRange({
-        start: new Date('2024-02-01'),
-        end: new Date('2024-07-01'),
+      const directEvents = eventStore.getEvents({
+        startTime: new Date('2024-02-01'),
+        endTime: new Date('2024-07-01'),
       });
       expect(directEvents).toHaveLength(2);
 
@@ -326,7 +326,7 @@ describe('QueryLayer', () => {
   });
 
   describe('Access Control Integration', () => {
-    it('should hide restricted information without revealing existence', () => {
+    it('should hide restricted information without revealing existence', async () => {
       const secretDoc = documentRegistry.registerDocument({
         referenceNumbers: ['DOC-SECRET-002'],
         title: 'Top Secret Document',
@@ -352,7 +352,7 @@ describe('QueryLayer', () => {
       });
 
       stateProjection.replayAllEvents();
-      graphStore.rebuildIndices();
+      await graphStore.rebuildIndices();
 
       const viewerResult = queryLayer.queryCurrentHolons(viewerUser, HolonType.Person);
       expect(viewerResult.data).toHaveLength(0);

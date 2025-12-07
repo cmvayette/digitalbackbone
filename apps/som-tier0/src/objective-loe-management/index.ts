@@ -3,13 +3,13 @@
  * Manages Objective and LOE holon creation, relationships, and validation
  */
 
-import { HolonRegistry } from '../core/holon-registry';
+import { IHolonRepository as HolonRegistry } from '../core/interfaces/holon-repository';
 import { RelationshipRegistry } from '../relationship-registry';
-import { EventStore } from '../event-store';
+import { IEventStore as EventStore } from '../event-store';
 import { ConstraintEngine, ValidationResult } from '../constraint-engine';
-import { Objective, LOE, HolonType, HolonID, DocumentID, EventID, Timestamp } from '../core/types/holon';
-import { RelationshipType } from '../core/types/relationship';
-import { EventType } from '../core/types/event';
+import { Objective, LOE, HolonType, HolonID, DocumentID, EventID, Timestamp } from '@som/shared-types';
+import { RelationshipType } from '@som/shared-types';
+import { EventType } from '@som/shared-types';
 
 /**
  * Parameters for creating an Objective holon
@@ -104,7 +104,7 @@ export class ObjectiveLOEManager {
    * Validates Requirements 9.4: WHEN an objective is created THEN the SOM SHALL require 
    * at least one measure, one owner, and one LOE link
    */
-  createObjective(params: CreateObjectiveParams): ObjectiveLOEOperationResult {
+  async createObjective(params: CreateObjectiveParams): Promise<ObjectiveLOEOperationResult> {
     // Validate required fields per Requirements 9.4
     const validationErrors: any[] = [];
 
@@ -146,7 +146,7 @@ export class ObjectiveLOEManager {
     }
 
     // Verify that the owner exists
-    const owner = this.holonRegistry.getHolon(params.ownerID);
+    const owner = await this.holonRegistry.getHolon(params.ownerID);
     if (!owner) {
       return {
         success: false,
@@ -163,7 +163,7 @@ export class ObjectiveLOEManager {
     }
 
     // Verify that the LOE exists
-    const loe = this.holonRegistry.getHolon(params.loeID);
+    const loe = await this.holonRegistry.getHolon(params.loeID);
     if (!loe) {
       return {
         success: false,
@@ -181,7 +181,7 @@ export class ObjectiveLOEManager {
 
     // Verify that all measures exist
     for (const measureID of params.measureIDs) {
-      const measure = this.holonRegistry.getHolon(measureID);
+      const measure = await this.holonRegistry.getHolon(measureID);
       if (!measure) {
         return {
           success: false,
@@ -218,7 +218,7 @@ export class ObjectiveLOEManager {
     });
 
     // Create Objective holon
-    const objective = this.holonRegistry.createHolon({
+    const objective = await this.holonRegistry.createHolon({
       type: HolonType.Objective,
       properties: {
         description: params.description,
@@ -235,7 +235,7 @@ export class ObjectiveLOEManager {
 
     if (!validation.valid) {
       // Rollback: mark objective as inactive
-      this.holonRegistry.markHolonInactive(objective.id, 'Validation failed');
+      await this.holonRegistry.markHolonInactive(objective.id, 'Validation failed');
       return {
         success: false,
         validation,
@@ -243,7 +243,7 @@ export class ObjectiveLOEManager {
     }
 
     // Create OWNED_BY relationship with owner
-    const ownerRelResult = this.relationshipRegistry.createRelationship({
+    const ownerRelResult = await this.relationshipRegistry.createRelationship({
       type: RelationshipType.OWNED_BY,
       sourceHolonID: objective.id,
       targetHolonID: params.ownerID,
@@ -256,7 +256,7 @@ export class ObjectiveLOEManager {
 
     if (!ownerRelResult.relationship) {
       // Rollback: mark objective as inactive
-      this.holonRegistry.markHolonInactive(objective.id, 'Failed to create owner relationship');
+      await this.holonRegistry.markHolonInactive(objective.id, 'Failed to create owner relationship');
       return {
         success: false,
         validation: ownerRelResult.validation,
@@ -264,7 +264,7 @@ export class ObjectiveLOEManager {
     }
 
     // Create GROUPED_UNDER relationship with LOE
-    const loeRelResult = this.relationshipRegistry.createRelationship({
+    const loeRelResult = await this.relationshipRegistry.createRelationship({
       type: RelationshipType.GROUPED_UNDER,
       sourceHolonID: objective.id,
       targetHolonID: params.loeID,
@@ -277,7 +277,7 @@ export class ObjectiveLOEManager {
 
     if (!loeRelResult.relationship) {
       // Rollback: mark objective as inactive
-      this.holonRegistry.markHolonInactive(objective.id, 'Failed to create LOE relationship');
+      await this.holonRegistry.markHolonInactive(objective.id, 'Failed to create LOE relationship');
       return {
         success: false,
         validation: loeRelResult.validation,
@@ -286,7 +286,7 @@ export class ObjectiveLOEManager {
 
     // Create MEASURED_BY relationships with all measures
     for (const measureID of params.measureIDs) {
-      const measureRelResult = this.relationshipRegistry.createRelationship({
+      const measureRelResult = await this.relationshipRegistry.createRelationship({
         type: RelationshipType.MEASURED_BY,
         sourceHolonID: objective.id,
         targetHolonID: measureID,
@@ -299,7 +299,7 @@ export class ObjectiveLOEManager {
 
       if (!measureRelResult.relationship) {
         // Rollback: mark objective as inactive
-        this.holonRegistry.markHolonInactive(objective.id, 'Failed to create measure relationship');
+        await this.holonRegistry.markHolonInactive(objective.id, 'Failed to create measure relationship');
         return {
           success: false,
           validation: measureRelResult.validation,
@@ -318,7 +318,7 @@ export class ObjectiveLOEManager {
   /**
    * Create a new LOE holon with required fields
    */
-  createLOE(params: CreateLOEParams): ObjectiveLOEOperationResult {
+  async createLOE(params: CreateLOEParams): Promise<ObjectiveLOEOperationResult> {
     // Create event for LOE creation
     const eventId = this.eventStore.submitEvent({
       type: EventType.LOECreated,
@@ -336,7 +336,7 @@ export class ObjectiveLOEManager {
     });
 
     // Create LOE holon
-    const loe = this.holonRegistry.createHolon({
+    const loe = await this.holonRegistry.createHolon({
       type: HolonType.LOE,
       properties: {
         name: params.name,
@@ -353,7 +353,7 @@ export class ObjectiveLOEManager {
 
     if (!validation.valid) {
       // Rollback: mark LOE as inactive
-      this.holonRegistry.markHolonInactive(loe.id, 'Validation failed');
+      await this.holonRegistry.markHolonInactive(loe.id, 'Validation failed');
       return {
         success: false,
         validation,
@@ -371,10 +371,10 @@ export class ObjectiveLOEManager {
   /**
    * Create an Objective GROUPED_UNDER LOE relationship
    */
-  groupObjectiveUnderLOE(params: GroupObjectiveUnderLOEParams): ObjectiveLOEOperationResult {
+  async groupObjectiveUnderLOE(params: GroupObjectiveUnderLOEParams): Promise<ObjectiveLOEOperationResult> {
     // Get objective and LOE holons
-    const objective = this.holonRegistry.getHolon(params.objectiveID);
-    const loe = this.holonRegistry.getHolon(params.loeID);
+    const objective = await this.holonRegistry.getHolon(params.objectiveID);
+    const loe = await this.holonRegistry.getHolon(params.loeID);
 
     if (!objective) {
       return {
@@ -407,7 +407,7 @@ export class ObjectiveLOEManager {
     }
 
     // Create the GROUPED_UNDER relationship
-    const result = this.relationshipRegistry.createRelationship({
+    const result = await this.relationshipRegistry.createRelationship({
       type: RelationshipType.GROUPED_UNDER,
       sourceHolonID: params.objectiveID,
       targetHolonID: params.loeID,
@@ -438,10 +438,10 @@ export class ObjectiveLOEManager {
    * Create objective decomposition through DEPENDS_ON relationships
    * Validates that no cycles are created
    */
-  createObjectiveDependency(params: CreateObjectiveDependencyParams): ObjectiveLOEOperationResult {
+  async createObjectiveDependency(params: CreateObjectiveDependencyParams): Promise<ObjectiveLOEOperationResult> {
     // Get source and target objectives
-    const sourceObjective = this.holonRegistry.getHolon(params.sourceObjectiveID);
-    const targetObjective = this.holonRegistry.getHolon(params.targetObjectiveID);
+    const sourceObjective = await this.holonRegistry.getHolon(params.sourceObjectiveID);
+    const targetObjective = await this.holonRegistry.getHolon(params.targetObjectiveID);
 
     if (!sourceObjective) {
       return {
@@ -474,7 +474,7 @@ export class ObjectiveLOEManager {
     }
 
     // Check for cycles before creating the relationship
-    const cycleCheck = this.checkForCycles(params.sourceObjectiveID, params.targetObjectiveID);
+    const cycleCheck = await this.checkForCycles(params.sourceObjectiveID, params.targetObjectiveID);
     if (!cycleCheck.valid) {
       return {
         success: false,
@@ -483,7 +483,7 @@ export class ObjectiveLOEManager {
     }
 
     // Create the DEPENDS_ON relationship
-    const result = this.relationshipRegistry.createRelationship({
+    const result = await this.relationshipRegistry.createRelationship({
       type: RelationshipType.DEPENDS_ON,
       sourceHolonID: params.sourceObjectiveID,
       targetHolonID: params.targetObjectiveID,
@@ -515,8 +515,8 @@ export class ObjectiveLOEManager {
   /**
    * Get all objectives grouped under a specific LOE
    */
-  getObjectivesUnderLOE(loeID: HolonID, effectiveAt?: Timestamp): HolonID[] {
-    const relationships = this.relationshipRegistry.getRelationshipsTo(
+  async getObjectivesUnderLOE(loeID: HolonID, effectiveAt?: Timestamp): Promise<HolonID[]> {
+    const relationships = await this.relationshipRegistry.getRelationshipsTo(
       loeID,
       RelationshipType.GROUPED_UNDER,
       { effectiveAt, includeEnded: false }
@@ -528,8 +528,8 @@ export class ObjectiveLOEManager {
   /**
    * Get the LOE that an objective is grouped under
    */
-  getObjectiveLOE(objectiveID: HolonID, effectiveAt?: Timestamp): HolonID | null {
-    const relationships = this.relationshipRegistry.getRelationshipsFrom(
+  async getObjectiveLOE(objectiveID: HolonID, effectiveAt?: Timestamp): Promise<HolonID | null> {
+    const relationships = await this.relationshipRegistry.getRelationshipsFrom(
       objectiveID,
       RelationshipType.GROUPED_UNDER,
       { effectiveAt, includeEnded: false }
@@ -541,8 +541,8 @@ export class ObjectiveLOEManager {
   /**
    * Get all objectives that a specific objective depends on
    */
-  getObjectiveDependencies(objectiveID: HolonID, effectiveAt?: Timestamp): HolonID[] {
-    const relationships = this.relationshipRegistry.getRelationshipsFrom(
+  async getObjectiveDependencies(objectiveID: HolonID, effectiveAt?: Timestamp): Promise<HolonID[]> {
+    const relationships = await this.relationshipRegistry.getRelationshipsFrom(
       objectiveID,
       RelationshipType.DEPENDS_ON,
       { effectiveAt, includeEnded: false }
@@ -554,8 +554,8 @@ export class ObjectiveLOEManager {
   /**
    * Get all objectives that depend on a specific objective
    */
-  getObjectiveDependents(objectiveID: HolonID, effectiveAt?: Timestamp): HolonID[] {
-    const relationships = this.relationshipRegistry.getRelationshipsTo(
+  async getObjectiveDependents(objectiveID: HolonID, effectiveAt?: Timestamp): Promise<HolonID[]> {
+    const relationships = await this.relationshipRegistry.getRelationshipsTo(
       objectiveID,
       RelationshipType.DEPENDS_ON,
       { effectiveAt, includeEnded: false }
@@ -567,8 +567,8 @@ export class ObjectiveLOEManager {
   /**
    * Get all measures for an objective
    */
-  getObjectiveMeasures(objectiveID: HolonID, effectiveAt?: Timestamp): HolonID[] {
-    const relationships = this.relationshipRegistry.getRelationshipsFrom(
+  async getObjectiveMeasures(objectiveID: HolonID, effectiveAt?: Timestamp): Promise<HolonID[]> {
+    const relationships = await this.relationshipRegistry.getRelationshipsFrom(
       objectiveID,
       RelationshipType.MEASURED_BY,
       { effectiveAt, includeEnded: false }
@@ -580,8 +580,8 @@ export class ObjectiveLOEManager {
   /**
    * Get the owner of an objective
    */
-  getObjectiveOwner(objectiveID: HolonID, effectiveAt?: Timestamp): HolonID | null {
-    const relationships = this.relationshipRegistry.getRelationshipsFrom(
+  async getObjectiveOwner(objectiveID: HolonID, effectiveAt?: Timestamp): Promise<HolonID | null> {
+    const relationships = await this.relationshipRegistry.getRelationshipsFrom(
       objectiveID,
       RelationshipType.OWNED_BY,
       { effectiveAt, includeEnded: false }
@@ -594,7 +594,7 @@ export class ObjectiveLOEManager {
    * Check for cycles in objective dependencies
    * Uses depth-first search to detect cycles
    */
-  private checkForCycles(sourceID: HolonID, targetID: HolonID): ValidationResult {
+  private async checkForCycles(sourceID: HolonID, targetID: HolonID): Promise<ValidationResult> {
     // If source depends on target, and target already depends on source (directly or indirectly),
     // we have a cycle
     const visited = new Set<HolonID>();
@@ -602,7 +602,7 @@ export class ObjectiveLOEManager {
 
     while (stack.length > 0) {
       const current = stack.pop()!;
-      
+
       if (current === sourceID) {
         // Found a cycle
         return {
@@ -623,7 +623,7 @@ export class ObjectiveLOEManager {
       visited.add(current);
 
       // Get all objectives that current depends on
-      const dependencies = this.getObjectiveDependencies(current);
+      const dependencies = await this.getObjectiveDependencies(current);
       stack.push(...dependencies);
     }
 

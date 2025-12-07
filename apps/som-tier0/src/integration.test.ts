@@ -6,7 +6,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { InMemoryEventStore } from './event-store';
 import { ConstraintEngine } from './constraint-engine';
-import { HolonRegistry } from './core/holon-registry';
+import { InMemoryHolonRepository as HolonRegistry } from './core/holon-registry';
 import { DocumentRegistry } from './document-registry';
 import { SemanticAccessLayer, ExternalData } from './semantic-access-layer';
 import { RelationshipRegistry } from './relationship-registry';
@@ -16,9 +16,9 @@ import { QueryLayer } from './query/query-layer';
 import { GraphStore } from './graph-store';
 import { AccessControlEngine, Role, ClassificationLevel, UserContext } from './access-control';
 import { SchemaVersioningEngine } from './schema-versioning';
-import { HolonType, ConstraintType, DocumentType } from './core/types/holon';
-import { EventType } from './core/types/event';
-import { RelationshipType } from './core/types/relationship';
+import { HolonType, ConstraintType, DocumentType } from '@som/shared-types';
+import { EventType } from '@som/shared-types';
+import { RelationshipType } from '@som/shared-types';
 
 describe('Integration Tests', () => {
   let eventStore: InMemoryEventStore;
@@ -56,7 +56,7 @@ describe('Integration Tests', () => {
   });
 
   describe('End-to-End: External Data Submission through SAL to Query', () => {
-    it('should submit external data, validate, store, and query successfully', () => {
+    it('should submit external data, validate, store, and query successfully', async () => {
       // Step 1: Register a document to ground constraints
       const docEventID = eventStore.submitEvent({
         type: EventType.DocumentIssued,
@@ -125,18 +125,19 @@ describe('Integration Tests', () => {
       expect(transformResult.events).toHaveLength(1);
 
       // Step 4: Create the holon from the event
-      const holonID = holonRegistry.createHolon({
+      const holon = await holonRegistry.createHolon({
         type: HolonType.Person,
         properties: externalData.payload,
         createdBy: transformResult.events[0].id,
         sourceDocuments: [policyDoc.id],
-      }).id;
+      });
+      const holonID = holon.id;
 
       // Map the external ID
       semanticAccessLayer.mapExternalID(externalData.externalSystem, externalData.externalID, holonID);
 
       // Step 5: Query the holon directly from registry
-      const queriedHolon = holonRegistry.getHolon(holonID);
+      const queriedHolon = await holonRegistry.getHolon(holonID);
 
       expect(queriedHolon).toBeDefined();
       expect(queriedHolon!.type).toBe(HolonType.Person);
@@ -144,7 +145,7 @@ describe('Integration Tests', () => {
       expect(queriedHolon!.properties.edipi).toBe('1234567890');
 
       // Step 6: Query through SAL for system-specific format
-      const systemView = semanticAccessLayer.queryForSystem('NSIPS', holonID);
+      const systemView = await semanticAccessLayer.queryForSystem('NSIPS', holonID);
 
       expect(systemView).toBeDefined();
       expect(systemView!.externalID).toBe('EMP-12345');
@@ -219,7 +220,7 @@ describe('Integration Tests', () => {
   });
 
   describe('Temporal Consistency: Event Creation and Queries', () => {
-    it('should maintain temporal consistency across state changes', () => {
+    it('should maintain temporal consistency across state changes', async () => {
       // Create events at different timestamps
       const t1 = new Date('2024-01-01T10:00:00Z');
       const t2 = new Date('2024-02-01T10:00:00Z');
@@ -246,7 +247,7 @@ describe('Integration Tests', () => {
       stateProjection.applyNewEvent(eventStore.getEvent(orgEventID)!);
 
       // Query state at T1 using temporal query
-      const stateAtT1 = temporalQuery.getHolonAsOf(orgId, t1);
+      const stateAtT1 = await temporalQuery.getHolonAsOf(orgId, t1);
       expect(stateAtT1).toBeDefined();
       expect(stateAtT1!.properties.name).toBe('Test Org');
 
@@ -267,12 +268,12 @@ describe('Integration Tests', () => {
       stateProjection.applyNewEvent(eventStore.getEvent(modifyEventID)!);
 
       // Query state at T2 - should show updated name
-      const stateAtT2 = temporalQuery.getHolonAsOf(orgId, t2);
+      const stateAtT2 = await temporalQuery.getHolonAsOf(orgId, t2);
       expect(stateAtT2).toBeDefined();
       expect(stateAtT2!.properties.name).toBe('Updated Org');
 
       // Query state at T1 again - should still show original name
-      const stateAtT1Again = temporalQuery.getHolonAsOf(orgId, t1);
+      const stateAtT1Again = await temporalQuery.getHolonAsOf(orgId, t1);
       expect(stateAtT1Again).toBeDefined();
       expect(stateAtT1Again!.properties.name).toBe('Test Org');
 
@@ -287,7 +288,7 @@ describe('Integration Tests', () => {
       expect(eventsInRange.length).toBeGreaterThanOrEqual(2);
     });
 
-    it('should reconstruct relationship graph at historical timestamps', () => {
+    it('should reconstruct relationship graph at historical timestamps', async () => {
       // Create organization and positions at T1
       const t1 = new Date('2024-01-01T10:00:00Z');
       const t2 = new Date('2024-06-01T10:00:00Z');
@@ -345,7 +346,7 @@ describe('Integration Tests', () => {
       stateProjection.applyNewEvent(eventStore.getEvent(relEvent)!);
 
       // Query relationships at T1
-      const relsAtT1 = temporalQuery.getRelationshipsAsOf(positionId, t1);
+      const relsAtT1 = await temporalQuery.getRelationshipsAsOf(positionId, t1);
       expect(relsAtT1.length).toBeGreaterThanOrEqual(0); // May or may not have relationships depending on implementation
 
       // End relationship at T2
@@ -363,7 +364,7 @@ describe('Integration Tests', () => {
       stateProjection.applyNewEvent(eventStore.getEvent(endEvent)!);
 
       // Query relationships at T3 (after end) - should not include ended relationship
-      const relsAtT3 = temporalQuery.getRelationshipsAsOf(positionId, t3);
+      const relsAtT3 = await temporalQuery.getRelationshipsAsOf(positionId, t3);
       // Relationship should be ended by T3
       expect(relsAtT3).toBeDefined();
 
@@ -372,7 +373,7 @@ describe('Integration Tests', () => {
       expect(history.length).toBeGreaterThanOrEqual(2); // Start and end events
     });
 
-    it('should handle complex temporal scenarios with multiple state changes', () => {
+    it('should handle complex temporal scenarios with multiple state changes', async () => {
       const t1 = new Date('2024-01-01');
       const t2 = new Date('2024-02-01');
       const t3 = new Date('2024-03-01');
@@ -389,7 +390,7 @@ describe('Integration Tests', () => {
         causalLinks: {},
       });
 
-      const person = holonRegistry.createHolon({
+      const person = await holonRegistry.createHolon({
         type: HolonType.Person,
         properties: { name: 'Bob Jones', status: 'active' },
         createdBy: createEventID,
@@ -445,7 +446,7 @@ describe('Integration Tests', () => {
   });
 
   describe('Constraint Enforcement Across All Operations', () => {
-    it('should enforce constraints on holon creation', () => {
+    it('should enforce constraints on holon creation', async () => {
       // Register constraint
       const docEventID = eventStore.submitEvent({
         type: EventType.DocumentIssued,
@@ -506,7 +507,7 @@ describe('Integration Tests', () => {
       expect(validationResult.errors![0].message).toContain('UIC');
 
       // Create organization with UIC
-      const validOrg = holonRegistry.createHolon({
+      const validOrg = await holonRegistry.createHolon({
         type: HolonType.Organization,
         properties: { name: 'Test Org', uic: 'TEST-001' },
         createdBy: docEventID,
@@ -517,7 +518,7 @@ describe('Integration Tests', () => {
       expect(validOrg.properties.uic).toBe('TEST-001');
     });
 
-    it('should enforce constraints on relationship creation', () => {
+    it('should enforce constraints on relationship creation', async () => {
       // Create holons
       const eventID = eventStore.submitEvent({
         type: EventType.OrganizationCreated,
@@ -529,14 +530,14 @@ describe('Integration Tests', () => {
         causalLinks: {},
       });
 
-      const person = holonRegistry.createHolon({
+      const person = await holonRegistry.createHolon({
         type: HolonType.Person,
         properties: { name: 'Test Person', qualifications: [] },
         createdBy: eventID,
         sourceDocuments: [],
       });
 
-      const position = holonRegistry.createHolon({
+      const position = await holonRegistry.createHolon({
         type: HolonType.Position,
         properties: {
           title: 'Senior Position',
@@ -573,7 +574,7 @@ describe('Integration Tests', () => {
       });
 
       // Create relationship (should succeed with our simplified validation)
-      const result = relationshipRegistry.createRelationship({
+      const result = await relationshipRegistry.createRelationship({
         type: RelationshipType.OCCUPIES,
         sourceHolonID: person.id,
         targetHolonID: position.id,
@@ -679,7 +680,7 @@ describe('Integration Tests', () => {
       expect(validValidation.valid).toBe(true);
     });
 
-    it('should enforce constraint inheritance in hierarchies', () => {
+    it('should enforce constraint inheritance in hierarchies', async () => {
       // Create parent and child organizations
       const eventID = eventStore.submitEvent({
         type: EventType.OrganizationCreated,
@@ -691,14 +692,14 @@ describe('Integration Tests', () => {
         causalLinks: {},
       });
 
-      const parentOrg = holonRegistry.createHolon({
+      const parentOrg = await holonRegistry.createHolon({
         type: HolonType.Organization,
         properties: { name: 'Parent Org', uic: 'PARENT-001', securityLevel: 'SECRET' },
         createdBy: eventID,
         sourceDocuments: [],
       });
 
-      const childOrg = holonRegistry.createHolon({
+      const childOrg = await holonRegistry.createHolon({
         type: HolonType.Organization,
         properties: { name: 'Child Org', uic: 'CHILD-001' },
         createdBy: eventID,
@@ -706,7 +707,7 @@ describe('Integration Tests', () => {
       });
 
       // Create hierarchy relationship
-      relationshipRegistry.createRelationship({
+      await relationshipRegistry.createRelationship({
         type: RelationshipType.CONTAINS,
         sourceHolonID: parentOrg.id,
         targetHolonID: childOrg.id,
@@ -758,7 +759,7 @@ describe('Integration Tests', () => {
   });
 
   describe('Access Control Across Query Types', () => {
-    it('should enforce role-based access control on queries', () => {
+    it('should enforce role-based access control on queries', async () => {
       // Create holons with different access requirements
       const eventID = eventStore.submitEvent({
         type: EventType.OrganizationCreated,
@@ -770,14 +771,14 @@ describe('Integration Tests', () => {
         causalLinks: {},
       });
 
-      const publicHolon = holonRegistry.createHolon({
+      const publicHolon = await holonRegistry.createHolon({
         type: HolonType.Organization,
         properties: { name: 'Public Org', classificationMetadata: 'UNCLASS' },
         createdBy: eventID,
         sourceDocuments: [],
       });
 
-      const secretHolon = holonRegistry.createHolon({
+      const secretHolon = await holonRegistry.createHolon({
         type: HolonType.Mission,
         properties: { name: 'Secret Mission', classificationMetadata: 'SECRET' },
         createdBy: eventID,
@@ -824,7 +825,7 @@ describe('Integration Tests', () => {
       expect(secretUserCanAccessSecret.allowed).toBe(true);
     });
 
-    it('should enforce classification-based access control', () => {
+    it('should enforce classification-based access control', async () => {
       // Create document with classification
       const eventID = eventStore.submitEvent({
         type: EventType.DocumentIssued,
@@ -861,14 +862,14 @@ describe('Integration Tests', () => {
       );
 
       // Create holons defined by these documents
-      const secretHolon = holonRegistry.createHolon({
+      const secretHolon = await holonRegistry.createHolon({
         type: HolonType.Mission,
         properties: { name: 'Classified Mission' },
         createdBy: eventID,
         sourceDocuments: [secretDoc.id],
       });
 
-      const publicHolon = holonRegistry.createHolon({
+      const publicHolon = await holonRegistry.createHolon({
         type: HolonType.Organization,
         properties: { name: 'Public Organization' },
         createdBy: eventID,
@@ -914,7 +915,7 @@ describe('Integration Tests', () => {
       expect(secretUserCanAccessPublicHolon.allowed).toBe(true);
     });
 
-    it('should filter query results based on access control', () => {
+    it('should filter query results based on access control', async () => {
       // Create multiple holons with different classifications
       const eventID = eventStore.submitEvent({
         type: EventType.OrganizationCreated,
@@ -963,7 +964,7 @@ describe('Integration Tests', () => {
         eventID
       );
 
-      const holons = [
+      const holons = await Promise.all([
         holonRegistry.createHolon({
           type: HolonType.Organization,
           properties: { name: 'Org 1', classificationMetadata: 'UNCLASS' },
@@ -982,7 +983,7 @@ describe('Integration Tests', () => {
           createdBy: eventID,
           sourceDocuments: [secretDoc.id],
         }),
-      ];
+      ]);
 
       // Define user context with limited clearance
       const confUser: UserContext = {
@@ -992,7 +993,7 @@ describe('Integration Tests', () => {
       };
 
       // Query all organizations
-      const allOrgs = holonRegistry.getHolonsByType(HolonType.Organization);
+      const allOrgs = await holonRegistry.getHolonsByType(HolonType.Organization);
       expect(allOrgs).toHaveLength(3);
 
       // Filter based on access control
@@ -1006,7 +1007,7 @@ describe('Integration Tests', () => {
       )).toBe(true);
     });
 
-    it('should hide restricted information without revealing existence', () => {
+    it('should hide restricted information without revealing existence', async () => {
       // Create a secret holon
       const eventID = eventStore.submitEvent({
         type: EventType.OrganizationCreated,
@@ -1018,7 +1019,7 @@ describe('Integration Tests', () => {
         causalLinks: {},
       });
 
-      const secretHolon = holonRegistry.createHolon({
+      const secretHolon = await holonRegistry.createHolon({
         type: HolonType.Mission,
         properties: { name: 'Classified Operation', classificationMetadata: 'TOP_SECRET' },
         createdBy: eventID,
@@ -1037,8 +1038,8 @@ describe('Integration Tests', () => {
       expect(canAccess.allowed).toBe(false);
 
       // Query should return null/undefined, not an error that reveals existence
-      const result = holonRegistry.getHolon(secretHolon.id);
-      
+      const result = await holonRegistry.getHolon(secretHolon.id);
+
       // In a real system with integrated access control, this would return null
       // For now, we verify the access control check works
       if (result && !canAccess.allowed) {
@@ -1047,7 +1048,7 @@ describe('Integration Tests', () => {
       }
     });
 
-    it('should enforce access control on temporal queries', () => {
+    it('should enforce access control on temporal queries', async () => {
       const t1 = new Date('2024-01-01');
       const t2 = new Date('2024-06-01');
 
@@ -1062,7 +1063,7 @@ describe('Integration Tests', () => {
         causalLinks: {},
       });
 
-      const holon = holonRegistry.createHolon({
+      const holon = await holonRegistry.createHolon({
         type: HolonType.Mission,
         properties: { name: 'Classified Mission', classificationMetadata: 'SECRET' },
         createdBy: eventID,
@@ -1083,7 +1084,7 @@ describe('Integration Tests', () => {
       };
 
       // Query current state and check access control
-      const currentHolon = holonRegistry.getHolon(holon.id);
+      const currentHolon = await holonRegistry.getHolon(holon.id);
       expect(currentHolon).toBeDefined();
 
       // Check access control for the holon
@@ -1287,7 +1288,7 @@ describe('Integration Tests', () => {
   });
 
   describe('Complex Integration Scenarios', () => {
-    it('should handle complete lifecycle: create, assign, qualify, query', () => {
+    it('should handle complete lifecycle: create, assign, qualify, query', async () => {
       // Step 1: Create foundational documents
       const docEventID = eventStore.submitEvent({
         type: EventType.DocumentIssued,
@@ -1312,14 +1313,14 @@ describe('Integration Tests', () => {
       );
 
       // Step 2: Create organization structure
-      const org = holonRegistry.createHolon({
+      const org = await holonRegistry.createHolon({
         type: HolonType.Organization,
         properties: { name: 'SEAL Team 1', uic: 'ST1-001' },
         createdBy: docEventID,
         sourceDocuments: [policy.id],
       });
 
-      const position = holonRegistry.createHolon({
+      const position = await holonRegistry.createHolon({
         type: HolonType.Position,
         properties: {
           title: 'Team Leader',
@@ -1330,7 +1331,7 @@ describe('Integration Tests', () => {
         sourceDocuments: [policy.id],
       });
 
-      relationshipRegistry.createRelationship({
+      await relationshipRegistry.createRelationship({
         type: RelationshipType.BELONGS_TO,
         sourceHolonID: position.id,
         targetHolonID: org.id,
@@ -1359,7 +1360,7 @@ describe('Integration Tests', () => {
       const salResult = semanticAccessLayer.submitExternalData(externalData);
       expect(salResult.success).toBe(true);
 
-      const person = holonRegistry.createHolon({
+      const person = await holonRegistry.createHolon({
         type: HolonType.Person,
         properties: externalData.payload,
         createdBy: salResult.events[0].id,
@@ -1369,7 +1370,7 @@ describe('Integration Tests', () => {
       semanticAccessLayer.mapExternalID('NSIPS', 'SEAL-12345', person.id);
 
       // Step 4: Assign person to position
-      const assignment = relationshipRegistry.createRelationship({
+      const assignment = await relationshipRegistry.createRelationship({
         type: RelationshipType.OCCUPIES,
         sourceHolonID: person.id,
         targetHolonID: position.id,
@@ -1381,30 +1382,30 @@ describe('Integration Tests', () => {
       });
 
       // Step 5: Query complete structure
-      const orgStructure = holonRegistry.getHolonsByType(HolonType.Organization);
+      const orgStructure = await holonRegistry.getHolonsByType(HolonType.Organization);
       expect(orgStructure).toHaveLength(1);
 
-      const positions = relationshipRegistry.getRelationshipsFrom(org.id);
+      const positions = await relationshipRegistry.getRelationshipsFrom(org.id);
       // Note: We created BELONGS_TO, not CONTAINS, so we need to query differently
-      const positionRels = relationshipRegistry.getRelationshipsTo(org.id);
+      const positionRels = await relationshipRegistry.getRelationshipsTo(org.id);
       expect(positionRels.length).toBeGreaterThan(0);
 
-      const assignments = relationshipRegistry.getRelationshipsFrom(person.id);
+      const assignments = await relationshipRegistry.getRelationshipsFrom(person.id);
       expect(assignments).toHaveLength(1);
       expect(assignments[0].targetHolonID).toBe(position.id);
 
       // Step 6: Query through external system interface
-      const externalView = semanticAccessLayer.queryForSystem('NSIPS', person.id);
+      const externalView = await semanticAccessLayer.queryForSystem('NSIPS', person.id);
       expect(externalView).toBeDefined();
       expect(externalView!.externalID).toBe('SEAL-12345');
       expect(externalView!.properties.name).toBe('John Smith');
 
       // Step 7: Verify data integrity
-      const retrievedPerson = holonRegistry.getHolon(person.id);
+      const retrievedPerson = await holonRegistry.getHolon(person.id);
       expect(retrievedPerson).toBeDefined();
       expect(retrievedPerson!.properties.name).toBe('John Smith');
 
-      const retrievedAssignments = relationshipRegistry.getRelationshipsFrom(person.id);
+      const retrievedAssignments = await relationshipRegistry.getRelationshipsFrom(person.id);
       expect(retrievedAssignments.length).toBeGreaterThan(0);
 
       // Verify event history

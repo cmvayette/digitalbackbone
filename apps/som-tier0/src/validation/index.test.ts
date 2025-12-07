@@ -13,8 +13,8 @@ import {
 import { ConstraintEngine } from '../constraint-engine';
 import { InMemoryEventStore } from '../event-store';
 import { DocumentRegistry } from '../document-registry';
-import { Event, EventType } from '../core/types/event';
-import { HolonType, ConstraintType } from '../core/types/holon';
+import { Event, EventType } from '@som/shared-types';
+import { HolonType, ConstraintType } from '@som/shared-types';
 
 describe('ValidationEngine', () => {
   let validationEngine: ValidationEngine;

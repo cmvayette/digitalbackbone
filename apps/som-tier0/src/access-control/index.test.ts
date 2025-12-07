@@ -12,9 +12,9 @@ import {
   UserContext,
 } from './index';
 import { DocumentRegistry } from '../document-registry';
-import { Holon, HolonType, DocumentType } from '../core/types/holon';
-import { Relationship, RelationshipType } from '../core/types/relationship';
-import { Event, EventType } from '../core/types/event';
+import { Holon, HolonType, DocumentType } from '@som/shared-types';
+import { Relationship, RelationshipType } from '@som/shared-types';
+import { Event, EventType } from '@som/shared-types';
 
 describe('AccessControlEngine', () => {
   let documentRegistry: DocumentRegistry;

@@ -3,13 +3,13 @@
  * Manages Qualification holon creation, relationships, expiration, and prerequisites
  */
 
-import { HolonRegistry } from '../core/holon-registry';
+import { IHolonRepository as HolonRegistry } from '../core/interfaces/holon-repository';
 import { RelationshipRegistry } from '../relationship-registry';
-import { EventStore } from '../event-store';
+import { IEventStore as EventStore } from '../event-store';
 import { ConstraintEngine, ValidationResult } from '../constraint-engine';
-import { Qualification, HolonType, HolonID, DocumentID, EventID, Timestamp } from '../core/types/holon';
-import { RelationshipType } from '../core/types/relationship';
-import { EventType } from '../core/types/event';
+import { Qualification, HolonType, HolonID, DocumentID, EventID, Timestamp } from '@som/shared-types';
+import { RelationshipType } from '@som/shared-types';
+import { EventType } from '@som/shared-types';
 
 /**
  * Parameters for creating a Qualification holon
@@ -19,9 +19,14 @@ export interface CreateQualificationParams {
   pqsID?: string;
   courseCode?: string;
   certificationID?: string;
+  code?: string;
   name: string;
   type: string;
+  domain?: string;
+  level?: string;
+  description?: string;
   validityPeriod: number; // Duration in milliseconds
+  validityPeriodDays?: number;
   renewalRules: string;
   issuingAuthority: string;
   sourceDocuments: DocumentID[];
@@ -35,6 +40,19 @@ export interface CreateQualificationParams {
 export interface AssignQualificationToPersonParams {
   qualificationID: HolonID;
   personID: HolonID;
+  effectiveStart: Timestamp;
+  effectiveEnd?: Timestamp;
+  sourceDocuments: DocumentID[];
+  actor: HolonID;
+  sourceSystem: string;
+}
+
+/**
+ * Parameters for awarding a qualification to a person
+ */
+export interface AwardQualificationParams {
+  personID: HolonID;
+  qualificationID: HolonID;
   effectiveStart: Timestamp;
   effectiveEnd?: Timestamp;
   sourceDocuments: DocumentID[];
@@ -115,14 +133,14 @@ export class QualificationManager {
   /**
    * Create a new Qualification holon with required fields
    */
-  createQualification(params: CreateQualificationParams): QualificationOperationResult {
+  async createQualification(params: CreateQualificationParams): Promise<QualificationOperationResult> {
     // Validate that at least one identifier is present (Requirement 8.1)
-    const hasIdentifier = 
+    const hasIdentifier =
       params.nec !== undefined ||
       params.pqsID !== undefined ||
       params.courseCode !== undefined ||
       params.certificationID !== undefined;
-    
+
     if (!hasIdentifier) {
       return {
         success: false,
@@ -130,7 +148,7 @@ export class QualificationManager {
           valid: false,
           errors: [{
             constraintID: 'qualification-identifier-required',
-            message: 'At least one identifier (NEC, PQS ID, course code, or certification ID) must be provided',
+            message: 'At least one identifier (NEC, PQS ID, course code, certification ID, or code) must be provided',
             violatedRule: 'Qualification must have at least one identifier',
             affectedHolons: [],
           }],
@@ -140,7 +158,7 @@ export class QualificationManager {
 
     // Create event for qualification creation
     const eventId = this.eventStore.submitEvent({
-      type: EventType.QualificationAwarded, // Using as generic creation event
+      type: EventType.QualificationDefined, // Changed event type
       occurredAt: new Date(),
       actor: params.actor,
       subjects: [],
@@ -152,6 +170,12 @@ export class QualificationManager {
         pqsID: params.pqsID,
         courseCode: params.courseCode,
         certificationID: params.certificationID,
+        // New fields from snippet
+        code: params.code,
+        description: params.description,
+        domain: params.domain,
+        level: params.level,
+        validityPeriodDays: params.validityPeriodDays,
       },
       sourceSystem: params.sourceSystem,
       sourceDocument: params.sourceDocuments[0],
@@ -159,7 +183,7 @@ export class QualificationManager {
     });
 
     // Create Qualification holon
-    const qualification = this.holonRegistry.createHolon({
+    const qualification = await this.holonRegistry.createHolon({ // Await holonRegistry call
       type: HolonType.Qualification,
       properties: {
         nec: params.nec,
@@ -171,6 +195,12 @@ export class QualificationManager {
         validityPeriod: params.validityPeriod,
         renewalRules: params.renewalRules,
         issuingAuthority: params.issuingAuthority,
+        // New fields from snippet
+        code: params.code,
+        description: params.description,
+        domain: params.domain,
+        level: params.level,
+        validityPeriodDays: params.validityPeriodDays,
       },
       createdBy: eventId,
       sourceDocuments: params.sourceDocuments,
@@ -181,7 +211,7 @@ export class QualificationManager {
 
     if (!validation.valid) {
       // Rollback: mark qualification as inactive
-      this.holonRegistry.markHolonInactive(qualification.id, 'Validation failed');
+      await this.holonRegistry.markHolonInactive(qualification.id, 'Validation failed'); // Await holonRegistry call
       return {
         success: false,
         validation,
@@ -197,49 +227,32 @@ export class QualificationManager {
   }
 
   /**
-   * Assign a Qualification to a Person (Qualification HELD_BY Person)
+   * Award a qualification to a person
    */
-  assignQualificationToPerson(params: AssignQualificationToPersonParams): QualificationOperationResult {
-    // Get qualification and person holons
-    const qualification = this.holonRegistry.getHolon(params.qualificationID);
-    const person = this.holonRegistry.getHolon(params.personID);
+  async awardQualification(params: AwardQualificationParams): Promise<QualificationOperationResult> {
+    const person = await this.holonRegistry.getHolon(params.personID);
+    const qualification = await this.holonRegistry.getHolon(params.qualificationID);
 
-    if (!qualification) {
+    if (!person || !qualification) {
       return {
         success: false,
         validation: {
           valid: false,
-          errors: [{
-            constraintID: 'system',
-            message: 'Qualification not found',
-            violatedRule: 'existence',
-            affectedHolons: [params.qualificationID],
-          }],
-        },
+          errors: [{ constraintID: 'existence', message: 'Person or Qualification not found', violatedRule: 'existence', affectedHolons: [params.personID, params.qualificationID] }]
+        }
       };
     }
 
-    if (!person) {
-      return {
-        success: false,
-        validation: {
-          valid: false,
-          errors: [{
-            constraintID: 'system',
-            message: 'Person not found',
-            violatedRule: 'existence',
-            affectedHolons: [params.personID],
-          }],
-        },
-      };
-    }
-
-    // Create the HELD_BY relationship
-    const result = this.relationshipRegistry.createRelationship({
-      type: RelationshipType.HELD_BY,
-      sourceHolonID: params.qualificationID,
-      targetHolonID: params.personID,
-      properties: {},
+    // Create HAS_QUAL relationship
+    const result = await this.relationshipRegistry.createRelationship({
+      type: RelationshipType.HAS_QUAL,
+      sourceHolonID: params.personID,
+      targetHolonID: params.qualificationID,
+      properties: {
+        status: 'active',
+        awardedDate: params.effectiveStart,
+        expiryDate: params.effectiveEnd,
+      },
       effectiveStart: params.effectiveStart,
       effectiveEnd: params.effectiveEnd,
       sourceSystem: params.sourceSystem,
@@ -247,43 +260,34 @@ export class QualificationManager {
       actor: params.actor,
     });
 
-    if (!result.relationship) {
-      return {
-        success: false,
-        validation: result.validation,
-      };
+    if (result.relationship) {
+      this.eventStore.submitEvent({
+        type: EventType.QualificationAwarded,
+        occurredAt: params.effectiveStart,
+        actor: params.actor,
+        subjects: [params.personID, params.qualificationID],
+        payload: { relationshipId: result.relationship.id },
+        sourceSystem: params.sourceSystem,
+        sourceDocument: params.sourceDocuments[0],
+        causalLinks: {},
+      });
     }
 
-    // Generate qualification awarded event
-    const eventId = this.eventStore.submitEvent({
-      type: EventType.QualificationAwarded,
-      occurredAt: params.effectiveStart,
-      actor: params.actor,
-      subjects: [params.personID, params.qualificationID],
-      payload: {
-        relationshipId: result.relationship.id,
-        qualificationId: params.qualificationID,
-      },
-      sourceSystem: params.sourceSystem,
-      sourceDocument: params.sourceDocuments[0],
-      causalLinks: {},
-    });
-
     return {
-      success: true,
-      relationshipID: result.relationship.id,
+      success: !!result.relationship,
+      relationshipID: result.relationship?.id,
       validation: result.validation,
-      eventID: eventId,
+      eventID: result.relationship ? result.relationship.createdBy : undefined, // Assuming eventID comes from relationship creation if successful
     };
   }
 
   /**
    * Set a Qualification as required for a Position (Qualification REQUIRED_FOR Position)
    */
-  setQualificationRequirement(params: SetQualificationRequirementParams): QualificationOperationResult {
+  async setQualificationRequirement(params: SetQualificationRequirementParams): Promise<QualificationOperationResult> {
     // Get qualification and position holons
-    const qualification = this.holonRegistry.getHolon(params.qualificationID);
-    const position = this.holonRegistry.getHolon(params.positionID);
+    const qualification = await this.holonRegistry.getHolon(params.qualificationID);
+    const position = await this.holonRegistry.getHolon(params.positionID);
 
     if (!qualification) {
       return {
@@ -316,7 +320,7 @@ export class QualificationManager {
     }
 
     // Create the REQUIRED_FOR relationship
-    const result = this.relationshipRegistry.createRelationship({
+    const result = await this.relationshipRegistry.createRelationship({
       type: RelationshipType.REQUIRED_FOR,
       sourceHolonID: params.qualificationID,
       targetHolonID: params.positionID,
@@ -346,15 +350,15 @@ export class QualificationManager {
   /**
    * Handle qualification expiration by ending the HELD_BY relationship and recording an event
    */
-  expireQualification(params: ExpireQualificationParams): QualificationOperationResult {
-    // Find the HELD_BY relationship
-    const relationships = this.relationshipRegistry.getRelationshipsFrom(
+  async expireQualification(params: ExpireQualificationParams): Promise<QualificationOperationResult> {
+    // Find the HAS_QUAL relationship (Person -> Qualification)
+    const relationships = await this.relationshipRegistry.getRelationshipsTo(
       params.qualificationID,
-      RelationshipType.HELD_BY,
+      RelationshipType.HAS_QUAL,
       { includeEnded: false }
     );
 
-    const relationship = relationships.find(r => r.targetHolonID === params.personID);
+    const relationship = relationships.find(r => r.sourceHolonID === params.personID);
 
     if (!relationship) {
       return {
@@ -372,7 +376,7 @@ export class QualificationManager {
     }
 
     // End the relationship
-    const result = this.relationshipRegistry.endRelationship({
+    const result = await this.relationshipRegistry.endRelationship({
       relationshipID: relationship.id,
       endDate: params.expirationDate,
       reason: params.reason || 'Qualification expired',
@@ -415,10 +419,10 @@ export class QualificationManager {
    * Set a prerequisite relationship between qualifications
    * Uses DEPENDS_ON relationship to represent prerequisite chains
    */
-  setQualificationPrerequisite(params: SetQualificationPrerequisiteParams): QualificationOperationResult {
+  async setQualificationPrerequisite(params: SetQualificationPrerequisiteParams): Promise<QualificationOperationResult> {
     // Get both qualification holons
-    const qualification = this.holonRegistry.getHolon(params.qualificationID);
-    const prerequisite = this.holonRegistry.getHolon(params.prerequisiteQualificationID);
+    const qualification = await this.holonRegistry.getHolon(params.qualificationID);
+    const prerequisite = await this.holonRegistry.getHolon(params.prerequisiteQualificationID);
 
     if (!qualification) {
       return {
@@ -467,7 +471,7 @@ export class QualificationManager {
     }
 
     // Check for cycles in prerequisite chain
-    const cycleValidation = this.detectPrerequisiteCycle(
+    const cycleValidation = await this.detectPrerequisiteCycle(
       params.qualificationID,
       params.prerequisiteQualificationID
     );
@@ -480,7 +484,7 @@ export class QualificationManager {
     }
 
     // Create the DEPENDS_ON relationship (qualification depends on prerequisite)
-    const result = this.relationshipRegistry.createRelationship({
+    const result = await this.relationshipRegistry.createRelationship({
       type: RelationshipType.DEPENDS_ON,
       sourceHolonID: params.qualificationID,
       targetHolonID: params.prerequisiteQualificationID,
@@ -512,23 +516,10 @@ export class QualificationManager {
   /**
    * Get all people who hold a specific qualification
    */
-  getQualificationHolders(qualificationID: HolonID, effectiveAt?: Timestamp): HolonID[] {
-    const relationships = this.relationshipRegistry.getRelationshipsFrom(
+  async getQualificationHolders(qualificationID: HolonID, effectiveAt?: Timestamp): Promise<HolonID[]> {
+    const relationships = await this.relationshipRegistry.getRelationshipsTo(
       qualificationID,
-      RelationshipType.HELD_BY,
-      { effectiveAt, includeEnded: false }
-    );
-
-    return relationships.map(r => r.targetHolonID);
-  }
-
-  /**
-   * Get all qualifications held by a person
-   */
-  getPersonQualifications(personID: HolonID, effectiveAt?: Timestamp): HolonID[] {
-    const relationships = this.relationshipRegistry.getRelationshipsTo(
-      personID,
-      RelationshipType.HELD_BY,
+      RelationshipType.HAS_QUAL,
       { effectiveAt, includeEnded: false }
     );
 
@@ -536,10 +527,23 @@ export class QualificationManager {
   }
 
   /**
+   * Get all qualifications held by a person
+   */
+  async getPersonQualifications(personID: HolonID, effectiveAt?: Timestamp): Promise<HolonID[]> {
+    const relationships = await this.relationshipRegistry.getRelationshipsFrom(
+      personID,
+      RelationshipType.HAS_QUAL,
+      { effectiveAt, includeEnded: false }
+    );
+
+    return relationships.map(r => r.targetHolonID);
+  }
+
+  /**
    * Get all positions that require a specific qualification
    */
-  getPositionsRequiringQualification(qualificationID: HolonID, effectiveAt?: Timestamp): HolonID[] {
-    const relationships = this.relationshipRegistry.getRelationshipsFrom(
+  async getPositionsRequiringQualification(qualificationID: HolonID, effectiveAt?: Timestamp): Promise<HolonID[]> {
+    const relationships = await this.relationshipRegistry.getRelationshipsFrom(
       qualificationID,
       RelationshipType.REQUIRED_FOR,
       { effectiveAt, includeEnded: false }
@@ -551,8 +555,8 @@ export class QualificationManager {
   /**
    * Get all qualifications required for a position
    */
-  getPositionRequiredQualifications(positionID: HolonID, effectiveAt?: Timestamp): HolonID[] {
-    const relationships = this.relationshipRegistry.getRelationshipsTo(
+  async getPositionRequiredQualifications(positionID: HolonID, effectiveAt?: Timestamp): Promise<HolonID[]> {
+    const relationships = await this.relationshipRegistry.getRelationshipsTo(
       positionID,
       RelationshipType.REQUIRED_FOR,
       { effectiveAt, includeEnded: false }
@@ -564,8 +568,8 @@ export class QualificationManager {
   /**
    * Get all prerequisites for a qualification
    */
-  getQualificationPrerequisites(qualificationID: HolonID, effectiveAt?: Timestamp): HolonID[] {
-    const relationships = this.relationshipRegistry.getRelationshipsFrom(
+  async getQualificationPrerequisites(qualificationID: HolonID, effectiveAt?: Timestamp): Promise<HolonID[]> {
+    const relationships = await this.relationshipRegistry.getRelationshipsFrom(
       qualificationID,
       RelationshipType.DEPENDS_ON,
       { effectiveAt, includeEnded: false }
@@ -580,8 +584,8 @@ export class QualificationManager {
   /**
    * Get all qualifications that have this qualification as a prerequisite
    */
-  getQualificationsDependingOn(prerequisiteID: HolonID, effectiveAt?: Timestamp): HolonID[] {
-    const relationships = this.relationshipRegistry.getRelationshipsTo(
+  async getQualificationsDependingOn(prerequisiteID: HolonID, effectiveAt?: Timestamp): Promise<HolonID[]> {
+    const relationships = await this.relationshipRegistry.getRelationshipsTo(
       prerequisiteID,
       RelationshipType.DEPENDS_ON,
       { effectiveAt, includeEnded: false }
@@ -596,24 +600,24 @@ export class QualificationManager {
   /**
    * Get the complete prerequisite chain for a qualification
    */
-  getPrerequisiteChain(qualificationID: HolonID, effectiveAt?: Timestamp): HolonID[] {
+  async getPrerequisiteChain(qualificationID: HolonID, effectiveAt?: Timestamp): Promise<HolonID[]> {
     const chain: HolonID[] = [];
     const visited = new Set<HolonID>();
 
-    const traverse = (currentID: HolonID) => {
+    const traverse = async (currentID: HolonID) => {
       if (visited.has(currentID)) {
         return; // Avoid infinite loops
       }
       visited.add(currentID);
 
-      const prerequisites = this.getQualificationPrerequisites(currentID, effectiveAt);
+      const prerequisites = await this.getQualificationPrerequisites(currentID, effectiveAt);
       for (const prereqID of prerequisites) {
         chain.push(prereqID);
-        traverse(prereqID);
+        await traverse(prereqID);
       }
     };
 
-    traverse(qualificationID);
+    await traverse(qualificationID);
     return chain;
   }
 
@@ -621,11 +625,11 @@ export class QualificationManager {
    * Detect if creating a prerequisite relationship would create a cycle
    * Uses depth-first search to check if prerequisite is a dependent of qualification
    */
-  private detectPrerequisiteCycle(
+  private async detectPrerequisiteCycle(
     qualificationID: HolonID,
     prerequisiteID: HolonID,
     visited: Set<HolonID> = new Set()
-  ): ValidationResult {
+  ): Promise<ValidationResult> {
     // If we've already visited this node, we have a cycle
     if (visited.has(qualificationID)) {
       return {
@@ -642,7 +646,7 @@ export class QualificationManager {
     visited.add(qualificationID);
 
     // Get all qualifications that depend on this qualification
-    const dependents = this.getQualificationsDependingOn(qualificationID, undefined);
+    const dependents = await this.getQualificationsDependingOn(qualificationID, undefined);
 
     // Check if the prerequisite is a dependent of the qualification
     for (const dependentID of dependents) {
@@ -660,7 +664,7 @@ export class QualificationManager {
       }
 
       // Recursively check dependents
-      const dependentCheck = this.detectPrerequisiteCycle(dependentID, prerequisiteID, visited);
+      const dependentCheck = await this.detectPrerequisiteCycle(dependentID, prerequisiteID, visited);
       if (!dependentCheck.valid) {
         return dependentCheck;
       }

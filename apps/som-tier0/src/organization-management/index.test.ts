@@ -11,13 +11,13 @@ import {
   CreateOrganizationParams,
   CreateOrganizationHierarchyParams,
 } from './index';
-import { HolonRegistry } from '../core/holon-registry';
+import { InMemoryHolonRepository as HolonRegistry } from '../core/holon-registry';
 import { RelationshipRegistry } from '../relationship-registry';
-import { EventStore, InMemoryEventStore } from '../event-store';
+import { IEventStore as EventStore, InMemoryEventStore } from '../event-store';
 import { ConstraintEngine } from '../constraint-engine';
 import { DocumentRegistry } from '../document-registry';
-import { HolonType, HolonID } from '../core/types/holon';
-import { RelationshipType } from '../core/types/relationship';
+import { HolonType, HolonID } from '@som/shared-types';
+import { RelationshipType } from '@som/shared-types';
 
 // Test setup
 let holonRegistry: HolonRegistry;
@@ -27,7 +27,7 @@ let eventStore: EventStore;
 let relationshipRegistry: RelationshipRegistry;
 let organizationManager: OrganizationManager;
 
-beforeEach(() => {
+beforeEach(async () => {
   holonRegistry = new HolonRegistry();
   documentRegistry = new DocumentRegistry();
   constraintEngine = new ConstraintEngine(documentRegistry);
@@ -207,17 +207,25 @@ const genCreateOrganizationParams = (): fc.Arbitrary<CreateOrganizationParams> =
 describe('Property 21: Position holon completeness', () => {
   test('created Position holons contain all required fields', () => {
     fc.assert(
-      fc.property(genCreatePositionParams(), (params) => {
-        const result = organizationManager.createPosition(params);
-        
+      fc.asyncProperty(genCreatePositionParams(), async (params) => {
+        // Setup isolated environment
+        const holonRegistry = new HolonRegistry();
+        const documentRegistry = new DocumentRegistry();
+        const constraintEngine = new ConstraintEngine(documentRegistry);
+        const eventStore = new InMemoryEventStore();
+        const relationshipRegistry = new RelationshipRegistry(constraintEngine, eventStore);
+        const organizationManager = new OrganizationManager(holonRegistry, relationshipRegistry, eventStore, constraintEngine);
+
+        const result = await organizationManager.createPosition(params);
+
         // Position creation should succeed
         expect(result.success).toBe(true);
         expect(result.holonID).toBeDefined();
-        
+
         // Retrieve the created position
-        const position = holonRegistry.getHolon(result.holonID!);
+        const position = await holonRegistry.getHolon(result.holonID!);
         expect(position).toBeDefined();
-        
+
         // Verify all required fields are present
         expect(position!.id).toBeDefined(); // SOM Position ID
         expect(position!.type).toBe(HolonType.Position);
@@ -227,13 +235,13 @@ describe('Property 21: Position holon completeness', () => {
         expect(position!.properties.designatorExpectations).toEqual(params.designatorExpectations);
         expect(position!.properties.criticality).toBe(params.criticality);
         expect(position!.properties.billetType).toBe(params.billetType);
-        
+
         // Verify metadata
         expect(position!.createdAt).toBeInstanceOf(Date);
         expect(position!.createdBy).toBeDefined();
         expect(position!.status).toBe('active');
         expect(position!.sourceDocuments).toEqual(params.sourceDocuments);
-        
+
         return true;
       }),
       { numRuns: 100 }
@@ -252,17 +260,25 @@ describe('Property 21: Position holon completeness', () => {
 describe('Property 22: Organization holon completeness', () => {
   test('created Organization holons contain all required fields', () => {
     fc.assert(
-      fc.property(genCreateOrganizationParams(), (params) => {
-        const result = organizationManager.createOrganization(params);
-        
+      fc.asyncProperty(genCreateOrganizationParams(), async (params) => {
+        // Setup isolated environment
+        const holonRegistry = new HolonRegistry();
+        const documentRegistry = new DocumentRegistry();
+        const constraintEngine = new ConstraintEngine(documentRegistry);
+        const eventStore = new InMemoryEventStore();
+        const relationshipRegistry = new RelationshipRegistry(constraintEngine, eventStore);
+        const organizationManager = new OrganizationManager(holonRegistry, relationshipRegistry, eventStore, constraintEngine);
+
+        const result = await organizationManager.createOrganization(params);
+
         // Organization creation should succeed
         expect(result.success).toBe(true);
         expect(result.holonID).toBeDefined();
-        
+
         // Retrieve the created organization
-        const organization = holonRegistry.getHolon(result.holonID!);
+        const organization = await holonRegistry.getHolon(result.holonID!);
         expect(organization).toBeDefined();
-        
+
         // Verify all required fields are present
         expect(organization!.id).toBeDefined(); // SOM Organization ID
         expect(organization!.type).toBe(HolonType.Organization);
@@ -271,13 +287,13 @@ describe('Property 22: Organization holon completeness', () => {
         expect(organization!.properties.type).toBe(params.type);
         expect(organization!.properties.echelonLevel).toBe(params.echelonLevel);
         expect(organization!.properties.missionStatement).toBe(params.missionStatement);
-        
+
         // Verify metadata
         expect(organization!.createdAt).toBeInstanceOf(Date);
         expect(organization!.createdBy).toBeDefined();
         expect(organization!.status).toBe('active');
         expect(organization!.sourceDocuments).toEqual(params.sourceDocuments);
-        
+
         return true;
       }),
       { numRuns: 100 }
@@ -296,19 +312,27 @@ describe('Property 22: Organization holon completeness', () => {
 describe('Property 23: Organizational hierarchy validity', () => {
   test('organizational hierarchies do not contain cycles', () => {
     fc.assert(
-      fc.property(
+      fc.asyncProperty(
         fc.array(genCreateOrganizationParams(), { minLength: 3, maxLength: 10 }),
-        (orgParamsArray) => {
+        async (orgParamsArray) => {
+          // Setup isolated environment
+          const holonRegistry = new HolonRegistry();
+          const documentRegistry = new DocumentRegistry();
+          const constraintEngine = new ConstraintEngine(documentRegistry);
+          const eventStore = new InMemoryEventStore();
+          const relationshipRegistry = new RelationshipRegistry(constraintEngine, eventStore);
+          const organizationManager = new OrganizationManager(holonRegistry, relationshipRegistry, eventStore, constraintEngine);
+
           // Create multiple organizations
-          const organizations = orgParamsArray.map(params => {
-            const result = organizationManager.createOrganization(params);
+          const organizations = await Promise.all(orgParamsArray.map(async params => {
+            const result = await organizationManager.createOrganization(params);
             expect(result.success).toBe(true);
             return result.holonID!;
-          });
+          }));
 
           // Create a valid hierarchy: org[0] -> org[1] -> org[2]
           if (organizations.length >= 3) {
-            const hierarchy1 = organizationManager.createOrganizationHierarchy({
+            const hierarchy1 = await organizationManager.createOrganizationHierarchy({
               parentOrganizationID: organizations[0],
               childOrganizationID: organizations[1],
               effectiveStart: new Date(),
@@ -318,7 +342,7 @@ describe('Property 23: Organizational hierarchy validity', () => {
             });
             expect(hierarchy1.success).toBe(true);
 
-            const hierarchy2 = organizationManager.createOrganizationHierarchy({
+            const hierarchy2 = await organizationManager.createOrganizationHierarchy({
               parentOrganizationID: organizations[1],
               childOrganizationID: organizations[2],
               effectiveStart: new Date(),
@@ -329,7 +353,7 @@ describe('Property 23: Organizational hierarchy validity', () => {
             expect(hierarchy2.success).toBe(true);
 
             // Try to create a cycle: org[2] -> org[0] (should fail)
-            const cycleAttempt = organizationManager.createOrganizationHierarchy({
+            const cycleAttempt = await organizationManager.createOrganizationHierarchy({
               parentOrganizationID: organizations[2],
               childOrganizationID: organizations[0],
               effectiveStart: new Date(),
@@ -345,7 +369,7 @@ describe('Property 23: Organizational hierarchy validity', () => {
             expect(cycleAttempt.validation.errors![0].violatedRule).toBe('no_cycles');
 
             // Try to create self-containment: org[0] -> org[0] (should fail)
-            const selfContainment = organizationManager.createOrganizationHierarchy({
+            const selfContainment = await organizationManager.createOrganizationHierarchy({
               parentOrganizationID: organizations[0],
               childOrganizationID: organizations[0],
               effectiveStart: new Date(),
@@ -361,10 +385,10 @@ describe('Property 23: Organizational hierarchy validity', () => {
             expect(selfContainment.validation.errors![0].violatedRule).toBe('no_self_containment');
 
             // Verify the valid hierarchy is intact
-            const childOrgs = organizationManager.getChildOrganizations(organizations[0]);
+            const childOrgs = await organizationManager.getChildOrganizations(organizations[0]);
             expect(childOrgs).toContain(organizations[1]);
-            
-            const grandchildOrgs = organizationManager.getChildOrganizations(organizations[1]);
+
+            const grandchildOrgs = await organizationManager.getChildOrganizations(organizations[1]);
             expect(grandchildOrgs).toContain(organizations[2]);
           }
 
@@ -377,15 +401,23 @@ describe('Property 23: Organizational hierarchy validity', () => {
 
   test('complex organizational hierarchies remain acyclic', () => {
     fc.assert(
-      fc.property(
+      fc.asyncProperty(
         fc.array(genCreateOrganizationParams(), { minLength: 5, maxLength: 8 }),
-        (orgParamsArray) => {
+        async (orgParamsArray) => {
+          // Setup isolated environment
+          const holonRegistry = new HolonRegistry();
+          const documentRegistry = new DocumentRegistry();
+          const constraintEngine = new ConstraintEngine(documentRegistry);
+          const eventStore = new InMemoryEventStore();
+          const relationshipRegistry = new RelationshipRegistry(constraintEngine, eventStore);
+          const organizationManager = new OrganizationManager(holonRegistry, relationshipRegistry, eventStore, constraintEngine);
+
           // Create multiple organizations
-          const organizations = orgParamsArray.map(params => {
-            const result = organizationManager.createOrganization(params);
+          const organizations = await Promise.all(orgParamsArray.map(async params => {
+            const result = await organizationManager.createOrganization(params);
             expect(result.success).toBe(true);
             return result.holonID!;
-          });
+          }));
 
           if (organizations.length >= 5) {
             // Create a more complex hierarchy:
@@ -404,7 +436,7 @@ describe('Property 23: Organizational hierarchy validity', () => {
 
             // Create all valid links
             for (const link of links) {
-              const result = organizationManager.createOrganizationHierarchy({
+              const result = await organizationManager.createOrganizationHierarchy({
                 parentOrganizationID: organizations[link.parent],
                 childOrganizationID: organizations[link.child],
                 effectiveStart: new Date(),
@@ -424,7 +456,7 @@ describe('Property 23: Organizational hierarchy validity', () => {
             ];
 
             for (const attempt of cycleAttempts) {
-              const result = organizationManager.createOrganizationHierarchy({
+              const result = await organizationManager.createOrganizationHierarchy({
                 parentOrganizationID: organizations[attempt.parent],
                 childOrganizationID: organizations[attempt.child],
                 effectiveStart: new Date(),
@@ -441,7 +473,7 @@ describe('Property 23: Organizational hierarchy validity', () => {
             }
 
             // Verify the hierarchy structure is correct
-            const rootChildren = organizationManager.getChildOrganizations(organizations[0]);
+            const rootChildren = await organizationManager.getChildOrganizations(organizations[0]);
             expect(rootChildren).toHaveLength(2);
             expect(rootChildren).toContain(organizations[1]);
             expect(rootChildren).toContain(organizations[2]);

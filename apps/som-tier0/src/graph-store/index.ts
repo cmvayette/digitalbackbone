@@ -3,10 +3,9 @@
  * Provides materialized views of holons and relationships with efficient querying
  */
 
-import { Holon, HolonID, HolonType, Timestamp } from '../core/types/holon';
-import { Relationship, RelationshipID, RelationshipType } from '../core/types/relationship';
+import { Holon, HolonID, HolonType, Timestamp } from '@som/shared-types';
+import { Relationship, RelationshipID, RelationshipType } from '@som/shared-types';
 import { StateProjectionEngine, HolonState, RelationshipState } from '../state-projection';
-import { HolonRegistry } from '../core/holon-registry';
 import { RelationshipRegistry } from '../relationship-registry';
 
 /**
@@ -66,7 +65,6 @@ export interface PatternMatch {
  */
 export class GraphStore {
   private stateProjection: StateProjectionEngine;
-  private holonRegistry?: HolonRegistry;
   private relationshipRegistry?: RelationshipRegistry;
   private holonsByType: Map<HolonType, Set<HolonID>>;
   private relationshipsByType: Map<RelationshipType, Set<RelationshipID>>;
@@ -75,11 +73,9 @@ export class GraphStore {
 
   constructor(
     stateProjection: StateProjectionEngine,
-    holonRegistry?: HolonRegistry,
     relationshipRegistry?: RelationshipRegistry
   ) {
     this.stateProjection = stateProjection;
-    this.holonRegistry = holonRegistry;
     this.relationshipRegistry = relationshipRegistry;
     this.holonsByType = new Map();
     this.relationshipsByType = new Map();
@@ -96,14 +92,19 @@ export class GraphStore {
     });
 
     // Build initial indices from current state
-    this.rebuildIndices();
+    // Note: rebuildIndices is now async and must be called explicitly or via initialize()
+    // this.rebuildIndices();
+  }
+
+  async initialize(): Promise<void> {
+    await this.rebuildIndices();
   }
 
   /**
    * Rebuild all indices from the current state projection AND registries
    * This combines event-sourced state with current registry state
    */
-  rebuildIndices(): void {
+  async rebuildIndices(): Promise<void> {
     // Clear existing indices
     this.holonsByType.forEach(set => set.clear());
     this.relationshipsByType.forEach(set => set.clear());
@@ -111,23 +112,12 @@ export class GraphStore {
     this.relationshipsByTarget.clear();
 
     // Index holons from state projection (event-sourced)
-    const currentState = this.stateProjection.getCurrentState();
+    // Always replay events to ensure we have the latest state before indexing
+    const currentState = this.stateProjection.replayAllEvents();
     for (const [holonId, holonState] of currentState.holons) {
       const typeSet = this.holonsByType.get(holonState.holon.type);
       if (typeSet) {
         typeSet.add(holonId);
-      }
-    }
-
-    // ALSO index holons directly from registry (if available)
-    // This allows holons created via registry to be queryable
-    if (this.holonRegistry) {
-      for (const type of Object.values(HolonType)) {
-        const holons = this.holonRegistry.getHolonsByType(type);
-        const typeSet = this.holonsByType.get(type);
-        if (typeSet) {
-          holons.forEach(holon => typeSet.add(holon.id));
-        }
       }
     }
 
@@ -157,7 +147,7 @@ export class GraphStore {
     // ALSO index relationships directly from registry (if available)
     if (this.relationshipRegistry) {
       for (const type of Object.values(RelationshipType)) {
-        const relationships = this.relationshipRegistry.getRelationshipsByType(type);
+        const relationships = await this.relationshipRegistry.getRelationshipsByType(type);
         const typeSet = this.relationshipsByType.get(type);
         if (typeSet) {
           relationships.forEach(rel => {
@@ -183,10 +173,10 @@ export class GraphStore {
    * Update indices when a new event is processed
    * This is more efficient than full rebuild for incremental updates
    */
-  updateFromNewEvent(): void {
+  async updateFromNewEvent(): Promise<void> {
     // For now, just rebuild indices
     // In production, this would be optimized to only update affected indices
-    this.rebuildIndices();
+    await this.rebuildIndices();
   }
 
   /**
@@ -204,9 +194,6 @@ export class GraphStore {
       const holonState = currentState.holons.get(holonId);
       if (holonState) {
         holon = holonState.holon;
-      } else if (this.holonRegistry) {
-        // Fall back to registry if not in state projection
-        holon = this.holonRegistry.getHolon(holonId);
       }
 
       if (holon && this.matchesHolonFilters(holon, filters)) {
@@ -228,11 +215,6 @@ export class GraphStore {
       return holonState.holon;
     }
 
-    // Fall back to registry
-    if (this.holonRegistry) {
-      return this.holonRegistry.getHolon(holonId);
-    }
-
     return undefined;
   }
 
@@ -248,7 +230,7 @@ export class GraphStore {
    * Query relationships by type with optional filters
    * Queries from both state projection and registry
    */
-  queryRelationshipsByType(type: RelationshipType, filters?: RelationshipQueryFilters): Relationship[] {
+  async queryRelationshipsByType(type: RelationshipType, filters?: RelationshipQueryFilters): Promise<Relationship[]> {
     const relationshipIds = this.relationshipsByType.get(type) || new Set();
     const currentState = this.stateProjection.getCurrentState();
     const results: Relationship[] = [];
@@ -261,7 +243,7 @@ export class GraphStore {
         relationship = relationshipState.relationship;
       } else if (this.relationshipRegistry) {
         // Fall back to registry if not in state projection
-        relationship = this.relationshipRegistry.getRelationship(relationshipId);
+        relationship = await this.relationshipRegistry.getRelationship(relationshipId);
       }
 
       if (relationship && this.matchesRelationshipFilters(relationship, filters)) {
@@ -287,12 +269,12 @@ export class GraphStore {
    * @param direction - 'outgoing' (from), 'incoming' (to), or 'both'
    * @param filters - Optional relationship filters
    */
-  traverseRelationships(
+  async traverseRelationships(
     holonId: HolonID,
     relationshipType?: RelationshipType,
     direction: 'outgoing' | 'incoming' | 'both' = 'both',
     filters?: RelationshipQueryFilters
-  ): Relationship[] {
+  ): Promise<Relationship[]> {
     const currentState = this.stateProjection.getCurrentState();
     const results: Relationship[] = [];
 
@@ -307,7 +289,7 @@ export class GraphStore {
           relationship = relationshipState.relationship;
         } else if (this.relationshipRegistry) {
           // Fall back to registry
-          relationship = this.relationshipRegistry.getRelationship(relationshipId);
+          relationship = await this.relationshipRegistry.getRelationship(relationshipId);
         }
 
         if (relationship &&
@@ -329,7 +311,7 @@ export class GraphStore {
           relationship = relationshipState.relationship;
         } else if (this.relationshipRegistry) {
           // Fall back to registry
-          relationship = this.relationshipRegistry.getRelationship(relationshipId);
+          relationship = await this.relationshipRegistry.getRelationship(relationshipId);
         }
 
         if (relationship &&
@@ -350,13 +332,13 @@ export class GraphStore {
    * @param direction - 'outgoing' (targets), 'incoming' (sources), or 'both'
    * @param filters - Optional relationship filters
    */
-  getConnectedHolons(
+  async getConnectedHolons(
     holonId: HolonID,
     relationshipType?: RelationshipType,
     direction: 'outgoing' | 'incoming' | 'both' = 'both',
     filters?: RelationshipQueryFilters
-  ): Holon[] {
-    const relationships = this.traverseRelationships(holonId, relationshipType, direction, filters);
+  ): Promise<Holon[]> {
+    const relationships = await this.traverseRelationships(holonId, relationshipType, direction, filters);
     const currentState = this.stateProjection.getCurrentState();
     const connectedHolonIds = new Set<HolonID>();
 
@@ -388,7 +370,7 @@ export class GraphStore {
    * Match graph patterns to find subgraphs
    * This is a simplified pattern matching implementation
    */
-  matchPattern(pattern: GraphPattern): PatternMatch[] {
+  async matchPattern(pattern: GraphPattern): Promise<PatternMatch[]> {
     const results: PatternMatch[] = [];
     const currentState = this.stateProjection.getCurrentState();
 
@@ -403,7 +385,7 @@ export class GraphStore {
 
     // For each candidate, try to match the full pattern
     for (const holon of candidateHolons) {
-      const match = this.tryMatchPattern(holon, firstPattern.alias || '0', pattern, currentState);
+      const match = await this.tryMatchPattern(holon, firstPattern.alias || '0', pattern, currentState);
       if (match) {
         results.push(match);
       }
@@ -437,12 +419,12 @@ export class GraphStore {
   /**
    * Try to match a full pattern starting from a holon
    */
-  private tryMatchPattern(
+  private async tryMatchPattern(
     startHolon: Holon,
     startAlias: string,
     pattern: GraphPattern,
     currentState: any
-  ): PatternMatch | null {
+  ): Promise<PatternMatch | null> {
     const matchedHolons = new Map<string, Holon>();
     const matchedRelationships: Relationship[] = [];
 
@@ -460,7 +442,7 @@ export class GraphStore {
         }
 
         // Get relationships from this holon
-        const relationships = this.traverseRelationships(
+        const relationships = await this.traverseRelationships(
           sourceHolon.id,
           relPattern.type,
           'outgoing'

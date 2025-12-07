@@ -3,13 +3,13 @@
  * Manages Initiative and Task holon creation, relationships, and validation
  */
 
-import { HolonRegistry } from '../core/holon-registry';
+import { IHolonRepository as HolonRegistry } from '../core/interfaces/holon-repository';
 import { RelationshipRegistry } from '../relationship-registry';
-import { EventStore } from '../event-store';
+import { IEventStore as EventStore } from '../event-store';
 import { ConstraintEngine, ValidationResult } from '../constraint-engine';
-import { Initiative, Task, HolonType, HolonID, DocumentID, EventID, Timestamp } from '../core/types/holon';
-import { RelationshipType } from '../core/types/relationship';
-import { EventType } from '../core/types/event';
+import { Initiative, Task, HolonType, HolonID, DocumentID, EventID, Timestamp } from '@som/shared-types';
+import { RelationshipType } from '@som/shared-types';
+import { EventType } from '@som/shared-types';
 
 /**
  * Parameters for creating an Initiative holon
@@ -116,7 +116,7 @@ export class InitiativeTaskManager {
    * Validates Requirements 10.1: WHEN a multi-step effort is undertaken THEN the SOM SHALL create 
    * an Initiative holon with SOM Initiative ID, name, scope, sponsor, and stage
    */
-  createInitiative(params: CreateInitiativeParams): InitiativeTaskOperationResult {
+  async createInitiative(params: CreateInitiativeParams): Promise<InitiativeTaskOperationResult> {
     // Validate required fields
     const validationErrors: any[] = [];
 
@@ -190,7 +190,7 @@ export class InitiativeTaskManager {
     });
 
     // Create Initiative holon
-    const initiative = this.holonRegistry.createHolon({
+    const initiative = await this.holonRegistry.createHolon({
       type: HolonType.Initiative,
       properties: {
         name: trimmedName,
@@ -208,7 +208,7 @@ export class InitiativeTaskManager {
 
     if (!validation.valid) {
       // Rollback: mark initiative as inactive
-      this.holonRegistry.markHolonInactive(initiative.id, 'Validation failed');
+      await this.holonRegistry.markHolonInactive(initiative.id, 'Validation failed');
       return {
         success: false,
         validation,
@@ -228,7 +228,7 @@ export class InitiativeTaskManager {
    * Validates Requirements 10.2: WHEN actionable work is defined THEN the SOM SHALL create 
    * a Task holon with SOM Task ID, description, type, priority, due date, and status
    */
-  createTask(params: CreateTaskParams): InitiativeTaskOperationResult {
+  async createTask(params: CreateTaskParams): Promise<InitiativeTaskOperationResult> {
     // Validate required fields
     const validationErrors: any[] = [];
 
@@ -310,7 +310,7 @@ export class InitiativeTaskManager {
     });
 
     // Create Task holon
-    const task = this.holonRegistry.createHolon({
+    const task = await this.holonRegistry.createHolon({
       type: HolonType.Task,
       properties: {
         description: trimmedDescription,
@@ -328,7 +328,7 @@ export class InitiativeTaskManager {
 
     if (!validation.valid) {
       // Rollback: mark task as inactive
-      this.holonRegistry.markHolonInactive(task.id, 'Validation failed');
+      await this.holonRegistry.markHolonInactive(task.id, 'Validation failed');
       return {
         success: false,
         validation,
@@ -348,10 +348,10 @@ export class InitiativeTaskManager {
    * Validates Requirements 10.3: WHEN initiatives support objectives THEN the SOM SHALL create 
    * Initiative ALIGNED_TO Objective relationships
    */
-  alignInitiativeToObjective(params: AlignInitiativeToObjectiveParams): InitiativeTaskOperationResult {
+  async alignInitiativeToObjective(params: AlignInitiativeToObjectiveParams): Promise<InitiativeTaskOperationResult> {
     // Get initiative and objective holons
-    const initiative = this.holonRegistry.getHolon(params.initiativeID);
-    const objective = this.holonRegistry.getHolon(params.objectiveID);
+    const initiative = await this.holonRegistry.getHolon(params.initiativeID);
+    const objective = await this.holonRegistry.getHolon(params.objectiveID);
 
     if (!initiative) {
       return {
@@ -384,7 +384,7 @@ export class InitiativeTaskManager {
     }
 
     // Create the ALIGNED_TO relationship
-    const result = this.relationshipRegistry.createRelationship({
+    const result = await this.relationshipRegistry.createRelationship({
       type: RelationshipType.ALIGNED_TO,
       sourceHolonID: params.initiativeID,
       targetHolonID: params.objectiveID,
@@ -416,10 +416,10 @@ export class InitiativeTaskManager {
    * Validates Requirements 10.4: WHEN tasks are part of initiatives THEN the SOM SHALL create 
    * Task PART_OF Initiative relationships
    */
-  addTaskToInitiative(params: AddTaskToInitiativeParams): InitiativeTaskOperationResult {
+  async addTaskToInitiative(params: AddTaskToInitiativeParams): Promise<InitiativeTaskOperationResult> {
     // Get task and initiative holons
-    const task = this.holonRegistry.getHolon(params.taskID);
-    const initiative = this.holonRegistry.getHolon(params.initiativeID);
+    const task = await this.holonRegistry.getHolon(params.taskID);
+    const initiative = await this.holonRegistry.getHolon(params.initiativeID);
 
     if (!task) {
       return {
@@ -452,7 +452,7 @@ export class InitiativeTaskManager {
     }
 
     // Create the PART_OF relationship
-    const result = this.relationshipRegistry.createRelationship({
+    const result = await this.relationshipRegistry.createRelationship({
       type: RelationshipType.PART_OF,
       sourceHolonID: params.taskID,
       targetHolonID: params.initiativeID,
@@ -484,10 +484,10 @@ export class InitiativeTaskManager {
    * Validates Requirements 10.5: WHERE initiatives or tasks have dependencies THEN the SOM SHALL 
    * create DEPENDS_ON relationships for sequencing and risk analysis
    */
-  createDependency(params: CreateDependencyParams): InitiativeTaskOperationResult {
+  async createDependency(params: CreateDependencyParams): Promise<InitiativeTaskOperationResult> {
     // Get source and target holons
-    const source = this.holonRegistry.getHolon(params.sourceID);
-    const target = this.holonRegistry.getHolon(params.targetID);
+    const source = await this.holonRegistry.getHolon(params.sourceID);
+    const target = await this.holonRegistry.getHolon(params.targetID);
 
     if (!source) {
       return {
@@ -551,7 +551,7 @@ export class InitiativeTaskManager {
     }
 
     // Check for cycles before creating the relationship
-    const cycleCheck = this.checkForCycles(params.sourceID, params.targetID);
+    const cycleCheck = await this.checkForCycles(params.sourceID, params.targetID);
     if (!cycleCheck.valid) {
       return {
         success: false,
@@ -560,7 +560,7 @@ export class InitiativeTaskManager {
     }
 
     // Create the DEPENDS_ON relationship
-    const result = this.relationshipRegistry.createRelationship({
+    const result = await this.relationshipRegistry.createRelationship({
       type: RelationshipType.DEPENDS_ON,
       sourceHolonID: params.sourceID,
       targetHolonID: params.targetID,
@@ -592,8 +592,8 @@ export class InitiativeTaskManager {
   /**
    * Get all objectives that an initiative is aligned to
    */
-  getInitiativeObjectives(initiativeID: HolonID, effectiveAt?: Timestamp): HolonID[] {
-    const relationships = this.relationshipRegistry.getRelationshipsFrom(
+  async getInitiativeObjectives(initiativeID: HolonID, effectiveAt?: Timestamp): Promise<HolonID[]> {
+    const relationships = await this.relationshipRegistry.getRelationshipsFrom(
       initiativeID,
       RelationshipType.ALIGNED_TO,
       { effectiveAt, includeEnded: false }
@@ -605,8 +605,8 @@ export class InitiativeTaskManager {
   /**
    * Get all initiatives aligned to a specific objective
    */
-  getObjectiveInitiatives(objectiveID: HolonID, effectiveAt?: Timestamp): HolonID[] {
-    const relationships = this.relationshipRegistry.getRelationshipsTo(
+  async getObjectiveInitiatives(objectiveID: HolonID, effectiveAt?: Timestamp): Promise<HolonID[]> {
+    const relationships = await this.relationshipRegistry.getRelationshipsTo(
       objectiveID,
       RelationshipType.ALIGNED_TO,
       { effectiveAt, includeEnded: false }
@@ -618,8 +618,8 @@ export class InitiativeTaskManager {
   /**
    * Get all tasks that are part of an initiative
    */
-  getInitiativeTasks(initiativeID: HolonID, effectiveAt?: Timestamp): HolonID[] {
-    const relationships = this.relationshipRegistry.getRelationshipsTo(
+  async getInitiativeTasks(initiativeID: HolonID, effectiveAt?: Timestamp): Promise<HolonID[]> {
+    const relationships = await this.relationshipRegistry.getRelationshipsTo(
       initiativeID,
       RelationshipType.PART_OF,
       { effectiveAt, includeEnded: false }
@@ -631,8 +631,8 @@ export class InitiativeTaskManager {
   /**
    * Get the initiative that a task is part of
    */
-  getTaskInitiative(taskID: HolonID, effectiveAt?: Timestamp): HolonID | null {
-    const relationships = this.relationshipRegistry.getRelationshipsFrom(
+  async getTaskInitiative(taskID: HolonID, effectiveAt?: Timestamp): Promise<HolonID | null> {
+    const relationships = await this.relationshipRegistry.getRelationshipsFrom(
       taskID,
       RelationshipType.PART_OF,
       { effectiveAt, includeEnded: false }
@@ -644,8 +644,8 @@ export class InitiativeTaskManager {
   /**
    * Get all dependencies for an initiative or task
    */
-  getDependencies(holonID: HolonID, effectiveAt?: Timestamp): HolonID[] {
-    const relationships = this.relationshipRegistry.getRelationshipsFrom(
+  async getDependencies(holonID: HolonID, effectiveAt?: Timestamp): Promise<HolonID[]> {
+    const relationships = await this.relationshipRegistry.getRelationshipsFrom(
       holonID,
       RelationshipType.DEPENDS_ON,
       { effectiveAt, includeEnded: false }
@@ -657,8 +657,8 @@ export class InitiativeTaskManager {
   /**
    * Get all dependents of an initiative or task
    */
-  getDependents(holonID: HolonID, effectiveAt?: Timestamp): HolonID[] {
-    const relationships = this.relationshipRegistry.getRelationshipsTo(
+  async getDependents(holonID: HolonID, effectiveAt?: Timestamp): Promise<HolonID[]> {
+    const relationships = await this.relationshipRegistry.getRelationshipsTo(
       holonID,
       RelationshipType.DEPENDS_ON,
       { effectiveAt, includeEnded: false }
@@ -671,7 +671,7 @@ export class InitiativeTaskManager {
    * Check for cycles in dependency relationships
    * Uses depth-first search to detect cycles
    */
-  private checkForCycles(sourceID: HolonID, targetID: HolonID): ValidationResult {
+  private async checkForCycles(sourceID: HolonID, targetID: HolonID): Promise<ValidationResult> {
     // If source depends on target, and target already depends on source (directly or indirectly),
     // we have a cycle
     const visited = new Set<HolonID>();
@@ -679,7 +679,7 @@ export class InitiativeTaskManager {
 
     while (stack.length > 0) {
       const current = stack.pop()!;
-      
+
       if (current === sourceID) {
         // Found a cycle
         return {
@@ -700,7 +700,7 @@ export class InitiativeTaskManager {
       visited.add(current);
 
       // Get all holons that current depends on
-      const dependencies = this.getDependencies(current);
+      const dependencies = await this.getDependencies(current);
       stack.push(...dependencies);
     }
 

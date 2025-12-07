@@ -5,8 +5,8 @@
 import { describe, test, expect, beforeEach } from 'vitest';
 import * as fc from 'fast-check';
 import { createEventStore, EventStore } from './index';
-import { Event, EventType } from '../core/types/event';
-import { HolonID, EventID } from '../core/types/holon';
+import { Event, EventType } from '@som/shared-types';
+import { HolonID, EventID } from '@som/shared-types';
 
 // Generator for valid event types
 const genEventType = (): fc.Arbitrary<EventType> => {

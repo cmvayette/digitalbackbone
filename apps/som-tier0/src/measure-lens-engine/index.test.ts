@@ -5,19 +5,19 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import * as fc from 'fast-check';
 import { MeasureLensEngine, createMeasureLensEngine, CreateMeasureDefinitionParams, CreateLensDefinitionParams, MeasureValue } from './index';
-import { createEventStore, EventStore } from '../event-store';
-import { holonRegistry } from '../core/holon-registry';
-import { HolonType, HolonID } from '../core/types/holon';
-import { EventType } from '../core/types/event';
+import { createEventStore, IEventStore as EventStore } from '../event-store';
+import { holonRepository as holonRegistry } from '../core/holon-registry';
+import { HolonType, HolonID } from '@som/shared-types';
+import { EventType } from '@som/shared-types';
 
 describe('Measure and Lens Engine', () => {
   let engine: MeasureLensEngine;
   let eventStore: EventStore;
 
-  beforeEach(() => {
-    holonRegistry.clear();
+  beforeEach(async () => {
+    await holonRegistry.clear();
     eventStore = createEventStore();
-    engine = createMeasureLensEngine(eventStore);
+    engine = createMeasureLensEngine(eventStore, holonRegistry);
   });
 
   // Helper to create a valid non-whitespace string generator
@@ -25,7 +25,7 @@ describe('Measure and Lens Engine', () => {
     fc.string(options).filter(s => s.trim().length > 0);
 
   describe('Basic Functionality', () => {
-    it('should create a measure definition with all required fields', () => {
+    it('should create a measure definition with all required fields', async () => {
       const params: CreateMeasureDefinitionParams = {
         name: 'Readiness Score',
         description: 'Overall readiness metric',
@@ -40,7 +40,7 @@ describe('Measure and Lens Engine', () => {
         createdBy: 'event-1',
       };
 
-      const measureDef = engine.createMeasureDefinition(params);
+      const measureDef = await engine.createMeasureDefinition(params);
 
       expect(measureDef.type).toBe(HolonType.MeasureDefinition);
       expect(measureDef.properties.name).toBe(params.name);
@@ -51,7 +51,7 @@ describe('Measure and Lens Engine', () => {
       expect(measureDef.properties.version).toBe(1);
     });
 
-    it('should create a lens definition with all required fields', () => {
+    it('should create a lens definition with all required fields', async () => {
       const params: CreateLensDefinitionParams = {
         name: 'Health Status',
         description: 'Overall health indicator',
@@ -63,7 +63,7 @@ describe('Measure and Lens Engine', () => {
         createdBy: 'event-1',
       };
 
-      const lensDef = engine.createLensDefinition(params);
+      const lensDef = await engine.createLensDefinition(params);
 
       expect(lensDef.type).toBe(HolonType.LensDefinition);
       expect(lensDef.properties.name).toBe(params.name);
@@ -75,8 +75,8 @@ describe('Measure and Lens Engine', () => {
       expect(lensDef.properties.version).toBe(1);
     });
 
-    it('should emit a measure and generate MeasureEmitted event', () => {
-      const measureDef = engine.createMeasureDefinition({
+    it('should emit a measure and generate MeasureEmitted event', async () => {
+      const measureDef = await engine.createMeasureDefinition({
         name: 'Test Measure',
         description: 'Test',
         unit: 'count',
@@ -97,7 +97,7 @@ describe('Measure and Lens Engine', () => {
         timestamp: new Date(),
       };
 
-      const eventId = engine.emitMeasure(measureValue, 'actor-1', 'test-system');
+      const eventId = await engine.emitMeasure(measureValue, 'actor-1', 'test-system');
 
       expect(eventId).toBeDefined();
       const event = eventStore.getEvent(eventId);
@@ -107,9 +107,9 @@ describe('Measure and Lens Engine', () => {
       expect(event!.payload.value).toBe(42);
     });
 
-    it('should evaluate a lens and generate LensEvaluated event', () => {
+    it('should evaluate a lens and generate LensEvaluated event', async () => {
       // Create measure definition
-      const measureDef = engine.createMeasureDefinition({
+      const measureDef = await engine.createMeasureDefinition({
         name: 'Test Measure',
         description: 'Test',
         unit: 'percentage',
@@ -124,7 +124,7 @@ describe('Measure and Lens Engine', () => {
       });
 
       // Create lens definition
-      const lensDef = engine.createLensDefinition({
+      const lensDef = await engine.createLensDefinition({
         name: 'Test Lens',
         description: 'Test lens',
         inputMeasures: [measureDef.id],
@@ -138,7 +138,7 @@ describe('Measure and Lens Engine', () => {
       // Emit a measure value
       const holonId = 'holon-1';
       const timestamp = new Date();
-      engine.emitMeasure(
+      await engine.emitMeasure(
         {
           measureDefinitionID: measureDef.id,
           value: 85,
@@ -150,7 +150,7 @@ describe('Measure and Lens Engine', () => {
       );
 
       // Evaluate lens
-      const result = engine.evaluateLens(
+      const result = await engine.evaluateLens(
         lensDef.id,
         holonId,
         new Date(timestamp.getTime() + 1000),
@@ -167,7 +167,7 @@ describe('Measure and Lens Engine', () => {
       expect(event!.type).toBe(EventType.LensEvaluated);
     });
 
-    it('should version measure definitions', () => {
+    it('should version measure definitions', async () => {
       const params: CreateMeasureDefinitionParams = {
         name: 'Versioned Measure',
         description: 'Test versioning',
@@ -182,10 +182,10 @@ describe('Measure and Lens Engine', () => {
         createdBy: 'event-1',
       };
 
-      const v1 = engine.createMeasureDefinition(params);
+      const v1 = await engine.createMeasureDefinition(params);
       expect(v1.properties.version).toBe(1);
 
-      const v2 = engine.createMeasureDefinition(params);
+      const v2 = await engine.createMeasureDefinition(params);
       expect(v2.properties.version).toBe(2);
 
       const versions = engine.getMeasureVersions('Versioned Measure');
@@ -194,7 +194,7 @@ describe('Measure and Lens Engine', () => {
       expect(versions[1]).toBe(v2.id);
     });
 
-    it('should version lens definitions', () => {
+    it('should version lens definitions', async () => {
       const params: CreateLensDefinitionParams = {
         name: 'Versioned Lens',
         description: 'Test versioning',
@@ -206,10 +206,10 @@ describe('Measure and Lens Engine', () => {
         createdBy: 'event-1',
       };
 
-      const v1 = engine.createLensDefinition(params);
+      const v1 = await engine.createLensDefinition(params);
       expect(v1.properties.version).toBe(1);
 
-      const v2 = engine.createLensDefinition(params);
+      const v2 = await engine.createLensDefinition(params);
       expect(v2.properties.version).toBe(2);
 
       const versions = engine.getLensVersions('Versioned Lens');
@@ -221,9 +221,9 @@ describe('Measure and Lens Engine', () => {
 
   // **Feature: semantic-operating-model, Property 32: Measure definition completeness**
   describe('Property 32: Measure definition completeness', () => {
-    it('should ensure all measure definitions contain required fields', () => {
-      fc.assert(
-        fc.property(
+    it('should ensure all measure definitions contain required fields', async () => {
+      await fc.assert(
+        fc.asyncProperty(
           fc.record({
             name: nonWhitespaceString({ minLength: 1, maxLength: 50 }),
             description: nonWhitespaceString({ minLength: 1, maxLength: 200 }),
@@ -235,8 +235,8 @@ describe('Measure and Lens Engine', () => {
             leadingOrLagging: fc.constantFrom('leading' as const, 'lagging' as const),
             quantitativeOrQualitative: fc.constantFrom('quantitative' as const, 'qualitative' as const),
           }),
-          (params) => {
-            const measureDef = engine.createMeasureDefinition({
+          async (params) => {
+            const measureDef = await engine.createMeasureDefinition({
               ...params,
               sourceDocuments: ['doc-1'],
               createdBy: 'event-1',
@@ -263,9 +263,9 @@ describe('Measure and Lens Engine', () => {
 
   // **Feature: semantic-operating-model, Property 33: Lens definition completeness**
   describe('Property 33: Lens definition completeness', () => {
-    it('should ensure all lens definitions contain required fields', () => {
-      fc.assert(
-        fc.property(
+    it('should ensure all lens definitions contain required fields', async () => {
+      await fc.assert(
+        fc.asyncProperty(
           fc.record({
             name: nonWhitespaceString({ minLength: 1, maxLength: 50 }),
             description: nonWhitespaceString({ minLength: 1, maxLength: 200 }),
@@ -274,8 +274,8 @@ describe('Measure and Lens Engine', () => {
             thresholds: fc.dictionary(fc.string(), fc.oneof(fc.integer(), fc.double())),
             outputs: fc.array(nonWhitespaceString({ minLength: 1, maxLength: 20 }), { minLength: 1, maxLength: 5 }),
           }),
-          (params) => {
-            const lensDef = engine.createLensDefinition({
+          async (params) => {
+            const lensDef = await engine.createLensDefinition({
               ...params,
               sourceDocuments: ['doc-1'],
               createdBy: 'event-1',
@@ -299,17 +299,17 @@ describe('Measure and Lens Engine', () => {
 
   // **Feature: semantic-operating-model, Property 34: Measure emission event generation**
   describe('Property 34: Measure emission event generation', () => {
-    it('should generate MeasureEmitted event for any measure emission', () => {
-      fc.assert(
-        fc.property(
+    it('should generate MeasureEmitted event for any measure emission', async () => {
+      await fc.assert(
+        fc.asyncProperty(
           fc.record({
             measureName: nonWhitespaceString({ minLength: 1, maxLength: 50 }),
             value: fc.oneof(fc.integer({ min: 0, max: 100 }), fc.double({ min: 0, max: 100 })),
             holonID: nonWhitespaceString({ minLength: 1, maxLength: 50 }),
           }),
-          (params) => {
+          async (params) => {
             // Create measure definition
-            const measureDef = engine.createMeasureDefinition({
+            const measureDef = await engine.createMeasureDefinition({
               name: params.measureName,
               description: 'Test measure',
               unit: 'units',
@@ -324,7 +324,7 @@ describe('Measure and Lens Engine', () => {
             });
 
             // Emit measure
-            const eventId = engine.emitMeasure(
+            const eventId = await engine.emitMeasure(
               {
                 measureDefinitionID: measureDef.id,
                 value: params.value,
@@ -352,17 +352,17 @@ describe('Measure and Lens Engine', () => {
 
   // **Feature: semantic-operating-model, Property 35: Lens evaluation correctness**
   describe('Property 35: Lens evaluation correctness', () => {
-    it('should compute lens output correctly from input measures', () => {
-      fc.assert(
-        fc.property(
+    it('should compute lens output correctly from input measures', async () => {
+      await fc.assert(
+        fc.asyncProperty(
           fc.record({
             measureValues: fc.array(fc.integer({ min: 0, max: 100 }), { minLength: 1, maxLength: 5 }),
             greenThreshold: fc.integer({ min: 70, max: 90 }),
             amberThreshold: fc.integer({ min: 50, max: 69 }),
           }),
-          (params) => {
+          async (params) => {
             // Create measure definitions
-            const measureDefs = params.measureValues.map((_, i) =>
+            const measureDefs = await Promise.all(params.measureValues.map((_, i) =>
               engine.createMeasureDefinition({
                 name: `Measure ${i}`,
                 description: 'Test',
@@ -376,10 +376,10 @@ describe('Measure and Lens Engine', () => {
                 sourceDocuments: ['doc-1'],
                 createdBy: 'event-1',
               })
-            );
+            ));
 
             // Create lens
-            const lensDef = engine.createLensDefinition({
+            const lensDef = await engine.createLensDefinition({
               name: 'Test Lens',
               description: 'Test',
               inputMeasures: measureDefs.map(m => m.id),
@@ -393,8 +393,8 @@ describe('Measure and Lens Engine', () => {
             // Emit measures
             const holonId = 'test-holon';
             const timestamp = new Date();
-            params.measureValues.forEach((value, i) => {
-              engine.emitMeasure(
+            params.measureValues.forEach(async (value, i) => {
+              await engine.emitMeasure(
                 {
                   measureDefinitionID: measureDefs[i].id,
                   value,
@@ -407,7 +407,7 @@ describe('Measure and Lens Engine', () => {
             });
 
             // Evaluate lens
-            const result = engine.evaluateLens(
+            const result = await engine.evaluateLens(
               lensDef.id,
               holonId,
               new Date(timestamp.getTime() + 1000),
@@ -437,22 +437,22 @@ describe('Measure and Lens Engine', () => {
 
   // **Feature: semantic-operating-model, Property 36: Definition versioning**
   describe('Property 36: Definition versioning', () => {
-    it('should create new versions while preserving old versions for measures', () => {
-      fc.assert(
-        fc.property(
+    it('should create new versions while preserving old versions for measures', async () => {
+      await fc.assert(
+        fc.asyncProperty(
           fc.record({
             name: nonWhitespaceString({ minLength: 1, maxLength: 50 }),
             versionCount: fc.integer({ min: 1, max: 5 }),
           }),
-          (params) => {
+          async (params) => {
             // Create a fresh engine for each test run to avoid state pollution
             const testEventStore = createEventStore();
-            const testEngine = createMeasureLensEngine(testEventStore);
+            const testEngine = createMeasureLensEngine(testEventStore, holonRegistry);
             const versions: HolonID[] = [];
 
             // Create multiple versions
             for (let i = 0; i < params.versionCount; i++) {
-              const measureDef = testEngine.createMeasureDefinition({
+              const measureDef = await testEngine.createMeasureDefinition({
                 name: params.name,
                 description: `Version ${i + 1}`,
                 unit: 'units',
@@ -476,7 +476,7 @@ describe('Measure and Lens Engine', () => {
 
             // Verify each version is still accessible
             for (let i = 0; i < versions.length; i++) {
-              const holon = holonRegistry.getHolon(versions[i]);
+              const holon = await holonRegistry.getHolon(versions[i]);
               if (!holon || holon.properties.version !== i + 1) {
                 return false;
               }
@@ -489,22 +489,22 @@ describe('Measure and Lens Engine', () => {
       );
     });
 
-    it('should create new versions while preserving old versions for lenses', () => {
-      fc.assert(
-        fc.property(
+    it('should create new versions while preserving old versions for lenses', async () => {
+      await fc.assert(
+        fc.asyncProperty(
           fc.record({
             name: nonWhitespaceString({ minLength: 1, maxLength: 50 }),
             versionCount: fc.integer({ min: 1, max: 5 }),
           }),
-          (params) => {
+          async (params) => {
             // Create a fresh engine for each test run to avoid state pollution
             const testEventStore = createEventStore();
-            const testEngine = createMeasureLensEngine(testEventStore);
+            const testEngine = createMeasureLensEngine(testEventStore, holonRegistry);
             const versions: HolonID[] = [];
 
             // Create multiple versions
             for (let i = 0; i < params.versionCount; i++) {
-              const lensDef = testEngine.createLensDefinition({
+              const lensDef = await testEngine.createLensDefinition({
                 name: params.name,
                 description: `Version ${i + 1}`,
                 inputMeasures: ['measure-1'],
@@ -525,7 +525,7 @@ describe('Measure and Lens Engine', () => {
 
             // Verify each version is still accessible
             for (let i = 0; i < versions.length; i++) {
-              const holon = holonRegistry.getHolon(versions[i]);
+              const holon = await holonRegistry.getHolon(versions[i]);
               if (!holon || holon.properties.version !== i + 1) {
                 return false;
               }

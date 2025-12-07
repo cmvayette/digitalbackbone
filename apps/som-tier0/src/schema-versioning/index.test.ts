@@ -10,8 +10,8 @@ import {
   RelationshipTypeDefinition,
   SchemaChangeProposal,
 } from './index';
-import { HolonType, DocumentID } from '../core/types/holon';
-import { RelationshipType } from '../core/types/relationship';
+import { HolonType, DocumentID } from '@som/shared-types';
+import { RelationshipType } from '@som/shared-types';
 
 describe('Schema Versioning Engine - Property-Based Tests', () => {
   let engine: SchemaVersioningEngine;

@@ -3,7 +3,7 @@
  * Tier-0 authoritative conceptual representation for NSW
  */
 
-export * from './core/types';
+export * from '@som/shared-types';
 export * from './core/holon-registry';
 export * from './event-store';
 export * from './document-registry';

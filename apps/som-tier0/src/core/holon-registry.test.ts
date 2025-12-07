@@ -7,8 +7,8 @@
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import * as fc from 'fast-check';
-import { HolonRegistry } from './holon-registry';
-import { HolonType, Holon } from './types/holon';
+import { InMemoryHolonRepository as HolonRegistry } from './holon-registry';
+import { Holon, HolonType, HolonID } from '@som/shared-types';
 
 describe('Holon Registry - Property-Based Tests', () => {
   let registry: HolonRegistry;
@@ -25,9 +25,9 @@ describe('Holon Registry - Property-Based Tests', () => {
    * and must never change regardless of system migrations or state changes.
    */
   describe('Property 1: Holon ID uniqueness and persistence', () => {
-    it('should assign unique IDs to all created holons', () => {
-      fc.assert(
-        fc.property(
+    it('should assign unique IDs to all created holons', async () => {
+      await fc.assert(
+        fc.asyncProperty(
           fc.array(
             fc.record({
               type: fc.constantFrom(...Object.values(HolonType)),
@@ -37,18 +37,18 @@ describe('Holon Registry - Property-Based Tests', () => {
             }),
             { minLength: 2, maxLength: 100 }
           ),
-          (holonParams) => {
+          async (holonParams) => {
             const registry = new HolonRegistry();
-            const createdHolons = holonParams.map(params => 
+            const createdHolons = await Promise.all(holonParams.map(params =>
               registry.createHolon(params)
-            );
+            ));
 
             // Extract all IDs
             const ids = createdHolons.map(h => h.id);
-            
+
             // Check uniqueness: all IDs should be distinct
             const uniqueIds = new Set(ids);
-            
+
             return ids.length === uniqueIds.size;
           }
         ),
@@ -56,25 +56,25 @@ describe('Holon Registry - Property-Based Tests', () => {
       );
     });
 
-    it('should persist holon IDs across state changes (inactivation)', () => {
-      fc.assert(
-        fc.property(
+    it('should persist holon IDs across state changes (inactivation)', async () => {
+      await fc.assert(
+        fc.asyncProperty(
           fc.record({
             type: fc.constantFrom(...Object.values(HolonType)),
             properties: fc.dictionary(fc.string(), fc.anything()),
             createdBy: fc.uuid(),
             sourceDocuments: fc.array(fc.uuid(), { maxLength: 5 })
           }),
-          (holonParams) => {
+          async (holonParams) => {
             const registry = new HolonRegistry();
-            const holon = registry.createHolon(holonParams);
+            const holon = await registry.createHolon(holonParams);
             const originalId = holon.id;
 
             // Mark as inactive
-            registry.markHolonInactive(originalId);
+            await registry.markHolonInactive(originalId);
 
             // Retrieve the holon
-            const retrievedHolon = registry.getHolon(originalId);
+            const retrievedHolon = await registry.getHolon(originalId);
 
             // ID should remain the same
             return retrievedHolon !== undefined && retrievedHolon.id === originalId;
@@ -84,9 +84,9 @@ describe('Holon Registry - Property-Based Tests', () => {
       );
     });
 
-    it('should never reuse holon IDs', () => {
-      fc.assert(
-        fc.property(
+    it('should never reuse holon IDs', async () => {
+      await fc.assert(
+        fc.asyncProperty(
           fc.array(
             fc.record({
               type: fc.constantFrom(...Object.values(HolonType)),
@@ -96,19 +96,19 @@ describe('Holon Registry - Property-Based Tests', () => {
             }),
             { minLength: 10, maxLength: 50 }
           ),
-          (holonParams) => {
+          async (holonParams) => {
             const registry = new HolonRegistry();
             const allIds = new Set<string>();
 
             // Create holons in multiple batches
             for (const params of holonParams) {
-              const holon = registry.createHolon(params);
-              
+              const holon = await registry.createHolon(params);
+
               // Check that this ID has never been seen before
               if (allIds.has(holon.id)) {
                 return false;
               }
-              
+
               allIds.add(holon.id);
             }
 
@@ -128,21 +128,21 @@ describe('Holon Registry - Property-Based Tests', () => {
    * relationships, lifecycle state, and document lineage.
    */
   describe('Property 3: Holon query completeness', () => {
-    it('should return all required fields when querying a holon by ID', () => {
-      fc.assert(
-        fc.property(
+    it('should return all required fields when querying a holon by ID', async () => {
+      await fc.assert(
+        fc.asyncProperty(
           fc.record({
             type: fc.constantFrom(...Object.values(HolonType)),
             properties: fc.dictionary(fc.string(), fc.anything()),
             createdBy: fc.uuid(),
             sourceDocuments: fc.array(fc.uuid(), { minLength: 1, maxLength: 5 })
           }),
-          (holonParams) => {
+          async (holonParams) => {
             const registry = new HolonRegistry();
-            const createdHolon = registry.createHolon(holonParams);
+            const createdHolon = await registry.createHolon(holonParams);
 
             // Query the holon
-            const queriedHolon = registry.getHolon(createdHolon.id);
+            const queriedHolon = await registry.getHolon(createdHolon.id);
 
             if (!queriedHolon) {
               return false;
@@ -157,17 +157,17 @@ describe('Holon Registry - Property-Based Tests', () => {
             const hasStatus = queriedHolon.status === 'active' || queriedHolon.status === 'inactive';
             const hasSourceDocuments = Array.isArray(queriedHolon.sourceDocuments);
 
-            return hasId && hasType && hasProperties && hasCreatedAt && 
-                   hasCreatedBy && hasStatus && hasSourceDocuments;
+            return hasId && hasType && hasProperties && hasCreatedAt &&
+              hasCreatedBy && hasStatus && hasSourceDocuments;
           }
         ),
         { numRuns: 100 }
       );
     });
 
-    it('should return complete holons when querying by type', () => {
-      fc.assert(
-        fc.property(
+    it('should return complete holons when querying by type', async () => {
+      await fc.assert(
+        fc.asyncProperty(
           fc.array(
             fc.record({
               type: fc.constantFrom(...Object.values(HolonType)),
@@ -177,19 +177,19 @@ describe('Holon Registry - Property-Based Tests', () => {
             }),
             { minLength: 5, maxLength: 20 }
           ),
-          (holonParams) => {
+          async (holonParams) => {
             const registry = new HolonRegistry();
-            
+
             // Create holons
-            holonParams.forEach(params => registry.createHolon(params));
+            await Promise.all(holonParams.map(params => registry.createHolon(params)));
 
             // Query by each type
             for (const type of Object.values(HolonType)) {
-              const holons = registry.getHolonsByType(type);
-              
+              const holons = await registry.getHolonsByType(type);
+
               // Check that all returned holons have complete fields
               for (const holon of holons) {
-                const hasAllFields = 
+                const hasAllFields =
                   holon.id !== undefined &&
                   holon.type === type &&
                   holon.properties !== undefined &&
@@ -197,7 +197,7 @@ describe('Holon Registry - Property-Based Tests', () => {
                   holon.createdBy !== undefined &&
                   (holon.status === 'active' || holon.status === 'inactive') &&
                   Array.isArray(holon.sourceDocuments);
-                
+
                 if (!hasAllFields) {
                   return false;
                 }
@@ -211,21 +211,21 @@ describe('Holon Registry - Property-Based Tests', () => {
       );
     });
 
-    it('should preserve all holon data through query operations', () => {
-      fc.assert(
-        fc.property(
+    it('should preserve all holon data through query operations', async () => {
+      await fc.assert(
+        fc.asyncProperty(
           fc.record({
             type: fc.constantFrom(...Object.values(HolonType)),
             properties: fc.dictionary(fc.string(), fc.string(), { minKeys: 1, maxKeys: 10 }),
             createdBy: fc.uuid(),
             sourceDocuments: fc.array(fc.uuid(), { minLength: 1, maxLength: 5 })
           }),
-          (holonParams) => {
+          async (holonParams) => {
             const registry = new HolonRegistry();
-            const created = registry.createHolon(holonParams);
+            const created = await registry.createHolon(holonParams);
 
             // Query the holon
-            const queried = registry.getHolon(created.id);
+            const queried = await registry.getHolon(created.id);
 
             if (!queried) {
               return false;
@@ -236,15 +236,15 @@ describe('Holon Registry - Property-Based Tests', () => {
             const typeMatches = queried.type === created.type;
             const createdByMatches = queried.createdBy === created.createdBy;
             const statusMatches = queried.status === created.status;
-            
+
             // Check properties match
             const propertiesMatch = JSON.stringify(queried.properties) === JSON.stringify(created.properties);
-            
+
             // Check source documents match
             const docsMatch = JSON.stringify(queried.sourceDocuments) === JSON.stringify(created.sourceDocuments);
 
-            return idMatches && typeMatches && createdByMatches && 
-                   statusMatches && propertiesMatch && docsMatch;
+            return idMatches && typeMatches && createdByMatches &&
+              statusMatches && propertiesMatch && docsMatch;
           }
         ),
         { numRuns: 100 }
@@ -260,9 +260,9 @@ describe('Holon Registry - Property-Based Tests', () => {
    * queryable and unchanged.
    */
   describe('Property 4: Inactive holon preservation', () => {
-    it('should preserve inactive holons and keep them queryable', () => {
-      fc.assert(
-        fc.property(
+    it('should preserve inactive holons and keep them queryable', async () => {
+      await fc.assert(
+        fc.asyncProperty(
           fc.array(
             fc.record({
               type: fc.constantFrom(...Object.values(HolonType)),
@@ -273,26 +273,26 @@ describe('Holon Registry - Property-Based Tests', () => {
             { minLength: 5, maxLength: 20 }
           ),
           fc.array(fc.integer({ min: 0, max: 19 }), { minLength: 1, maxLength: 10 }),
-          (holonParams, indicesToInactivate) => {
+          async (holonParams, indicesToInactivate) => {
             const registry = new HolonRegistry();
-            
+
             // Create holons
-            const holons = holonParams.map(params => registry.createHolon(params));
+            const holons = await Promise.all(holonParams.map(params => registry.createHolon(params)));
 
             // Mark some as inactive
             const inactivatedIds = new Set<string>();
             for (const idx of indicesToInactivate) {
               if (idx < holons.length) {
                 const holon = holons[idx];
-                registry.markHolonInactive(holon.id);
+                await registry.markHolonInactive(holon.id);
                 inactivatedIds.add(holon.id);
               }
             }
 
             // Verify all holons (active and inactive) are still queryable
             for (const holon of holons) {
-              const queried = registry.getHolon(holon.id);
-              
+              const queried = await registry.getHolon(holon.id);
+
               if (!queried) {
                 return false; // Holon was deleted instead of inactivated
               }
@@ -312,18 +312,18 @@ describe('Holon Registry - Property-Based Tests', () => {
       );
     });
 
-    it('should preserve all holon data when marking as inactive', () => {
-      fc.assert(
-        fc.property(
+    it('should preserve all holon data when marking as inactive', async () => {
+      await fc.assert(
+        fc.asyncProperty(
           fc.record({
             type: fc.constantFrom(...Object.values(HolonType)),
             properties: fc.dictionary(fc.string(), fc.string(), { minKeys: 1, maxKeys: 10 }),
             createdBy: fc.uuid(),
             sourceDocuments: fc.array(fc.uuid(), { minLength: 1, maxLength: 5 })
           }),
-          (holonParams) => {
+          async (holonParams) => {
             const registry = new HolonRegistry();
-            const holon = registry.createHolon(holonParams);
+            const holon = await registry.createHolon(holonParams);
 
             // Capture original data
             const originalId = holon.id;
@@ -334,10 +334,10 @@ describe('Holon Registry - Property-Based Tests', () => {
             const originalSourceDocs = JSON.stringify(holon.sourceDocuments);
 
             // Mark as inactive
-            registry.markHolonInactive(originalId);
+            await registry.markHolonInactive(originalId);
 
             // Query the inactive holon
-            const inactiveHolon = registry.getHolon(originalId);
+            const inactiveHolon = await registry.getHolon(originalId);
 
             if (!inactiveHolon) {
               return false;
@@ -359,9 +359,9 @@ describe('Holon Registry - Property-Based Tests', () => {
       );
     });
 
-    it('should never delete holons when marking them inactive', () => {
-      fc.assert(
-        fc.property(
+    it('should never delete holons when marking them inactive', async () => {
+      await fc.assert(
+        fc.asyncProperty(
           fc.array(
             fc.record({
               type: fc.constantFrom(...Object.values(HolonType)),
@@ -371,19 +371,21 @@ describe('Holon Registry - Property-Based Tests', () => {
             }),
             { minLength: 10, maxLength: 30 }
           ),
-          (holonParams) => {
+          async (holonParams) => {
             const registry = new HolonRegistry();
-            
+
             // Create holons
-            const holons = holonParams.map(params => registry.createHolon(params));
+            const holons = await Promise.all(holonParams.map(params => registry.createHolon(params)));
             const totalCount = holons.length;
 
             // Mark all as inactive
-            holons.forEach(holon => registry.markHolonInactive(holon.id));
+            for (const holon of holons) {
+              await registry.markHolonInactive(holon.id);
+            }
 
             // Count all holons (should still be the same)
-            const allHolons = registry.getAllHolons();
-            
+            const allHolons = await registry.getAllHolons();
+
             return allHolons.length === totalCount;
           }
         ),
@@ -391,9 +393,9 @@ describe('Holon Registry - Property-Based Tests', () => {
       );
     });
 
-    it('should allow querying inactive holons by type', () => {
-      fc.assert(
-        fc.property(
+    it('should allow querying inactive holons by type', async () => {
+      await fc.assert(
+        fc.asyncProperty(
           fc.constantFrom(...Object.values(HolonType)),
           fc.array(
             fc.record({
@@ -403,25 +405,27 @@ describe('Holon Registry - Property-Based Tests', () => {
             }),
             { minLength: 5, maxLength: 15 }
           ),
-          (holonType, holonParams) => {
+          async (holonType, holonParams) => {
             const registry = new HolonRegistry();
-            
+
             // Create holons of the same type
-            const holons = holonParams.map(params => 
+            const holons = await Promise.all(holonParams.map(params =>
               registry.createHolon({ ...params, type: holonType })
-            );
+            ));
 
             // Mark all as inactive
-            holons.forEach(holon => registry.markHolonInactive(holon.id));
+            for (const holon of holons) {
+              await registry.markHolonInactive(holon.id);
+            }
 
             // Query by type without filters (should include inactive)
-            const allOfType = registry.getHolonsByType(holonType);
-            
-            // Query by type with inactive filter
-            const inactiveOfType = registry.getHolonsByType(holonType, { status: 'inactive' });
+            const allOfType = await registry.getHolonsByType(holonType);
 
-            return allOfType.length === holons.length && 
-                   inactiveOfType.length === holons.length;
+            // Query by type with inactive filter
+            const inactiveOfType = await registry.getHolonsByType(holonType, { status: 'inactive' });
+
+            return allOfType.length === holons.length &&
+              inactiveOfType.length === holons.length;
           }
         ),
         { numRuns: 100 }

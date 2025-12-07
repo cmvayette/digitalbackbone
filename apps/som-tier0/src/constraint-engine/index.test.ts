@@ -9,9 +9,9 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import * as fc from 'fast-check';
 import { ConstraintEngine, RegisterConstraintParams, ValidationResult } from './index';
 import { DocumentRegistry } from '../document-registry';
-import { HolonType, ConstraintType, DocumentType, Holon } from '../core/types/holon';
-import { Relationship, RelationshipType } from '../core/types/relationship';
-import { Event, EventType } from '../core/types/event';
+import { HolonType, ConstraintType, DocumentType, Holon } from '@som/shared-types';
+import { Relationship, RelationshipType } from '@som/shared-types';
+import { Event, EventType } from '@som/shared-types';
 
 // Helper generators (defined outside describe block for reusability)
 const genDocument = () => fc.record({

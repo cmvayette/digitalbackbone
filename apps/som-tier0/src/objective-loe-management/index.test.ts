@@ -5,12 +5,12 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import * as fc from 'fast-check';
 import { ObjectiveLOEManager, CreateObjectiveParams, CreateLOEParams } from './index';
-import { HolonRegistry } from '../core/holon-registry';
+import { InMemoryHolonRepository as HolonRegistry } from '../core/holon-registry';
 import { RelationshipRegistry } from '../relationship-registry';
-import { EventStore, InMemoryEventStore } from '../event-store';
+import { IEventStore as EventStore, InMemoryEventStore } from '../event-store';
 import { ConstraintEngine } from '../constraint-engine';
 import { DocumentRegistry } from '../document-registry';
-import { HolonType, HolonID } from '../core/types/holon';
+import { HolonType, HolonID } from '@som/shared-types';
 
 describe('ObjectiveLOEManager', () => {
   let manager: ObjectiveLOEManager;
@@ -22,7 +22,7 @@ describe('ObjectiveLOEManager', () => {
   let systemActorID: HolonID;
   let testDocID: string;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     holonRegistry = new HolonRegistry();
     documentRegistry = new DocumentRegistry();
     eventStore = new InMemoryEventStore();
@@ -41,7 +41,7 @@ describe('ObjectiveLOEManager', () => {
       causalLinks: {},
     });
 
-    const systemActor = holonRegistry.createHolon({
+    const systemActor = await holonRegistry.createHolon({
       type: HolonType.System,
       properties: {
         systemName: 'Test System',
@@ -58,7 +58,7 @@ describe('ObjectiveLOEManager', () => {
   });
 
   describe('LOE Management', () => {
-    it('should create an LOE with required fields', () => {
+    it('should create an LOE with required fields', async () => {
       const params: CreateLOEParams = {
         name: 'Strategic Initiative Alpha',
         description: 'Focus on strategic capabilities',
@@ -69,13 +69,13 @@ describe('ObjectiveLOEManager', () => {
         sourceSystem: 'test',
       };
 
-      const result = manager.createLOE(params);
+      const result = await manager.createLOE(params);
 
       expect(result.success).toBe(true);
       expect(result.holonID).toBeDefined();
       expect(result.validation.valid).toBe(true);
 
-      const loe = holonRegistry.getHolon(result.holonID!);
+      const loe = await holonRegistry.getHolon(result.holonID!);
       expect(loe).toBeDefined();
       expect(loe?.type).toBe(HolonType.LOE);
       expect(loe?.properties.name).toBe(params.name);
@@ -84,9 +84,9 @@ describe('ObjectiveLOEManager', () => {
   });
 
   describe('Objective Management', () => {
-    it('should reject objective creation without a measure', () => {
+    it('should reject objective creation without a measure', async () => {
       // Create LOE and owner first
-      const loeResult = manager.createLOE({
+      const loeResult = await manager.createLOE({
         name: 'Test LOE',
         description: 'Test',
         sponsoringEchelon: 'NSWC',
@@ -109,7 +109,7 @@ describe('ObjectiveLOEManager', () => {
         sourceSystem: 'test',
       };
 
-      const result = manager.createObjective(params);
+      const result = await manager.createObjective(params);
 
       expect(result.success).toBe(false);
       expect(result.validation.valid).toBe(false);
@@ -117,9 +117,9 @@ describe('ObjectiveLOEManager', () => {
       expect(result.validation.errors![0].message).toContain('measure');
     });
 
-    it('should reject objective creation without an owner', () => {
+    it('should reject objective creation without an owner', async () => {
       // Create LOE and measure first
-      const loeResult = manager.createLOE({
+      const loeResult = await manager.createLOE({
         name: 'Test LOE',
         description: 'Test',
         sponsoringEchelon: 'NSWC',
@@ -139,7 +139,7 @@ describe('ObjectiveLOEManager', () => {
         causalLinks: {},
       });
 
-      const measure = holonRegistry.createHolon({
+      const measure = await holonRegistry.createHolon({
         type: HolonType.MeasureDefinition,
         properties: {
           name: 'Test Measure',
@@ -170,7 +170,7 @@ describe('ObjectiveLOEManager', () => {
         sourceSystem: 'test',
       };
 
-      const result = manager.createObjective(params);
+      const result = await manager.createObjective(params);
 
       expect(result.success).toBe(false);
       expect(result.validation.valid).toBe(false);
@@ -178,7 +178,7 @@ describe('ObjectiveLOEManager', () => {
       expect(result.validation.errors![0].message).toContain('owner');
     });
 
-    it('should reject objective creation without an LOE link', () => {
+    it('should reject objective creation without an LOE link', async () => {
       // Create measure first
       const measureEvent = eventStore.submitEvent({
         type: 'MeasureEmitted' as any,
@@ -190,7 +190,7 @@ describe('ObjectiveLOEManager', () => {
         causalLinks: {},
       });
 
-      const measure = holonRegistry.createHolon({
+      const measure = await holonRegistry.createHolon({
         type: HolonType.MeasureDefinition,
         properties: {
           name: 'Test Measure',
@@ -221,7 +221,7 @@ describe('ObjectiveLOEManager', () => {
         sourceSystem: 'test',
       };
 
-      const result = manager.createObjective(params);
+      const result = await manager.createObjective(params);
 
       expect(result.success).toBe(false);
       expect(result.validation.valid).toBe(false);
@@ -229,9 +229,9 @@ describe('ObjectiveLOEManager', () => {
       expect(result.validation.errors![0].message).toContain('LOE');
     });
 
-    it('should create an objective with all required fields', () => {
+    it('should create an objective with all required fields', async () => {
       // Create LOE
-      const loeResult = manager.createLOE({
+      const loeResult = await manager.createLOE({
         name: 'Test LOE',
         description: 'Test',
         sponsoringEchelon: 'NSWC',
@@ -252,7 +252,7 @@ describe('ObjectiveLOEManager', () => {
         causalLinks: {},
       });
 
-      const measure = holonRegistry.createHolon({
+      const measure = await holonRegistry.createHolon({
         type: HolonType.MeasureDefinition,
         properties: {
           name: 'Test Measure',
@@ -283,33 +283,33 @@ describe('ObjectiveLOEManager', () => {
         sourceSystem: 'test',
       };
 
-      const result = manager.createObjective(params);
+      const result = await manager.createObjective(params);
 
       expect(result.success).toBe(true);
       expect(result.holonID).toBeDefined();
       expect(result.validation.valid).toBe(true);
 
-      const objective = holonRegistry.getHolon(result.holonID!);
+      const objective = await holonRegistry.getHolon(result.holonID!);
       expect(objective).toBeDefined();
       expect(objective?.type).toBe(HolonType.Objective);
       expect(objective?.properties.description).toBe(params.description);
 
       // Verify relationships were created
-      const loeRel = manager.getObjectiveLOE(result.holonID!);
+      const loeRel = await manager.getObjectiveLOE(result.holonID!);
       expect(loeRel).toBe(loeResult.holonID);
 
-      const owner = manager.getObjectiveOwner(result.holonID!);
+      const owner = await manager.getObjectiveOwner(result.holonID!);
       expect(owner).toBe(systemActorID);
 
-      const measures = manager.getObjectiveMeasures(result.holonID!);
+      const measures = await manager.getObjectiveMeasures(result.holonID!);
       expect(measures).toContain(measure.id);
     });
   });
 
   describe('Objective Decomposition', () => {
-    it('should create dependency relationships between objectives', () => {
+    it('should create dependency relationships between objectives', async () => {
       // Create LOE
-      const loeResult = manager.createLOE({
+      const loeResult = await manager.createLOE({
         name: 'Test LOE',
         description: 'Test',
         sponsoringEchelon: 'NSWC',
@@ -330,7 +330,7 @@ describe('ObjectiveLOEManager', () => {
         causalLinks: {},
       });
 
-      const measure = holonRegistry.createHolon({
+      const measure = await holonRegistry.createHolon({
         type: HolonType.MeasureDefinition,
         properties: {
           name: 'Test Measure',
@@ -349,7 +349,7 @@ describe('ObjectiveLOEManager', () => {
       });
 
       // Create two objectives
-      const obj1Result = manager.createObjective({
+      const obj1Result = await manager.createObjective({
         description: 'Parent Objective',
         level: 'strategic',
         timeHorizon: new Date('2024-12-31'),
@@ -362,7 +362,7 @@ describe('ObjectiveLOEManager', () => {
         sourceSystem: 'test',
       });
 
-      const obj2Result = manager.createObjective({
+      const obj2Result = await manager.createObjective({
         description: 'Child Objective',
         level: 'operational',
         timeHorizon: new Date('2024-12-31'),
@@ -376,7 +376,7 @@ describe('ObjectiveLOEManager', () => {
       });
 
       // Create dependency: obj2 depends on obj1
-      const depResult = manager.createObjectiveDependency({
+      const depResult = await manager.createObjectiveDependency({
         sourceObjectiveID: obj2Result.holonID!,
         targetObjectiveID: obj1Result.holonID!,
         dependencyType: 'prerequisite',
@@ -390,16 +390,16 @@ describe('ObjectiveLOEManager', () => {
       expect(depResult.relationshipID).toBeDefined();
 
       // Verify dependency
-      const dependencies = manager.getObjectiveDependencies(obj2Result.holonID!);
+      const dependencies = await manager.getObjectiveDependencies(obj2Result.holonID!);
       expect(dependencies).toContain(obj1Result.holonID);
 
-      const dependents = manager.getObjectiveDependents(obj1Result.holonID!);
+      const dependents = await manager.getObjectiveDependents(obj1Result.holonID!);
       expect(dependents).toContain(obj2Result.holonID);
     });
 
-    it('should reject dependency that would create a cycle', () => {
+    it('should reject dependency that would create a cycle', async () => {
       // Create LOE
-      const loeResult = manager.createLOE({
+      const loeResult = await manager.createLOE({
         name: 'Test LOE',
         description: 'Test',
         sponsoringEchelon: 'NSWC',
@@ -420,7 +420,7 @@ describe('ObjectiveLOEManager', () => {
         causalLinks: {},
       });
 
-      const measure = holonRegistry.createHolon({
+      const measure = await holonRegistry.createHolon({
         type: HolonType.MeasureDefinition,
         properties: {
           name: 'Test Measure',
@@ -439,7 +439,7 @@ describe('ObjectiveLOEManager', () => {
       });
 
       // Create two objectives
-      const obj1Result = manager.createObjective({
+      const obj1Result = await manager.createObjective({
         description: 'Objective 1',
         level: 'strategic',
         timeHorizon: new Date('2024-12-31'),
@@ -452,7 +452,7 @@ describe('ObjectiveLOEManager', () => {
         sourceSystem: 'test',
       });
 
-      const obj2Result = manager.createObjective({
+      const obj2Result = await manager.createObjective({
         description: 'Objective 2',
         level: 'operational',
         timeHorizon: new Date('2024-12-31'),
@@ -466,7 +466,7 @@ describe('ObjectiveLOEManager', () => {
       });
 
       // Create dependency: obj2 depends on obj1
-      manager.createObjectiveDependency({
+      await manager.createObjectiveDependency({
         sourceObjectiveID: obj2Result.holonID!,
         targetObjectiveID: obj1Result.holonID!,
         dependencyType: 'prerequisite',
@@ -477,7 +477,7 @@ describe('ObjectiveLOEManager', () => {
       });
 
       // Try to create reverse dependency: obj1 depends on obj2 (would create cycle)
-      const cycleResult = manager.createObjectiveDependency({
+      const cycleResult = await manager.createObjectiveDependency({
         sourceObjectiveID: obj1Result.holonID!,
         targetObjectiveID: obj2Result.holonID!,
         dependencyType: 'prerequisite',
@@ -502,9 +502,9 @@ describe('ObjectiveLOEManager', () => {
      * For any Objective holon created without at least one measure, one owner, and one LOE link,
      * the SOM must reject the creation.
      */
-    it('Property 28: Objective validation - rejects objectives without required fields', () => {
-      fc.assert(
-        fc.property(
+    it('Property 28: Objective validation - rejects objectives without required fields', async () => {
+      await fc.assert(
+        fc.asyncProperty(
           fc.record({
             description: fc.string({ minLength: 1, maxLength: 200 }),
             level: fc.constantFrom('strategic', 'operational', 'tactical'),
@@ -512,9 +512,9 @@ describe('ObjectiveLOEManager', () => {
             hasOwner: fc.boolean(),
             hasLOE: fc.boolean(),
           }),
-          (testCase) => {
+          async (testCase) => {
             // Create LOE
-            const loeResult = manager.createLOE({
+            const loeResult = await manager.createLOE({
               name: 'Test LOE',
               description: 'Test',
               sponsoringEchelon: 'NSWC',
@@ -535,7 +535,7 @@ describe('ObjectiveLOEManager', () => {
               causalLinks: {},
             });
 
-            const measure = holonRegistry.createHolon({
+            const measure = await holonRegistry.createHolon({
               type: HolonType.MeasureDefinition,
               properties: {
                 name: 'Test Measure',
@@ -566,7 +566,7 @@ describe('ObjectiveLOEManager', () => {
               sourceSystem: 'test',
             };
 
-            const result = manager.createObjective(params);
+            const result = await manager.createObjective(params);
 
             // If all required fields are present, creation should succeed
             // If any required field is missing, creation should fail

@@ -4,10 +4,10 @@
  * batch event validation with atomicity, and compensating event support
  */
 
-import { Event, EventType } from '../core/types/event';
-import { EventID, HolonID, Timestamp, DocumentID } from '../core/types/holon';
+import { Event, EventType } from '@som/shared-types';
+import { EventID, HolonID, Timestamp, DocumentID } from '@som/shared-types';
 import { ConstraintEngine, ValidationResult, ValidationError, ValidationContext } from '../constraint-engine';
-import { EventStore } from '../event-store';
+import { IEventStore as EventStore } from '../event-store';
 import { DocumentRegistry } from '../document-registry';
 import { randomUUID } from 'crypto';
 

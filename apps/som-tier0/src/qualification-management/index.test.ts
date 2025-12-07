@@ -5,42 +5,27 @@
 
 import { describe, test, expect, beforeEach } from 'vitest';
 import * as fc from 'fast-check';
-import { 
-  QualificationManager, 
+import {
+  QualificationManager,
   CreateQualificationParams,
   AssignQualificationToPersonParams,
   ExpireQualificationParams
 } from './index';
-import { HolonRegistry } from '../core/holon-registry';
+import { InMemoryHolonRepository as HolonRegistry } from '../core/holon-registry';
 import { RelationshipRegistry } from '../relationship-registry';
-import { EventStore, InMemoryEventStore } from '../event-store';
+import { IEventStore as EventStore, InMemoryEventStore } from '../event-store';
 import { ConstraintEngine } from '../constraint-engine';
 import { DocumentRegistry } from '../document-registry';
-import { HolonType, HolonID } from '../core/types/holon';
-import { RelationshipType } from '../core/types/relationship';
-import { EventType } from '../core/types/event';
+import { HolonType, HolonID } from '@som/shared-types';
+import { RelationshipType } from '@som/shared-types';
+import { EventType } from '@som/shared-types';
 
 // Test setup
-let holonRegistry: HolonRegistry;
-let documentRegistry: DocumentRegistry;
-let constraintEngine: ConstraintEngine;
-let eventStore: EventStore;
-let relationshipRegistry: RelationshipRegistry;
-let qualificationManager: QualificationManager;
+// Test setup - Removed shared state
+// let holonRegistry: HolonRegistry;
+// ...
+// beforeEach removed
 
-beforeEach(() => {
-  holonRegistry = new HolonRegistry();
-  documentRegistry = new DocumentRegistry();
-  constraintEngine = new ConstraintEngine(documentRegistry);
-  eventStore = new InMemoryEventStore();
-  relationshipRegistry = new RelationshipRegistry(constraintEngine, eventStore);
-  qualificationManager = new QualificationManager(
-    holonRegistry, 
-    relationshipRegistry, 
-    eventStore, 
-    constraintEngine
-  );
-});
 
 // Generators for property-based testing
 
@@ -214,7 +199,7 @@ const genTimestamp = (): fc.Arbitrary<Date> => {
   const now = new Date();
   const oneYearAgo = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
   const oneHourFromNow = new Date(now.getTime() + 60 * 60 * 1000); // 1 hour from now
-  
+
   return fc.date({ min: oneYearAgo, max: oneHourFromNow });
 };
 
@@ -229,29 +214,37 @@ const genTimestamp = (): fc.Arbitrary<Date> => {
 describe('Property 26: Qualification holon completeness', () => {
   test('created Qualification holons contain all required fields', () => {
     fc.assert(
-      fc.property(genCreateQualificationParams(), (params) => {
-        const result = qualificationManager.createQualification(params);
-        
+      fc.asyncProperty(genCreateQualificationParams(), async (params) => {
+        // Setup isolated environment
+        const holonRegistry = new HolonRegistry();
+        const documentRegistry = new DocumentRegistry();
+        const constraintEngine = new ConstraintEngine(documentRegistry);
+        const eventStore = new InMemoryEventStore();
+        const relationshipRegistry = new RelationshipRegistry(constraintEngine, eventStore);
+        const qualificationManager = new QualificationManager(holonRegistry, relationshipRegistry, eventStore, constraintEngine);
+
+        const result = await qualificationManager.createQualification(params);
+
         // Qualification creation should succeed
         expect(result.success).toBe(true);
         expect(result.holonID).toBeDefined();
-        
+
         // Retrieve the created qualification
-        const qualification = holonRegistry.getHolon(result.holonID!);
+        const qualification = await holonRegistry.getHolon(result.holonID!);
         expect(qualification).toBeDefined();
-        
+
         // Verify all required fields are present
         expect(qualification!.id).toBeDefined(); // SOM Qualification ID
         expect(qualification!.type).toBe(HolonType.Qualification);
-        
+
         // At least one identifier should be present
-        const hasIdentifier = 
+        const hasIdentifier =
           qualification!.properties.nec !== undefined ||
           qualification!.properties.pqsID !== undefined ||
           qualification!.properties.courseCode !== undefined ||
           qualification!.properties.certificationID !== undefined;
         expect(hasIdentifier).toBe(true);
-        
+
         // Verify specific fields match input
         expect(qualification!.properties.nec).toBe(params.nec);
         expect(qualification!.properties.pqsID).toBe(params.pqsID);
@@ -262,13 +255,13 @@ describe('Property 26: Qualification holon completeness', () => {
         expect(qualification!.properties.validityPeriod).toBe(params.validityPeriod);
         expect(qualification!.properties.renewalRules).toBe(params.renewalRules);
         expect(qualification!.properties.issuingAuthority).toBe(params.issuingAuthority);
-        
+
         // Verify metadata
         expect(qualification!.createdAt).toBeInstanceOf(Date);
         expect(qualification!.createdBy).toBeDefined();
         expect(qualification!.status).toBe('active');
         expect(qualification!.sourceDocuments).toEqual(params.sourceDocuments);
-        
+
         return true;
       }),
       { numRuns: 100 }
@@ -287,36 +280,47 @@ describe('Property 26: Qualification holon completeness', () => {
 describe('Property 27: Qualification expiration handling', () => {
   test('qualification expiration records event and updates relationship', () => {
     fc.assert(
-      fc.property(
+      fc.asyncProperty(
         genCreateQualificationParams(),
         genTimestamp(),
         genTimestamp(),
-        (qualParams, effectiveStart, expirationDate) => {
-          // Ensure both dates are in the past to avoid event store validation issues
+        async (qualParams, effectiveStart, expirationDate) => {
+          // Setup isolated environment
+          const holonRegistry = new HolonRegistry();
+          const documentRegistry = new DocumentRegistry();
+          const constraintEngine = new ConstraintEngine(documentRegistry);
+          const eventStore = new InMemoryEventStore();
+          const relationshipRegistry = new RelationshipRegistry(constraintEngine, eventStore);
+          const qualificationManager = new QualificationManager(holonRegistry, relationshipRegistry, eventStore, constraintEngine);
+
+          // Manual date fix to ensure effectiveStart < expirationDate < now
           const now = new Date();
-          if (effectiveStart > now) {
-            effectiveStart = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000); // 1 year ago
+          const oneDay = 24 * 60 * 60 * 1000;
+
+          // Force effectiveStart to be at least 2 days ago
+          if (effectiveStart.getTime() > now.getTime() - 2 * oneDay) {
+            effectiveStart = new Date(now.getTime() - 365 * oneDay);
           }
+
+          // Force expiration to be 1 day after effectiveStart
+          if (expirationDate.getTime() <= effectiveStart.getTime() || expirationDate.getTime() > now.getTime()) {
+            expirationDate = new Date(effectiveStart.getTime() + oneDay);
+          }
+
+          // Double check constraints (if expiration is still future, cap it, but ensure start < end)
           if (expirationDate > now) {
-            expirationDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000); // 30 days ago
+            expirationDate = new Date(now.getTime() - 1000);
           }
-          
-          // Ensure expiration is after effective start
-          if (expirationDate <= effectiveStart) {
-            expirationDate = new Date(effectiveStart.getTime() + 24 * 60 * 60 * 1000); // Add 1 day
+          if (effectiveStart >= expirationDate) {
+            effectiveStart = new Date(expirationDate.getTime() - oneDay);
           }
-          
-          // Ensure expiration is not in the future
-          if (expirationDate > now) {
-            expirationDate = new Date(now.getTime() - 1000); // 1 second ago
-          }
-          
+
           // Create a qualification
-          const qualResult = qualificationManager.createQualification(qualParams);
+          const qualResult = await qualificationManager.createQualification(qualParams);
           expect(qualResult.success).toBe(true);
-          
+
           // Create a person to hold the qualification
-          const person = holonRegistry.createHolon({
+          const person = await holonRegistry.createHolon({
             type: HolonType.Person,
             properties: {
               edipi: '1234567890',
@@ -330,9 +334,9 @@ describe('Property 27: Qualification expiration handling', () => {
             createdBy: 'event-001',
             sourceDocuments: ['doc-001'],
           });
-          
+
           // Assign qualification to person
-          const assignResult = qualificationManager.assignQualificationToPerson({
+          const assignResult = await qualificationManager.awardQualification({
             qualificationID: qualResult.holonID!,
             personID: person.id,
             effectiveStart,
@@ -341,18 +345,18 @@ describe('Property 27: Qualification expiration handling', () => {
             sourceSystem: 'test-system',
           });
           expect(assignResult.success).toBe(true);
-          
+
           // Get the relationship before expiration
-          const relationshipsBefore = relationshipRegistry.getRelationshipsFrom(
+          const relationshipsBefore = await relationshipRegistry.getRelationshipsTo(
             qualResult.holonID!,
-            RelationshipType.HELD_BY,
+            RelationshipType.HAS_QUAL,
             { includeEnded: false }
           );
           expect(relationshipsBefore.length).toBe(1);
           expect(relationshipsBefore[0].effectiveEnd).toBeUndefined();
-          
+
           // Expire the qualification
-          const expireResult = qualificationManager.expireQualification({
+          const expireResult = await qualificationManager.expireQualification({
             qualificationID: qualResult.holonID!,
             personID: person.id,
             expirationDate,
@@ -360,11 +364,11 @@ describe('Property 27: Qualification expiration handling', () => {
             actor: 'system',
             sourceSystem: 'test-system',
           });
-          
+
           // Expiration should succeed
           expect(expireResult.success).toBe(true);
           expect(expireResult.eventID).toBeDefined();
-          
+
           // Verify expiration event was recorded
           const event = eventStore.getEvent(expireResult.eventID!);
           expect(event).toBeDefined();
@@ -372,17 +376,17 @@ describe('Property 27: Qualification expiration handling', () => {
           expect(event!.subjects).toContain(person.id);
           expect(event!.subjects).toContain(qualResult.holonID!);
           expect(event!.payload.reason).toBe('Validity period expired');
-          
+
           // Verify relationship validity window was updated (relationship should be ended)
-          const relationshipsAfter = relationshipRegistry.getRelationshipsFrom(
+          const relationshipsAfter = await relationshipRegistry.getRelationshipsTo(
             qualResult.holonID!,
-            RelationshipType.HELD_BY,
+            RelationshipType.HAS_QUAL,
             { includeEnded: false }
           );
           expect(relationshipsAfter.length).toBe(0); // No active relationships
-          
+
           // Verify relationship exists with end date when including ended relationships
-          const allRelationships = relationshipRegistry.getRelationshipsFrom(
+          const allRelationships = await relationshipRegistry.getRelationshipsFrom(
             qualResult.holonID!,
             RelationshipType.HELD_BY,
             { includeEnded: true }
@@ -390,7 +394,7 @@ describe('Property 27: Qualification expiration handling', () => {
           expect(allRelationships.length).toBe(1);
           expect(allRelationships[0].effectiveEnd).toBeDefined();
           expect(allRelationships[0].effectiveEnd).toEqual(expirationDate);
-          
+
           return true;
         }
       ),
@@ -403,8 +407,16 @@ describe('Property 27: Qualification expiration handling', () => {
  * Additional unit tests for qualification management functionality
  */
 describe('Qualification Management - Unit Tests', () => {
-  test('can create qualification with NEC identifier', () => {
-    const result = qualificationManager.createQualification({
+  test('can create qualification with NEC identifier', async () => {
+    // Setup isolated environment
+    const holonRegistry = new HolonRegistry();
+    const documentRegistry = new DocumentRegistry();
+    const constraintEngine = new ConstraintEngine(documentRegistry);
+    const eventStore = new InMemoryEventStore();
+    const relationshipRegistry = new RelationshipRegistry(constraintEngine, eventStore);
+    const qualificationManager = new QualificationManager(holonRegistry, relationshipRegistry, eventStore, constraintEngine);
+
+    const result = await qualificationManager.createQualification({
       nec: '5326',
       name: 'Advanced Special Operations',
       type: 'NEC',
@@ -415,16 +427,24 @@ describe('Qualification Management - Unit Tests', () => {
       actor: 'system',
       sourceSystem: 'test-system',
     });
-    
+
     expect(result.success).toBe(true);
     expect(result.holonID).toBeDefined();
-    
-    const qual = holonRegistry.getHolon(result.holonID!);
+
+    const qual = await holonRegistry.getHolon(result.holonID!);
     expect(qual?.properties.nec).toBe('5326');
   });
-  
-  test('can create qualification with PQS identifier', () => {
-    const result = qualificationManager.createQualification({
+
+  test('can create qualification with PQS identifier', async () => {
+    // Setup isolated environment
+    const holonRegistry = new HolonRegistry();
+    const documentRegistry = new DocumentRegistry();
+    const constraintEngine = new ConstraintEngine(documentRegistry);
+    const eventStore = new InMemoryEventStore();
+    const relationshipRegistry = new RelationshipRegistry(constraintEngine, eventStore);
+    const qualificationManager = new QualificationManager(holonRegistry, relationshipRegistry, eventStore, constraintEngine);
+
+    const result = await qualificationManager.createQualification({
       pqsID: 'PQS-SEAL-001',
       name: 'SEAL PQS',
       type: 'PQS',
@@ -435,15 +455,23 @@ describe('Qualification Management - Unit Tests', () => {
       actor: 'system',
       sourceSystem: 'test-system',
     });
-    
+
     expect(result.success).toBe(true);
-    const qual = holonRegistry.getHolon(result.holonID!);
+    const qual = await holonRegistry.getHolon(result.holonID!);
     expect(qual?.properties.pqsID).toBe('PQS-SEAL-001');
   });
-  
-  test('can assign qualification to person', () => {
+
+  test('can assign qualification to person', async () => {
+    // Setup isolated environment
+    const holonRegistry = new HolonRegistry();
+    const documentRegistry = new DocumentRegistry();
+    const constraintEngine = new ConstraintEngine(documentRegistry);
+    const eventStore = new InMemoryEventStore();
+    const relationshipRegistry = new RelationshipRegistry(constraintEngine, eventStore);
+    const qualificationManager = new QualificationManager(holonRegistry, relationshipRegistry, eventStore, constraintEngine);
+
     // Create qualification
-    const qualResult = qualificationManager.createQualification({
+    const qualResult = await qualificationManager.createQualification({
       nec: '5326',
       name: 'Advanced Special Operations',
       type: 'NEC',
@@ -454,9 +482,9 @@ describe('Qualification Management - Unit Tests', () => {
       actor: 'system',
       sourceSystem: 'test-system',
     });
-    
+
     // Create person
-    const person = holonRegistry.createHolon({
+    const person = await holonRegistry.createHolon({
       type: HolonType.Person,
       properties: {
         edipi: '1234567890',
@@ -470,9 +498,9 @@ describe('Qualification Management - Unit Tests', () => {
       createdBy: 'event-001',
       sourceDocuments: ['doc-002'],
     });
-    
+
     // Assign qualification
-    const assignResult = qualificationManager.assignQualificationToPerson({
+    const assignResult = await qualificationManager.awardQualification({
       qualificationID: qualResult.holonID!,
       personID: person.id,
       effectiveStart: new Date(),
@@ -480,18 +508,26 @@ describe('Qualification Management - Unit Tests', () => {
       actor: 'system',
       sourceSystem: 'test-system',
     });
-    
+
     expect(assignResult.success).toBe(true);
     expect(assignResult.relationshipID).toBeDefined();
-    
+
     // Verify relationship exists
-    const holders = qualificationManager.getQualificationHolders(qualResult.holonID!);
+    const holders = await qualificationManager.getQualificationHolders(qualResult.holonID!);
     expect(holders).toContain(person.id);
   });
-  
-  test('can set qualification as required for position', () => {
+
+  test('can set qualification as required for position', async () => {
+    // Setup isolated environment
+    const holonRegistry = new HolonRegistry();
+    const documentRegistry = new DocumentRegistry();
+    const constraintEngine = new ConstraintEngine(documentRegistry);
+    const eventStore = new InMemoryEventStore();
+    const relationshipRegistry = new RelationshipRegistry(constraintEngine, eventStore);
+    const qualificationManager = new QualificationManager(holonRegistry, relationshipRegistry, eventStore, constraintEngine);
+
     // Create qualification
-    const qualResult = qualificationManager.createQualification({
+    const qualResult = await qualificationManager.createQualification({
       nec: '5326',
       name: 'Advanced Special Operations',
       type: 'NEC',
@@ -502,9 +538,9 @@ describe('Qualification Management - Unit Tests', () => {
       actor: 'system',
       sourceSystem: 'test-system',
     });
-    
+
     // Create position
-    const position = holonRegistry.createHolon({
+    const position = await holonRegistry.createHolon({
       type: HolonType.Position,
       properties: {
         billetIDs: ['BILLET-001'],
@@ -517,9 +553,9 @@ describe('Qualification Management - Unit Tests', () => {
       createdBy: 'event-002',
       sourceDocuments: ['doc-002'],
     });
-    
+
     // Set requirement
-    const reqResult = qualificationManager.setQualificationRequirement({
+    const reqResult = await qualificationManager.setQualificationRequirement({
       qualificationID: qualResult.holonID!,
       positionID: position.id,
       effectiveStart: new Date(),
@@ -527,17 +563,25 @@ describe('Qualification Management - Unit Tests', () => {
       actor: 'system',
       sourceSystem: 'test-system',
     });
-    
+
     expect(reqResult.success).toBe(true);
-    
+
     // Verify requirement exists
-    const positions = qualificationManager.getPositionsRequiringQualification(qualResult.holonID!);
+    const positions = await qualificationManager.getPositionsRequiringQualification(qualResult.holonID!);
     expect(positions).toContain(position.id);
   });
-  
-  test('can set prerequisite relationships between qualifications', () => {
+
+  test('can set prerequisite relationships between qualifications', async () => {
+    // Setup isolated environment
+    const holonRegistry = new HolonRegistry();
+    const documentRegistry = new DocumentRegistry();
+    const constraintEngine = new ConstraintEngine(documentRegistry);
+    const eventStore = new InMemoryEventStore();
+    const relationshipRegistry = new RelationshipRegistry(constraintEngine, eventStore);
+    const qualificationManager = new QualificationManager(holonRegistry, relationshipRegistry, eventStore, constraintEngine);
+
     // Create basic qualification
-    const basicQual = qualificationManager.createQualification({
+    const basicQual = await qualificationManager.createQualification({
       nec: '5320',
       name: 'Basic Special Operations',
       type: 'NEC',
@@ -548,9 +592,9 @@ describe('Qualification Management - Unit Tests', () => {
       actor: 'system',
       sourceSystem: 'test-system',
     });
-    
+
     // Create advanced qualification
-    const advancedQual = qualificationManager.createQualification({
+    const advancedQual = await qualificationManager.createQualification({
       nec: '5326',
       name: 'Advanced Special Operations',
       type: 'NEC',
@@ -561,9 +605,9 @@ describe('Qualification Management - Unit Tests', () => {
       actor: 'system',
       sourceSystem: 'test-system',
     });
-    
+
     // Set basic as prerequisite for advanced
-    const prereqResult = qualificationManager.setQualificationPrerequisite({
+    const prereqResult = await qualificationManager.setQualificationPrerequisite({
       qualificationID: advancedQual.holonID!,
       prerequisiteQualificationID: basicQual.holonID!,
       effectiveStart: new Date(),
@@ -571,16 +615,24 @@ describe('Qualification Management - Unit Tests', () => {
       actor: 'system',
       sourceSystem: 'test-system',
     });
-    
+
     expect(prereqResult.success).toBe(true);
-    
+
     // Verify prerequisite relationship
-    const prerequisites = qualificationManager.getQualificationPrerequisites(advancedQual.holonID!);
+    const prerequisites = await qualificationManager.getQualificationPrerequisites(advancedQual.holonID!);
     expect(prerequisites).toContain(basicQual.holonID!);
   });
-  
-  test('prevents self-prerequisite', () => {
-    const qualResult = qualificationManager.createQualification({
+
+  test('prevents self-prerequisite', async () => {
+    // Setup isolated environment
+    const holonRegistry = new HolonRegistry();
+    const documentRegistry = new DocumentRegistry();
+    const constraintEngine = new ConstraintEngine(documentRegistry);
+    const eventStore = new InMemoryEventStore();
+    const relationshipRegistry = new RelationshipRegistry(constraintEngine, eventStore);
+    const qualificationManager = new QualificationManager(holonRegistry, relationshipRegistry, eventStore, constraintEngine);
+
+    const qualResult = await qualificationManager.createQualification({
       nec: '5326',
       name: 'Advanced Special Operations',
       type: 'NEC',
@@ -591,9 +643,9 @@ describe('Qualification Management - Unit Tests', () => {
       actor: 'system',
       sourceSystem: 'test-system',
     });
-    
+
     // Try to set qualification as its own prerequisite
-    const prereqResult = qualificationManager.setQualificationPrerequisite({
+    const prereqResult = await qualificationManager.setQualificationPrerequisite({
       qualificationID: qualResult.holonID!,
       prerequisiteQualificationID: qualResult.holonID!,
       effectiveStart: new Date(),
@@ -601,15 +653,23 @@ describe('Qualification Management - Unit Tests', () => {
       actor: 'system',
       sourceSystem: 'test-system',
     });
-    
+
     expect(prereqResult.success).toBe(false);
     expect(prereqResult.validation.errors).toBeDefined();
     expect(prereqResult.validation.errors![0].violatedRule).toBe('no_self_prerequisite');
   });
-  
-  test('detects cycles in prerequisite chains', () => {
+
+  test('detects cycles in prerequisite chains', async () => {
+    // Setup isolated environment
+    const holonRegistry = new HolonRegistry();
+    const documentRegistry = new DocumentRegistry();
+    const constraintEngine = new ConstraintEngine(documentRegistry);
+    const eventStore = new InMemoryEventStore();
+    const relationshipRegistry = new RelationshipRegistry(constraintEngine, eventStore);
+    const qualificationManager = new QualificationManager(holonRegistry, relationshipRegistry, eventStore, constraintEngine);
+
     // Create three qualifications
-    const qual1 = qualificationManager.createQualification({
+    const qual1 = await qualificationManager.createQualification({
       nec: '5320',
       name: 'Qual 1',
       type: 'NEC',
@@ -620,8 +680,8 @@ describe('Qualification Management - Unit Tests', () => {
       actor: 'system',
       sourceSystem: 'test-system',
     });
-    
-    const qual2 = qualificationManager.createQualification({
+
+    const qual2 = await qualificationManager.createQualification({
       nec: '5321',
       name: 'Qual 2',
       type: 'NEC',
@@ -632,8 +692,8 @@ describe('Qualification Management - Unit Tests', () => {
       actor: 'system',
       sourceSystem: 'test-system',
     });
-    
-    const qual3 = qualificationManager.createQualification({
+
+    const qual3 = await qualificationManager.createQualification({
       nec: '5322',
       name: 'Qual 3',
       type: 'NEC',
@@ -644,9 +704,9 @@ describe('Qualification Management - Unit Tests', () => {
       actor: 'system',
       sourceSystem: 'test-system',
     });
-    
+
     // Create chain: qual2 depends on qual1
-    qualificationManager.setQualificationPrerequisite({
+    await qualificationManager.setQualificationPrerequisite({
       qualificationID: qual2.holonID!,
       prerequisiteQualificationID: qual1.holonID!,
       effectiveStart: new Date(),
@@ -654,9 +714,9 @@ describe('Qualification Management - Unit Tests', () => {
       actor: 'system',
       sourceSystem: 'test-system',
     });
-    
+
     // Create chain: qual3 depends on qual2
-    qualificationManager.setQualificationPrerequisite({
+    await qualificationManager.setQualificationPrerequisite({
       qualificationID: qual3.holonID!,
       prerequisiteQualificationID: qual2.holonID!,
       effectiveStart: new Date(),
@@ -664,9 +724,9 @@ describe('Qualification Management - Unit Tests', () => {
       actor: 'system',
       sourceSystem: 'test-system',
     });
-    
+
     // Try to create cycle: qual1 depends on qual3 (would create cycle)
-    const cycleResult = qualificationManager.setQualificationPrerequisite({
+    const cycleResult = await qualificationManager.setQualificationPrerequisite({
       qualificationID: qual1.holonID!,
       prerequisiteQualificationID: qual3.holonID!,
       effectiveStart: new Date(),
@@ -674,7 +734,7 @@ describe('Qualification Management - Unit Tests', () => {
       actor: 'system',
       sourceSystem: 'test-system',
     });
-    
+
     expect(cycleResult.success).toBe(false);
     expect(cycleResult.validation.errors).toBeDefined();
     expect(cycleResult.validation.errors![0].violatedRule).toBe('no_cycles');

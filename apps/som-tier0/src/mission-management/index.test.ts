@@ -5,12 +5,12 @@
 import { describe, test, expect, beforeEach } from 'vitest';
 import * as fc from 'fast-check';
 import { MissionManager, CreateMissionParams, CreateCapabilityParams, CreateAssetParams } from './index';
-import { HolonRegistry } from '../core/holon-registry';
+import { InMemoryHolonRepository as HolonRegistry } from '../core/holon-registry';
 import { RelationshipRegistry } from '../relationship-registry';
-import { EventStore, InMemoryEventStore } from '../event-store';
+import { IEventStore as EventStore, InMemoryEventStore } from '../event-store';
 import { ConstraintEngine } from '../constraint-engine';
 import { DocumentRegistry } from '../document-registry';
-import { HolonType } from '../core/types/holon';
+import { HolonType } from '@som/shared-types';
 
 describe('MissionManager', () => {
   let missionManager: MissionManager;
@@ -20,7 +20,7 @@ describe('MissionManager', () => {
   let constraintEngine: ConstraintEngine;
   let documentRegistry: DocumentRegistry;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     holonRegistry = new HolonRegistry();
     documentRegistry = new DocumentRegistry();
     eventStore = new InMemoryEventStore();
@@ -31,9 +31,9 @@ describe('MissionManager', () => {
 
   // **Feature: semantic-operating-model, Property 24: Mission holon completeness**
   // **Validates: Requirements 7.1**
-  test('Property 24: Mission holon completeness - For any Mission holon created, it must contain SOM Mission ID, name, type, classification metadata, and time bounds', () => {
-    fc.assert(
-      fc.property(
+  test('Property 24: Mission holon completeness - For any Mission holon created, it must contain SOM Mission ID, name, type, classification metadata, and time bounds', async () => {
+    await fc.assert(
+      fc.asyncProperty(
         fc.record({
           operationName: fc.string({ minLength: 1, maxLength: 100 }),
           operationNumber: fc.string({ minLength: 1, maxLength: 50 }),
@@ -45,20 +45,20 @@ describe('MissionManager', () => {
           actor: fc.uuid(),
           sourceSystem: fc.string({ minLength: 1, maxLength: 50 }),
         }),
-        (params) => {
+        async (params) => {
           // Ensure endTime is after startTime
           if (params.endTime <= params.startTime) {
             params.endTime = new Date(params.startTime.getTime() + 24 * 60 * 60 * 1000);
           }
 
-          const result = missionManager.createMission(params);
+          const result = await missionManager.createMission(params);
 
           // Mission creation should succeed
           expect(result.success).toBe(true);
           expect(result.holonID).toBeDefined();
 
           // Retrieve the created mission
-          const mission = holonRegistry.getHolon(result.holonID!);
+          const mission = await holonRegistry.getHolon(result.holonID!);
           expect(mission).toBeDefined();
 
           // Verify all required fields are present
@@ -80,9 +80,9 @@ describe('MissionManager', () => {
 
   // **Feature: semantic-operating-model, Property 25: Mission lifecycle tracking**
   // **Validates: Requirements 7.5**
-  test('Property 25: Mission lifecycle tracking - For any mission with phase transitions, all phase transition events must be recorded and mission state must reflect the current phase', () => {
-    fc.assert(
-      fc.property(
+  test('Property 25: Mission lifecycle tracking - For any mission with phase transitions, all phase transition events must be recorded and mission state must reflect the current phase', async () => {
+    await fc.assert(
+      fc.asyncProperty(
         fc.record({
           mission: fc.record({
             operationName: fc.string({ minLength: 1, maxLength: 100 }),
@@ -105,14 +105,14 @@ describe('MissionManager', () => {
             { minLength: 1, maxLength: 5 }
           ),
         }),
-        ({ mission, phases }) => {
+        async ({ mission, phases }) => {
           // Ensure endTime is after startTime
           if (mission.endTime <= mission.startTime) {
             mission.endTime = new Date(mission.startTime.getTime() + 24 * 60 * 60 * 1000);
           }
 
           // Create mission
-          const missionResult = missionManager.createMission(mission);
+          const missionResult = await missionManager.createMission(mission);
           expect(missionResult.success).toBe(true);
           const missionID = missionResult.holonID!;
 
@@ -128,7 +128,7 @@ describe('MissionManager', () => {
               currentTime = new Date(maxTime.getTime() - 1000);
             }
 
-            const transitionResult = missionManager.recordMissionPhaseTransition({
+            const transitionResult = await missionManager.recordMissionPhaseTransition({
               missionID,
               fromPhase: phase.fromPhase,
               toPhase: phase.toPhase,
@@ -150,7 +150,7 @@ describe('MissionManager', () => {
           }
 
           // Verify all phase transition events were recorded
-          const phaseHistory = missionManager.getMissionPhaseHistory(missionID);
+          const phaseHistory = await missionManager.getMissionPhaseHistory(missionID);
           expect(phaseHistory.length).toBe(phases.length);
 
           // Verify all recorded event IDs are in the history
@@ -175,7 +175,7 @@ describe('MissionManager', () => {
 
   // Unit tests for basic functionality
   describe('Mission creation', () => {
-    test('should create a mission with all required fields', () => {
+    test('should create a mission with all required fields', async () => {
       const params: CreateMissionParams = {
         operationName: 'Operation Neptune Spear',
         operationNumber: 'OP-2011-001',
@@ -188,13 +188,13 @@ describe('MissionManager', () => {
         sourceSystem: 'mission-planning',
       };
 
-      const result = missionManager.createMission(params);
+      const result = await missionManager.createMission(params);
 
       expect(result.success).toBe(true);
       expect(result.holonID).toBeDefined();
       expect(result.eventID).toBeDefined();
 
-      const mission = holonRegistry.getHolon(result.holonID!);
+      const mission = await holonRegistry.getHolon(result.holonID!);
       expect(mission).toBeDefined();
       expect(mission!.type).toBe(HolonType.Mission);
       expect(mission!.properties.operationName).toBe(params.operationName);
@@ -202,7 +202,7 @@ describe('MissionManager', () => {
   });
 
   describe('Capability creation', () => {
-    test('should create a capability with all required fields', () => {
+    test('should create a capability with all required fields', async () => {
       const params: CreateCapabilityParams = {
         capabilityCode: 'CAP-001',
         name: 'Direct Action',
@@ -214,12 +214,12 @@ describe('MissionManager', () => {
         sourceSystem: 'capability-registry',
       };
 
-      const result = missionManager.createCapability(params);
+      const result = await missionManager.createCapability(params);
 
       expect(result.success).toBe(true);
       expect(result.holonID).toBeDefined();
 
-      const capability = holonRegistry.getHolon(result.holonID!);
+      const capability = await holonRegistry.getHolon(result.holonID!);
       expect(capability).toBeDefined();
       expect(capability!.type).toBe(HolonType.Capability);
       expect(capability!.properties.name).toBe(params.name);
@@ -227,7 +227,7 @@ describe('MissionManager', () => {
   });
 
   describe('Asset creation', () => {
-    test('should create an asset with all required fields', () => {
+    test('should create an asset with all required fields', async () => {
       const params: CreateAssetParams = {
         hullNumberOrSerial: 'DDG-51',
         assetType: 'destroyer',
@@ -238,12 +238,12 @@ describe('MissionManager', () => {
         sourceSystem: 'asset-registry',
       };
 
-      const result = missionManager.createAsset(params);
+      const result = await missionManager.createAsset(params);
 
       expect(result.success).toBe(true);
       expect(result.holonID).toBeDefined();
 
-      const asset = holonRegistry.getHolon(result.holonID!);
+      const asset = await holonRegistry.getHolon(result.holonID!);
       expect(asset).toBeDefined();
       expect(asset!.type).toBe(HolonType.Asset);
       expect(asset!.properties.hullNumberOrSerial).toBe(params.hullNumberOrSerial);
@@ -251,9 +251,9 @@ describe('MissionManager', () => {
   });
 
   describe('Mission-Capability relationships', () => {
-    test('should assign a capability to a mission', () => {
+    test('should assign a capability to a mission', async () => {
       // Create mission
-      const missionResult = missionManager.createMission({
+      const missionResult = await missionManager.createMission({
         operationName: 'Test Mission',
         operationNumber: 'TM-001',
         type: 'training',
@@ -266,7 +266,7 @@ describe('MissionManager', () => {
       });
 
       // Create capability
-      const capabilityResult = missionManager.createCapability({
+      const capabilityResult = await missionManager.createCapability({
         capabilityCode: 'CAP-001',
         name: 'Test Capability',
         description: 'Test',
@@ -278,7 +278,7 @@ describe('MissionManager', () => {
       });
 
       // Assign capability to mission
-      const assignResult = missionManager.assignCapabilityToMission({
+      const assignResult = await missionManager.assignCapabilityToMission({
         missionID: missionResult.holonID!,
         capabilityID: capabilityResult.holonID!,
         effectiveStart: new Date('2024-01-01'),
@@ -291,15 +291,15 @@ describe('MissionManager', () => {
       expect(assignResult.relationshipID).toBeDefined();
 
       // Verify relationship
-      const capabilities = missionManager.getMissionCapabilities(missionResult.holonID!);
+      const capabilities = await missionManager.getMissionCapabilities(missionResult.holonID!);
       expect(capabilities).toContain(capabilityResult.holonID);
     });
   });
 
   describe('Asset-Mission relationships', () => {
-    test('should assign an asset to support a mission', () => {
+    test('should assign an asset to support a mission', async () => {
       // Create mission
-      const missionResult = missionManager.createMission({
+      const missionResult = await missionManager.createMission({
         operationName: 'Test Mission',
         operationNumber: 'TM-001',
         type: 'training',
@@ -312,7 +312,7 @@ describe('MissionManager', () => {
       });
 
       // Create asset
-      const assetResult = missionManager.createAsset({
+      const assetResult = await missionManager.createAsset({
         hullNumberOrSerial: 'TEST-001',
         assetType: 'test_asset',
         configuration: 'standard',
@@ -323,7 +323,7 @@ describe('MissionManager', () => {
       });
 
       // Assign asset to mission
-      const assignResult = missionManager.assignAssetToMission({
+      const assignResult = await missionManager.assignAssetToMission({
         assetID: assetResult.holonID!,
         missionID: missionResult.holonID!,
         effectiveStart: new Date('2024-01-01'),
@@ -336,15 +336,15 @@ describe('MissionManager', () => {
       expect(assignResult.relationshipID).toBeDefined();
 
       // Verify relationship
-      const assets = missionManager.getMissionAssets(missionResult.holonID!);
+      const assets = await missionManager.getMissionAssets(missionResult.holonID!);
       expect(assets).toContain(assetResult.holonID);
     });
   });
 
   describe('Mission phase transitions', () => {
-    test('should record mission phase transitions', () => {
+    test('should record mission phase transitions', async () => {
       // Create mission
-      const missionResult = missionManager.createMission({
+      const missionResult = await missionManager.createMission({
         operationName: 'Test Mission',
         operationNumber: 'TM-001',
         type: 'training',
@@ -357,7 +357,7 @@ describe('MissionManager', () => {
       });
 
       // Record phase transition
-      const transitionResult = missionManager.recordMissionPhaseTransition({
+      const transitionResult = await missionManager.recordMissionPhaseTransition({
         missionID: missionResult.holonID!,
         fromPhase: 'planning',
         toPhase: 'execution',
@@ -371,7 +371,7 @@ describe('MissionManager', () => {
       expect(transitionResult.eventID).toBeDefined();
 
       // Verify phase history
-      const phaseHistory = missionManager.getMissionPhaseHistory(missionResult.holonID!);
+      const phaseHistory = await missionManager.getMissionPhaseHistory(missionResult.holonID!);
       expect(phaseHistory.length).toBe(1);
       expect(phaseHistory).toContain(transitionResult.eventID);
     });

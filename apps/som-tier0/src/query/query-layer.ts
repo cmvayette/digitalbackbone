@@ -3,13 +3,13 @@
  * Integrates current state, temporal, pattern matching, and access control
  */
 
-import { Holon, HolonID, HolonType, Timestamp } from '../core/types/holon';
-import { Relationship, RelationshipID, RelationshipType } from '../core/types/relationship';
-import { Event, EventID, EventType } from '../core/types/event';
+import { Holon, HolonID, HolonType, Timestamp } from '@som/shared-types';
+import { Relationship, RelationshipID, RelationshipType } from '@som/shared-types';
+import { Event, EventID, EventType } from '@som/shared-types';
 import { TemporalQueryEngine, OrganizationalStructure, CausalChain, EventHistory } from './temporal-query-engine';
 import { GraphStore, HolonQueryFilters, RelationshipQueryFilters, GraphPattern, PatternMatch } from '../graph-store';
 import { AccessControlEngine, UserContext } from '../access-control';
-import { EventStore } from '../event-store';
+import { IEventStore as EventStore } from '../event-store';
 
 /**
  * Query options for current state queries
@@ -79,11 +79,11 @@ export class QueryLayer {
   ): QueryResult<Holon[]> {
     // Query holons from graph store
     const holons = this.graphStore.queryHolonsByType(type, options?.filters);
-    
+
     // Apply access control
     const originalCount = holons.length;
     const filteredHolons = this.accessControl.filterHolons(user, holons);
-    
+
     return {
       data: filteredHolons,
       filtered: filteredHolons.length < originalCount,
@@ -93,18 +93,18 @@ export class QueryLayer {
   /**
    * Query current state relationships by type with filtering and access control
    */
-  queryCurrentRelationships(
+  async queryCurrentRelationships(
     user: UserContext,
     type: RelationshipType,
     options?: RelationshipQueryFilters
-  ): QueryResult<Relationship[]> {
+  ): Promise<QueryResult<Relationship[]>> {
     // Query relationships from graph store
-    const relationships = this.graphStore.queryRelationshipsByType(type, options);
-    
+    const relationships = await this.graphStore.queryRelationshipsByType(type, options);
+
     // Apply access control
     const originalCount = relationships.length;
     const filteredRelationships = this.accessControl.filterRelationships(user, relationships);
-    
+
     return {
       data: filteredRelationships,
       filtered: filteredRelationships.length < originalCount,
@@ -116,14 +116,14 @@ export class QueryLayer {
    */
   getHolon(user: UserContext, holonId: HolonID): QueryResult<Holon | undefined> {
     const holon = this.graphStore.getHolon(holonId);
-    
+
     if (!holon) {
       return { data: undefined, filtered: false };
     }
 
     // Check access control
     const accessDecision = this.accessControl.canAccessHolon(user, holon);
-    
+
     return {
       data: accessDecision.allowed ? holon : undefined,
       filtered: !accessDecision.allowed,
@@ -133,25 +133,25 @@ export class QueryLayer {
   /**
    * Traverse relationships from a holon with access control
    */
-  traverseRelationships(
+  async traverseRelationships(
     user: UserContext,
     holonId: HolonID,
     relationshipType?: RelationshipType,
     direction: 'outgoing' | 'incoming' | 'both' = 'both',
     filters?: RelationshipQueryFilters
-  ): QueryResult<Relationship[]> {
+  ): Promise<QueryResult<Relationship[]>> {
     // Get relationships from graph store
-    const relationships = this.graphStore.traverseRelationships(
+    const relationships = await this.graphStore.traverseRelationships(
       holonId,
       relationshipType,
       direction,
       filters
     );
-    
+
     // Apply access control
     const originalCount = relationships.length;
     const filteredRelationships = this.accessControl.filterRelationships(user, relationships);
-    
+
     return {
       data: filteredRelationships,
       filtered: filteredRelationships.length < originalCount,
@@ -161,25 +161,25 @@ export class QueryLayer {
   /**
    * Get connected holons from a starting holon with access control
    */
-  getConnectedHolons(
+  async getConnectedHolons(
     user: UserContext,
     holonId: HolonID,
     relationshipType?: RelationshipType,
     direction: 'outgoing' | 'incoming' | 'both' = 'both',
     filters?: RelationshipQueryFilters
-  ): QueryResult<Holon[]> {
+  ): Promise<QueryResult<Holon[]>> {
     // Get connected holons from graph store
-    const holons = this.graphStore.getConnectedHolons(
+    const holons = await this.graphStore.getConnectedHolons(
       holonId,
       relationshipType,
       direction,
       filters
     );
-    
+
     // Apply access control
     const originalCount = holons.length;
     const filteredHolons = this.accessControl.filterHolons(user, holons);
-    
+
     return {
       data: filteredHolons,
       filtered: filteredHolons.length < originalCount,
@@ -189,13 +189,13 @@ export class QueryLayer {
   /**
    * Match graph patterns with access control
    */
-  matchPattern(
+  async matchPattern(
     user: UserContext,
     pattern: GraphPattern
-  ): QueryResult<PatternMatch[]> {
+  ): Promise<QueryResult<PatternMatch[]>> {
     // Get pattern matches from graph store
-    const matches = this.graphStore.matchPattern(pattern);
-    
+    const matches = await this.graphStore.matchPattern(pattern);
+
     // Apply access control to each match
     const filteredMatches: PatternMatch[] = [];
     let totalFiltered = false;
@@ -204,16 +204,16 @@ export class QueryLayer {
       const holons = Array.from(match.holons.values());
       const filteredHolons = this.accessControl.filterHolons(user, holons);
       const filteredRelationships = this.accessControl.filterRelationships(user, match.relationships);
-      
+
       // Only include match if all holons and relationships are accessible
-      if (filteredHolons.length === holons.length && 
-          filteredRelationships.length === match.relationships.length) {
+      if (filteredHolons.length === holons.length &&
+        filteredRelationships.length === match.relationships.length) {
         filteredMatches.push(match);
       } else {
         totalFiltered = true;
       }
     }
-    
+
     return {
       data: filteredMatches,
       filtered: totalFiltered || filteredMatches.length < matches.length,
@@ -234,11 +234,11 @@ export class QueryLayer {
       options.asOfTimestamp,
       options.filters
     );
-    
+
     // Apply access control
     const originalCount = holons.length;
     const filteredHolons = this.accessControl.filterHolons(user, holons);
-    
+
     return {
       data: filteredHolons,
       filtered: filteredHolons.length < originalCount,
@@ -259,11 +259,11 @@ export class QueryLayer {
       options.asOfTimestamp,
       options.filters
     );
-    
+
     // Apply access control
     const originalCount = relationships.length;
     const filteredRelationships = this.accessControl.filterRelationships(user, relationships);
-    
+
     return {
       data: filteredRelationships,
       filtered: filteredRelationships.length < originalCount,
@@ -279,14 +279,14 @@ export class QueryLayer {
     timestamp: Timestamp
   ): QueryResult<Holon | undefined> {
     const holon = this.temporalQueryEngine.getHolonAsOf(holonId, timestamp);
-    
+
     if (!holon) {
       return { data: undefined, filtered: false };
     }
 
     // Check access control
     const accessDecision = this.accessControl.canAccessHolon(user, holon);
-    
+
     return {
       data: accessDecision.allowed ? holon : undefined,
       filtered: !accessDecision.allowed,
@@ -307,11 +307,11 @@ export class QueryLayer {
       timestamp,
       relationshipType
     );
-    
+
     // Apply access control
     const originalCount = relationships.length;
     const filteredRelationships = this.accessControl.filterRelationships(user, relationships);
-    
+
     return {
       data: filteredRelationships,
       filtered: filteredRelationships.length < originalCount,
@@ -330,14 +330,14 @@ export class QueryLayer {
       organizationId,
       timestamp
     );
-    
+
     if (!structure) {
       return { data: undefined, filtered: false };
     }
 
     // Apply access control recursively
     const filteredStructure = this.filterOrganizationalStructure(user, structure);
-    
+
     return {
       data: filteredStructure,
       filtered: this.isStructureFiltered(structure, filteredStructure),
@@ -352,21 +352,21 @@ export class QueryLayer {
     options: TimeRangeQueryOptions
   ): QueryResult<Event[]> {
     // Query events from event store
-    const events = this.eventStore.getEventsByTimeRange({
-      start: options.startTime,
-      end: options.endTime,
+    const events = this.eventStore.getEvents({
+      startTime: options.startTime,
+      endTime: options.endTime,
     });
-    
+
     // Filter by event types if specified
     let filteredEvents = events;
     if (options.eventTypes && options.eventTypes.length > 0) {
       filteredEvents = events.filter(e => options.eventTypes!.includes(e.type));
     }
-    
+
     // Apply access control
     const originalCount = filteredEvents.length;
     const accessFilteredEvents = this.accessControl.filterEvents(user, filteredEvents);
-    
+
     return {
       data: accessFilteredEvents,
       filtered: accessFilteredEvents.length < originalCount,
@@ -381,12 +381,12 @@ export class QueryLayer {
     holonId: HolonID,
     timeRange?: { start: Timestamp; end: Timestamp }
   ): QueryResult<Event[]> {
-    const events = this.eventStore.getEventsByHolon(holonId, timeRange);
-    
+    const events = this.eventStore.getEvents({ subjects: [holonId], startTime: timeRange?.start, endTime: timeRange?.end });
+
     // Apply access control
     const originalCount = events.length;
     const filteredEvents = this.accessControl.filterEvents(user, events);
-    
+
     return {
       data: filteredEvents,
       filtered: filteredEvents.length < originalCount,
@@ -401,12 +401,12 @@ export class QueryLayer {
     eventType: EventType,
     timeRange?: { start: Timestamp; end: Timestamp }
   ): QueryResult<Event[]> {
-    const events = this.eventStore.getEventsByType(eventType, timeRange);
-    
+    const events = this.eventStore.getEvents({ type: [eventType], startTime: timeRange?.start, endTime: timeRange?.end });
+
     // Apply access control
     const originalCount = events.length;
     const filteredEvents = this.accessControl.filterEvents(user, events);
-    
+
     return {
       data: filteredEvents,
       filtered: filteredEvents.length < originalCount,
@@ -422,11 +422,11 @@ export class QueryLayer {
     timeRange?: { start: Timestamp; end: Timestamp }
   ): QueryResult<EventHistory> {
     const history = this.temporalQueryEngine.getHolonEventHistory(holonId, timeRange);
-    
+
     // Apply access control to events
     const originalCount = history.events.length;
     const filteredEvents = this.accessControl.filterEvents(user, history.events);
-    
+
     return {
       data: {
         ...history,
@@ -439,17 +439,17 @@ export class QueryLayer {
   /**
    * Get event history for a relationship with access control
    */
-  getRelationshipEventHistory(
+  async getRelationshipEventHistory(
     user: UserContext,
     relationshipId: RelationshipID,
     timeRange?: { start: Timestamp; end: Timestamp }
-  ): QueryResult<EventHistory> {
-    const history = this.temporalQueryEngine.getRelationshipEventHistory(relationshipId, timeRange);
-    
+  ): Promise<QueryResult<EventHistory>> {
+    const history = await this.temporalQueryEngine.getRelationshipEventHistory(relationshipId, timeRange);
+
     // Apply access control to events
     const originalCount = history.events.length;
     const filteredEvents = this.accessControl.filterEvents(user, history.events);
-    
+
     return {
       data: {
         ...history,
@@ -467,7 +467,7 @@ export class QueryLayer {
     eventId: EventID
   ): QueryResult<CausalChain | undefined> {
     const chain = this.temporalQueryEngine.traceCausalChain(eventId);
-    
+
     if (!chain) {
       return { data: undefined, filtered: false };
     }
@@ -478,13 +478,13 @@ export class QueryLayer {
     const filteredPreceding = this.accessControl.filterEvents(user, chain.precedingEvents);
     const filteredCausing = this.accessControl.filterEvents(user, chain.causingEvents);
     const filteredGrouped = this.accessControl.filterEvents(user, chain.groupedEvents);
-    
+
     // Check if root event is accessible
     const rootAccessDecision = this.accessControl.canAccessEvent(user, chain.rootEvent);
     if (!rootAccessDecision.allowed) {
       return { data: undefined, filtered: true };
     }
-    
+
     return {
       data: {
         rootEvent: chain.rootEvent,

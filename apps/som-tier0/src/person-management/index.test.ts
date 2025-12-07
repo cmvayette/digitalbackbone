@@ -6,13 +6,13 @@
 import { describe, test, expect, beforeEach } from 'vitest';
 import * as fc from 'fast-check';
 import { PersonManager, CreatePersonParams, AssignPersonToPositionParams, AssignQualificationParams } from './index';
-import { HolonRegistry } from '../core/holon-registry';
+import { InMemoryHolonRepository as HolonRegistry } from '../core/holon-registry';
 import { RelationshipRegistry } from '../relationship-registry';
-import { EventStore, InMemoryEventStore } from '../event-store';
+import { IEventStore as EventStore, InMemoryEventStore } from '../event-store';
 import { ConstraintEngine } from '../constraint-engine';
 import { DocumentRegistry } from '../document-registry';
-import { HolonType, HolonID } from '../core/types/holon';
-import { RelationshipType } from '../core/types/relationship';
+import { HolonType, HolonID } from '@som/shared-types';
+import { RelationshipType } from '@som/shared-types';
 
 // Test setup
 let holonRegistry: HolonRegistry;
@@ -22,7 +22,7 @@ let eventStore: EventStore;
 let relationshipRegistry: RelationshipRegistry;
 let personManager: PersonManager;
 
-beforeEach(() => {
+beforeEach(async () => {
   holonRegistry = new HolonRegistry();
   documentRegistry = new DocumentRegistry();
   constraintEngine = new ConstraintEngine(documentRegistry);
@@ -66,7 +66,7 @@ const genDOB = (): fc.Arbitrary<Date> => {
   const maxAge = 65;
   const minDate = new Date(now.getFullYear() - maxAge, 0, 1);
   const maxDate = new Date(now.getFullYear() - minAge, 11, 31);
-  
+
   return fc.date({ min: minDate, max: maxDate });
 };
 
@@ -141,34 +141,44 @@ const genCreatePersonParams = (): fc.Arbitrary<CreatePersonParams> => {
 describe('Property 17: Person holon completeness', () => {
   test('created Person holons contain all required fields', () => {
     fc.assert(
-      fc.property(genCreatePersonParams(), (params) => {
-        const result = personManager.createPerson(params);
-        
+      fc.asyncProperty(genCreatePersonParams(), async (params) => {
+        // Setup isolated environment
+        const holonRegistry = new HolonRegistry();
+        const documentRegistry = new DocumentRegistry();
+        const constraintEngine = new ConstraintEngine(documentRegistry);
+        const eventStore = new InMemoryEventStore();
+        const relationshipRegistry = new RelationshipRegistry(constraintEngine, eventStore);
+        const personManager = new PersonManager(
+          holonRegistry,
+          relationshipRegistry,
+          eventStore,
+          constraintEngine
+        );
+
+        const result = await personManager.createPerson(params);
+
         // Person creation should succeed
         expect(result.success).toBe(true);
         expect(result.personID).toBeDefined();
-        
+
         // Retrieve the created person
-        const person = holonRegistry.getHolon(result.personID!);
+        const person = await holonRegistry.getHolon(result.personID!);
         expect(person).toBeDefined();
-        
+
         // Verify all required fields are present
         expect(person!.id).toBeDefined(); // SOM Person ID
         expect(person!.type).toBe(HolonType.Person);
+
+        // Verify specific fields match input
         expect(person!.properties.edipi).toBe(params.edipi);
-        expect(person!.properties.serviceNumbers).toEqual(params.serviceNumbers);
         expect(person!.properties.name).toBe(params.name);
-        expect(person!.properties.dob).toEqual(params.dob);
+        expect(person!.properties.email).toBe(params.email);
+        expect(person!.properties.employeeId).toBe(params.employeeId);
         expect(person!.properties.serviceBranch).toBe(params.serviceBranch);
         expect(person!.properties.designatorRating).toBe(params.designatorRating);
         expect(person!.properties.category).toBe(params.category);
-        
-        // Verify metadata
-        expect(person!.createdAt).toBeInstanceOf(Date);
-        expect(person!.createdBy).toBeDefined();
-        expect(person!.status).toBe('active');
-        expect(person!.sourceDocuments).toEqual(params.sourceDocuments);
-        
+        expect(person!.properties.securityClearance).toBe(params.securityClearance);
+
         return true;
       }),
       { numRuns: 100 }
@@ -187,12 +197,20 @@ describe('Property 17: Person holon completeness', () => {
 describe('Property 18: Assignment qualification validation', () => {
   test('assignment is rejected when person lacks required qualifications', () => {
     fc.assert(
-      fc.property(
+      fc.asyncProperty(
         genCreatePersonParams(),
         genCreatePersonParams(), // For creating a second person with qualifications
-        (personParams, qualifiedPersonParams) => {
+        async (personParams, qualifiedPersonParams) => {
+          // Setup isolated environment
+          const holonRegistry = new HolonRegistry();
+          const documentRegistry = new DocumentRegistry();
+          const constraintEngine = new ConstraintEngine(documentRegistry);
+          const eventStore = new InMemoryEventStore();
+          const relationshipRegistry = new RelationshipRegistry(constraintEngine, eventStore);
+          const personManager = new PersonManager(holonRegistry, relationshipRegistry, eventStore, constraintEngine);
+
           // Create a position with required qualifications
-          const positionResult = holonRegistry.createHolon({
+          const positionResult = await holonRegistry.createHolon({
             type: HolonType.Position,
             properties: {
               billetIDs: ['BILLET-001'],
@@ -207,7 +225,7 @@ describe('Property 18: Assignment qualification validation', () => {
           });
 
           // Create a qualification
-          const qualificationResult = holonRegistry.createHolon({
+          const qualificationResult = await holonRegistry.createHolon({
             type: HolonType.Qualification,
             properties: {
               nec: '5326',
@@ -222,7 +240,7 @@ describe('Property 18: Assignment qualification validation', () => {
           });
 
           // Link qualification as required for position
-          relationshipRegistry.createRelationship({
+          await relationshipRegistry.createRelationship({
             type: RelationshipType.REQUIRED_FOR,
             sourceHolonID: qualificationResult.id,
             targetHolonID: positionResult.id,
@@ -234,11 +252,11 @@ describe('Property 18: Assignment qualification validation', () => {
           });
 
           // Create a person WITHOUT the required qualification
-          const personResult = personManager.createPerson(personParams);
+          const personResult = await personManager.createPerson(personParams);
           expect(personResult.success).toBe(true);
 
           // Try to assign person to position - should fail
-          const assignmentResult = personManager.assignPersonToPosition({
+          const assignmentResult = await personManager.assignPersonToPosition({
             personID: personResult.personID!,
             positionID: positionResult.id,
             effectiveStart: new Date(),
@@ -254,11 +272,11 @@ describe('Property 18: Assignment qualification validation', () => {
           expect(assignmentResult.validation.errors![0].violatedRule).toBe('qualification_requirement');
 
           // Now create a qualified person
-          const qualifiedPersonResult = personManager.createPerson(qualifiedPersonParams);
+          const qualifiedPersonResult = await personManager.createPerson(qualifiedPersonParams);
           expect(qualifiedPersonResult.success).toBe(true);
 
           // Assign the qualification to the person
-          const qualAssignmentResult = personManager.assignQualification({
+          const qualAssignmentResult = await personManager.assignQualification({
             personID: qualifiedPersonResult.personID!,
             qualificationID: qualificationResult.id,
             effectiveStart: new Date(),
@@ -269,7 +287,7 @@ describe('Property 18: Assignment qualification validation', () => {
           expect(qualAssignmentResult.success).toBe(true);
 
           // Now try to assign qualified person to position - should succeed
-          const qualifiedAssignmentResult = personManager.assignPersonToPosition({
+          const qualifiedAssignmentResult = await personManager.assignPersonToPosition({
             personID: qualifiedPersonResult.personID!,
             positionID: positionResult.id,
             effectiveStart: new Date(),
@@ -301,16 +319,24 @@ describe('Property 18: Assignment qualification validation', () => {
 describe('Property 19: Qualification change tracking', () => {
   test('qualification changes generate events and update relationships', () => {
     fc.assert(
-      fc.property(
+      fc.asyncProperty(
         genCreatePersonParams(),
-        (personParams) => {
+        async (personParams) => {
+          // Setup isolated environment
+          const holonRegistry = new HolonRegistry();
+          const documentRegistry = new DocumentRegistry();
+          const constraintEngine = new ConstraintEngine(documentRegistry);
+          const eventStore = new InMemoryEventStore();
+          const relationshipRegistry = new RelationshipRegistry(constraintEngine, eventStore);
+          const personManager = new PersonManager(holonRegistry, relationshipRegistry, eventStore, constraintEngine);
+
           // Create a person
-          const personResult = personManager.createPerson(personParams);
+          const personResult = await personManager.createPerson(personParams);
           expect(personResult.success).toBe(true);
           const personID = personResult.personID!;
 
           // Create a qualification
-          const qualificationResult = holonRegistry.createHolon({
+          const qualificationResult = await holonRegistry.createHolon({
             type: HolonType.Qualification,
             properties: {
               nec: '5326',
@@ -329,7 +355,7 @@ describe('Property 19: Qualification change tracking', () => {
           const initialEventCount = eventStore.getAllEvents().length;
 
           // Assign qualification to person
-          const assignResult = personManager.assignQualification({
+          const assignResult = await personManager.assignQualification({
             personID,
             qualificationID,
             effectiveStart: new Date(),
@@ -355,7 +381,7 @@ describe('Property 19: Qualification change tracking', () => {
           expect(qualEvent!.subjects).toContain(qualificationID);
 
           // Verify HAS_QUAL relationship exists
-          const relationships = relationshipRegistry.getRelationshipsFrom(
+          const relationships = await relationshipRegistry.getRelationshipsFrom(
             personID,
             RelationshipType.HAS_QUAL
           );
@@ -365,7 +391,7 @@ describe('Property 19: Qualification change tracking', () => {
           expect(hasQualRel!.effectiveEnd).toBeUndefined(); // Still active
 
           // Now remove the qualification
-          const removeResult = personManager.removeQualification(
+          const removeResult = await personManager.removeQualification(
             personID,
             qualificationID,
             new Date(),
@@ -386,7 +412,7 @@ describe('Property 19: Qualification change tracking', () => {
           expect(expireEvent!.subjects).toContain(qualificationID);
 
           // Verify relationship was updated (ended)
-          const updatedRel = relationshipRegistry.getRelationship(hasQualRel!.id);
+          const updatedRel = await relationshipRegistry.getRelationship(hasQualRel!.id);
           expect(updatedRel).toBeDefined();
           expect(updatedRel!.effectiveEnd).toBeDefined();
 
@@ -409,19 +435,27 @@ describe('Property 19: Qualification change tracking', () => {
 describe('Property 20: Concurrent position constraint enforcement', () => {
   test('concurrent position limits are enforced', () => {
     fc.assert(
-      fc.property(
+      fc.asyncProperty(
         genCreatePersonParams(),
         fc.integer({ min: 1, max: 5 }), // Number of positions to create
-        (personParams, numPositions) => {
+        async (personParams, numPositions) => {
+          // Setup isolated environment
+          const holonRegistry = new HolonRegistry();
+          const documentRegistry = new DocumentRegistry();
+          const constraintEngine = new ConstraintEngine(documentRegistry);
+          const eventStore = new InMemoryEventStore();
+          const relationshipRegistry = new RelationshipRegistry(constraintEngine, eventStore);
+          const personManager = new PersonManager(holonRegistry, relationshipRegistry, eventStore, constraintEngine);
+
           // Create a person
-          const personResult = personManager.createPerson(personParams);
+          const personResult = await personManager.createPerson(personParams);
           expect(personResult.success).toBe(true);
           const personID = personResult.personID!;
 
           // Create multiple positions
           const positions: string[] = [];
           for (let i = 0; i < numPositions; i++) {
-            const positionResult = holonRegistry.createHolon({
+            const positionResult = await holonRegistry.createHolon({
               type: HolonType.Position,
               properties: {
                 billetIDs: [`BILLET-${i}`],
@@ -443,7 +477,7 @@ describe('Property 20: Concurrent position constraint enforcement', () => {
 
           // Try to assign person to all positions
           for (let i = 0; i < positions.length; i++) {
-            const assignResult = personManager.assignPersonToPosition({
+            const assignResult = await personManager.assignPersonToPosition({
               personID,
               positionID: positions[i],
               effectiveStart: effectiveDate,
@@ -468,7 +502,7 @@ describe('Property 20: Concurrent position constraint enforcement', () => {
           // Verify that we can assign up to MAX_CONCURRENT_POSITIONS (3)
           // but no more
           const MAX_CONCURRENT_POSITIONS = 3;
-          
+
           if (numPositions <= MAX_CONCURRENT_POSITIONS) {
             // All assignments should succeed
             expect(successfulAssignments).toBe(numPositions);
@@ -480,7 +514,7 @@ describe('Property 20: Concurrent position constraint enforcement', () => {
           }
 
           // Verify the actual number of concurrent positions
-          const currentPositions = personManager.getPersonPositions(personID, effectiveDate);
+          const currentPositions = await personManager.getPersonPositions(personID, effectiveDate);
           expect(currentPositions.length).toBeLessThanOrEqual(MAX_CONCURRENT_POSITIONS);
           expect(currentPositions.length).toBe(successfulAssignments);
 

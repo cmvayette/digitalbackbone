@@ -1,0 +1,144 @@
+{
+  "type": "object",
+  "properties": {
+    "type": {
+      "type": "string",
+      "const": "Constraint"
+    },
+    "properties": {
+      "type": "object",
+      "properties": {
+        "constraintType": {
+          "type": "string",
+          "enum": [
+            "Structural",
+            "Policy",
+            "Eligibility",
+            "Temporal",
+            "Capacity",
+            "Dependency",
+            "Risk"
+          ]
+        },
+        "name": {
+          "type": "string"
+        },
+        "definition": {
+          "type": "string"
+        },
+        "scope": {
+          "type": "object",
+          "properties": {
+            "holonTypes": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "Person",
+                  "Position",
+                  "Organization",
+                  "System",
+                  "Asset",
+                  "Mission",
+                  "Capability",
+                  "Qualification",
+                  "Event",
+                  "Location",
+                  "Document",
+                  "Objective",
+                  "LOE",
+                  "Initiative",
+                  "Task",
+                  "MeasureDefinition",
+                  "LensDefinition",
+                  "Constraint"
+                ]
+              }
+            },
+            "relationshipTypes": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "eventTypes": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "effectiveDates": {
+          "type": "object",
+          "properties": {
+            "start": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "end": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "start"
+          ]
+        },
+        "precedence": {
+          "type": "number"
+        },
+        "inheritanceRules": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "constraintType",
+        "definition",
+        "effectiveDates",
+        "name",
+        "precedence",
+        "scope"
+      ]
+    },
+    "id": {
+      "description": "Core holon type definitions for the Semantic Operating Model",
+      "type": "string"
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "createdBy": {
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "active",
+        "inactive"
+      ],
+      "type": "string"
+    },
+    "sourceDocuments": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "createdAt",
+    "createdBy",
+    "id",
+    "properties",
+    "sourceDocuments",
+    "status",
+    "type"
+  ],
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "http://som.tier0/schemas/v1/constraintholon.schema.json"
+}

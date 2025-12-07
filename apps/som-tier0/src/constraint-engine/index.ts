@@ -11,9 +11,10 @@ import {
   ConstraintType,
   ConstraintHolon,
   Holon,
-} from '../core/types/holon';
-import { Relationship, RelationshipType } from '../core/types/relationship';
-import { Event, EventType } from '../core/types/event';
+} from '@som/shared-types';
+import { JsonLogicRule, jsonLogicEvaluator } from './json-logic-evaluator';
+import { Relationship, RelationshipType } from '@som/shared-types';
+import { Event, EventType } from '@som/shared-types';
 import { DocumentRegistry } from '../document-registry';
 import { randomUUID } from 'crypto';
 
@@ -80,7 +81,8 @@ export interface Constraint {
   };
   effectiveDates: { start: Date; end?: Date };
   sourceDocuments: DocumentID[];
-  validationLogic: ValidationFunction;
+  validationLogic?: ValidationFunction;
+  rule?: JsonLogicRule;
   precedence: number;
   inheritanceRules?: InheritanceRule;
 }
@@ -108,7 +110,8 @@ export interface RegisterConstraintParams {
   };
   effectiveDates: { start: Date; end?: Date };
   sourceDocuments: DocumentID[];
-  validationLogic: ValidationFunction;
+  validationLogic?: ValidationFunction;
+  rule?: JsonLogicRule;
   precedence?: number;
   inheritanceRules?: InheritanceRule;
 }
@@ -169,9 +172,14 @@ export class ConstraintEngine {
       effectiveDates: params.effectiveDates,
       sourceDocuments: params.sourceDocuments,
       validationLogic: params.validationLogic,
+      rule: params.rule,
       precedence: params.precedence ?? 0,
       inheritanceRules: params.inheritanceRules,
     };
+
+    if (!params.validationLogic && !params.rule) {
+      throw new Error('Constraint checks require either validationLogic or a rule.');
+    }
 
     // Store constraint
     this.constraints.set(id, constraint);
@@ -313,8 +321,26 @@ export class ConstraintEngine {
     const warnings: ValidationWarning[] = [];
 
     for (const constraint of allConstraints) {
-      const result = constraint.validationLogic(holon, context);
-      
+      let result: ValidationResult = { valid: true };
+
+      if (constraint.validationLogic) {
+        result = constraint.validationLogic(holon, context);
+      } else if (constraint.rule) {
+        // Evaluate logic rule
+        const isValid = jsonLogicEvaluator.evaluate(constraint.rule, { target: holon });
+        if (!isValid) {
+          result = {
+            valid: false,
+            errors: [{
+              constraintID: constraint.id,
+              message: `Constraint ${constraint.name} failed.`,
+              violatedRule: JSON.stringify(constraint.rule),
+              affectedHolons: [holon.id],
+            }]
+          };
+        }
+      }
+
       if (!result.valid) {
         if (result.errors) {
           errors.push(...result.errors);
@@ -343,8 +369,26 @@ export class ConstraintEngine {
     const warnings: ValidationWarning[] = [];
 
     for (const constraint of constraints) {
-      const result = constraint.validationLogic(relationship, context);
-      
+      let result: ValidationResult = { valid: true };
+
+      if (constraint.validationLogic) {
+        result = constraint.validationLogic(relationship, context);
+      } else if (constraint.rule) {
+        // Evaluate logic rule
+        const isValid = jsonLogicEvaluator.evaluate(constraint.rule, { target: relationship });
+        if (!isValid) {
+          result = {
+            valid: false,
+            errors: [{
+              constraintID: constraint.id,
+              message: `Constraint ${constraint.name} failed.`,
+              violatedRule: JSON.stringify(constraint.rule),
+              affectedHolons: [relationship.sourceHolonID, relationship.targetHolonID],
+            }]
+          };
+        }
+      }
+
       if (!result.valid) {
         if (result.errors) {
           errors.push(...result.errors);
@@ -373,8 +417,26 @@ export class ConstraintEngine {
     const warnings: ValidationWarning[] = [];
 
     for (const constraint of constraints) {
-      const result = constraint.validationLogic(event, context);
-      
+      let result: ValidationResult = { valid: true };
+
+      if (constraint.validationLogic) {
+        result = constraint.validationLogic(event, context);
+      } else if (constraint.rule) {
+        // Evaluate logic rule
+        const isValid = jsonLogicEvaluator.evaluate(constraint.rule, { target: event });
+        if (!isValid) {
+          result = {
+            valid: false,
+            errors: [{
+              constraintID: constraint.id,
+              message: `Constraint ${constraint.name} failed.`,
+              violatedRule: JSON.stringify(constraint.rule),
+              affectedHolons: event.subjects,
+            }]
+          };
+        }
+      }
+
       if (!result.valid) {
         if (result.errors) {
           errors.push(...result.errors);
@@ -427,7 +489,7 @@ export class ConstraintEngine {
     // Override with direct constraints based on inheritance rules
     for (const constraint of direct) {
       const existing = merged.get(constraint.name);
-      
+
       if (!existing) {
         merged.set(constraint.name, constraint);
       } else if (existing.inheritanceRules?.canOverride) {

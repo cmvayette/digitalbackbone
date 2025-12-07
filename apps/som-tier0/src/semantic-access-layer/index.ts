@@ -3,11 +3,11 @@
  * Maps external system data to SOM holons and events
  */
 
-import { HolonID, DocumentID, Timestamp } from '../core/types/holon';
-import { Event, EventType } from '../core/types/event';
-import { EventStore } from '../event-store';
+import { HolonID, DocumentID, Timestamp } from '@som/shared-types';
+import { Event, EventType } from '@som/shared-types';
+import { IEventStore as EventStore } from '../event-store';
 import { ConstraintEngine, ValidationResult } from '../constraint-engine';
-import { HolonRegistry } from '../core/holon-registry';
+import { IHolonRepository as HolonRegistry } from '../core/interfaces/holon-repository';
 import { DocumentRegistry } from '../document-registry';
 
 /**
@@ -154,7 +154,7 @@ export class SemanticAccessLayer {
       this.reverseIdMappings.set(holonID, []);
     }
     const reverseMappings = this.reverseIdMappings.get(holonID)!;
-    
+
     // Update existing or add new
     const existingIndex = reverseMappings.findIndex(
       m => m.externalSystem === externalSystem && m.externalID === externalID
@@ -293,7 +293,7 @@ export class SemanticAccessLayer {
       if (!holonID) {
         // Look for potential duplicates based on payload data
         const potentialDuplicates = this.findPotentialDuplicates(data);
-        
+
         if (potentialDuplicates.length > 0) {
           // Conflict detected - multiple systems may reference same entity
           const conflict: DataConflict = {
@@ -408,7 +408,7 @@ export class SemanticAccessLayer {
     // This is a simplified implementation
     // In a real system, this would use sophisticated matching logic
     // based on entity attributes (e.g., EDIPI for persons, UIC for orgs)
-    
+
     // For now, return empty array (no duplicates detected)
     return [];
   }
@@ -458,12 +458,12 @@ export class SemanticAccessLayer {
    * Query for system-specific format
    * Transforms SOM data into external system format
    */
-  queryForSystem(
+  async queryForSystem(
     externalSystem: ExternalSystemID,
     holonID: HolonID
-  ): Record<string, any> | null {
+  ): Promise<Record<string, any> | null> {
     // Get the holon
-    const holon = this.holonRegistry.getHolon(holonID);
+    const holon = await this.holonRegistry.getHolon(holonID);
     if (!holon) {
       return null;
     }

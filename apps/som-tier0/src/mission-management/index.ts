@@ -3,13 +3,13 @@
  * Manages Mission, Capability, and Asset holon creation, relationships, and lifecycle
  */
 
-import { HolonRegistry } from '../core/holon-registry';
+import { IHolonRepository as HolonRegistry } from '../core/interfaces/holon-repository';
 import { RelationshipRegistry } from '../relationship-registry';
-import { EventStore } from '../event-store';
+import { IEventStore as EventStore } from '../event-store';
 import { ConstraintEngine, ValidationResult } from '../constraint-engine';
-import { Mission, Capability, Asset, HolonType, HolonID, DocumentID, EventID, Timestamp } from '../core/types/holon';
-import { RelationshipType } from '../core/types/relationship';
-import { EventType } from '../core/types/event';
+import { Mission, Capability, Asset, HolonType, HolonID, DocumentID, EventID, Timestamp } from '@som/shared-types';
+import { RelationshipType } from '@som/shared-types';
+import { EventType } from '@som/shared-types';
 
 /**
  * Parameters for creating a Mission holon
@@ -128,7 +128,7 @@ export class MissionManager {
   /**
    * Create a new Mission holon with required fields
    */
-  createMission(params: CreateMissionParams): MissionOperationResult {
+  async createMission(params: CreateMissionParams): Promise<MissionOperationResult> {
     // Create event for mission creation
     const eventId = this.eventStore.submitEvent({
       type: EventType.MissionPlanned,
@@ -147,7 +147,7 @@ export class MissionManager {
     });
 
     // Create Mission holon
-    const mission = this.holonRegistry.createHolon({
+    const mission = await this.holonRegistry.createHolon({
       type: HolonType.Mission,
       properties: {
         operationName: params.operationName,
@@ -166,7 +166,7 @@ export class MissionManager {
 
     if (!validation.valid) {
       // Rollback: mark mission as inactive
-      this.holonRegistry.markHolonInactive(mission.id, 'Validation failed');
+      await this.holonRegistry.markHolonInactive(mission.id, 'Validation failed');
       return {
         success: false,
         validation,
@@ -184,7 +184,7 @@ export class MissionManager {
   /**
    * Create a new Capability holon with required fields
    */
-  createCapability(params: CreateCapabilityParams): MissionOperationResult {
+  async createCapability(params: CreateCapabilityParams): Promise<MissionOperationResult> {
     // Create event for capability creation
     const eventId = this.eventStore.submitEvent({
       type: EventType.MissionPlanned, // Using generic event type
@@ -202,7 +202,7 @@ export class MissionManager {
     });
 
     // Create Capability holon
-    const capability = this.holonRegistry.createHolon({
+    const capability = await this.holonRegistry.createHolon({
       type: HolonType.Capability,
       properties: {
         capabilityCode: params.capabilityCode,
@@ -220,7 +220,7 @@ export class MissionManager {
 
     if (!validation.valid) {
       // Rollback: mark capability as inactive
-      this.holonRegistry.markHolonInactive(capability.id, 'Validation failed');
+      await this.holonRegistry.markHolonInactive(capability.id, 'Validation failed');
       return {
         success: false,
         validation,
@@ -238,7 +238,7 @@ export class MissionManager {
   /**
    * Create a new Asset holon with required fields
    */
-  createAsset(params: CreateAssetParams): MissionOperationResult {
+  async createAsset(params: CreateAssetParams): Promise<MissionOperationResult> {
     // Create event for asset creation
     const eventId = this.eventStore.submitEvent({
       type: EventType.SystemDeployed, // Using system event as proxy
@@ -256,7 +256,7 @@ export class MissionManager {
     });
 
     // Create Asset holon
-    const asset = this.holonRegistry.createHolon({
+    const asset = await this.holonRegistry.createHolon({
       type: HolonType.Asset,
       properties: {
         hullNumberOrSerial: params.hullNumberOrSerial,
@@ -273,7 +273,7 @@ export class MissionManager {
 
     if (!validation.valid) {
       // Rollback: mark asset as inactive
-      this.holonRegistry.markHolonInactive(asset.id, 'Validation failed');
+      await this.holonRegistry.markHolonInactive(asset.id, 'Validation failed');
       return {
         success: false,
         validation,
@@ -291,10 +291,10 @@ export class MissionManager {
   /**
    * Assign a Capability to a Mission (Mission USES Capability)
    */
-  assignCapabilityToMission(params: AssignCapabilityToMissionParams): MissionOperationResult {
+  async assignCapabilityToMission(params: AssignCapabilityToMissionParams): Promise<MissionOperationResult> {
     // Get mission and capability holons
-    const mission = this.holonRegistry.getHolon(params.missionID);
-    const capability = this.holonRegistry.getHolon(params.capabilityID);
+    const mission = await this.holonRegistry.getHolon(params.missionID);
+    const capability = await this.holonRegistry.getHolon(params.capabilityID);
 
     if (!mission) {
       return {
@@ -327,7 +327,7 @@ export class MissionManager {
     }
 
     // Create the USES relationship
-    const result = this.relationshipRegistry.createRelationship({
+    const result = await this.relationshipRegistry.createRelationship({
       type: RelationshipType.USES,
       sourceHolonID: params.missionID,
       targetHolonID: params.capabilityID,
@@ -357,10 +357,10 @@ export class MissionManager {
   /**
    * Assign an Asset to support a Mission (Asset SUPPORTS Mission)
    */
-  assignAssetToMission(params: AssignAssetToMissionParams): MissionOperationResult {
+  async assignAssetToMission(params: AssignAssetToMissionParams): Promise<MissionOperationResult> {
     // Get asset and mission holons
-    const asset = this.holonRegistry.getHolon(params.assetID);
-    const mission = this.holonRegistry.getHolon(params.missionID);
+    const asset = await this.holonRegistry.getHolon(params.assetID);
+    const mission = await this.holonRegistry.getHolon(params.missionID);
 
     if (!asset) {
       return {
@@ -393,7 +393,7 @@ export class MissionManager {
     }
 
     // Create the SUPPORTS relationship
-    const result = this.relationshipRegistry.createRelationship({
+    const result = await this.relationshipRegistry.createRelationship({
       type: RelationshipType.SUPPORTS,
       sourceHolonID: params.assetID,
       targetHolonID: params.missionID,
@@ -423,9 +423,9 @@ export class MissionManager {
   /**
    * Record a mission phase transition event
    */
-  recordMissionPhaseTransition(params: MissionPhaseTransitionParams): MissionOperationResult {
+  async recordMissionPhaseTransition(params: MissionPhaseTransitionParams): Promise<MissionOperationResult> {
     // Get mission holon
-    const mission = this.holonRegistry.getHolon(params.missionID);
+    const mission = await this.holonRegistry.getHolon(params.missionID);
 
     if (!mission) {
       return {
@@ -468,8 +468,8 @@ export class MissionManager {
   /**
    * Get all capabilities used by a mission
    */
-  getMissionCapabilities(missionID: HolonID, effectiveAt?: Timestamp): HolonID[] {
-    const relationships = this.relationshipRegistry.getRelationshipsFrom(
+  async getMissionCapabilities(missionID: HolonID, effectiveAt?: Timestamp): Promise<HolonID[]> {
+    const relationships = await this.relationshipRegistry.getRelationshipsFrom(
       missionID,
       RelationshipType.USES,
       { effectiveAt, includeEnded: false }
@@ -481,8 +481,8 @@ export class MissionManager {
   /**
    * Get all assets supporting a mission
    */
-  getMissionAssets(missionID: HolonID, effectiveAt?: Timestamp): HolonID[] {
-    const relationships = this.relationshipRegistry.getRelationshipsTo(
+  async getMissionAssets(missionID: HolonID, effectiveAt?: Timestamp): Promise<HolonID[]> {
+    const relationships = await this.relationshipRegistry.getRelationshipsTo(
       missionID,
       RelationshipType.SUPPORTS,
       { effectiveAt, includeEnded: false }
@@ -494,8 +494,8 @@ export class MissionManager {
   /**
    * Get all missions that use a specific capability
    */
-  getCapabilityMissions(capabilityID: HolonID, effectiveAt?: Timestamp): HolonID[] {
-    const relationships = this.relationshipRegistry.getRelationshipsTo(
+  async getCapabilityMissions(capabilityID: HolonID, effectiveAt?: Timestamp): Promise<HolonID[]> {
+    const relationships = await this.relationshipRegistry.getRelationshipsTo(
       capabilityID,
       RelationshipType.USES,
       { effectiveAt, includeEnded: false }
@@ -507,8 +507,8 @@ export class MissionManager {
   /**
    * Get all missions supported by a specific asset
    */
-  getAssetMissions(assetID: HolonID, effectiveAt?: Timestamp): HolonID[] {
-    const relationships = this.relationshipRegistry.getRelationshipsFrom(
+  async getAssetMissions(assetID: HolonID, effectiveAt?: Timestamp): Promise<HolonID[]> {
+    const relationships = await this.relationshipRegistry.getRelationshipsFrom(
       assetID,
       RelationshipType.SUPPORTS,
       { effectiveAt, includeEnded: false }
@@ -521,7 +521,7 @@ export class MissionManager {
    * Get all phase transition events for a mission
    */
   getMissionPhaseHistory(missionID: HolonID): EventID[] {
-    const events = this.eventStore.getEventsByHolon(missionID);
+    const events = this.eventStore.getEvents({ subjects: [missionID] });
     return events
       .filter(event => event.type === EventType.MissionPhaseTransition)
       .map(event => event.id);

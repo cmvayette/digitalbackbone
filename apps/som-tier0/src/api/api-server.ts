@@ -4,12 +4,12 @@
  */
 
 import { QueryLayer } from '../query/query-layer';
-import { EventStore } from '../event-store';
+import { IEventStore as EventStore } from '../event-store';
 import { SemanticAccessLayer } from '../semantic-access-layer';
 import { SchemaVersioningEngine } from '../schema-versioning';
 import { GovernanceEngine } from '../governance';
 import { MonitoringService } from '../monitoring';
-import { HolonRegistry } from '../core/holon-registry';
+import { IHolonRepository as HolonRegistry } from '../core/interfaces/holon-repository';
 import { RelationshipRegistry } from '../relationship-registry';
 import { ConstraintEngine } from '../constraint-engine';
 import { DocumentRegistry } from '../document-registry';

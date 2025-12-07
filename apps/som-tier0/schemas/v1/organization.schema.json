@@ -1,0 +1,76 @@
+{
+  "type": "object",
+  "properties": {
+    "type": {
+      "type": "string",
+      "const": "Organization"
+    },
+    "properties": {
+      "type": "object",
+      "properties": {
+        "uics": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "echelonLevel": {
+          "type": "string"
+        },
+        "missionStatement": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "echelonLevel",
+        "missionStatement",
+        "name",
+        "type",
+        "uics"
+      ]
+    },
+    "id": {
+      "description": "Core holon type definitions for the Semantic Operating Model",
+      "type": "string"
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "createdBy": {
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "active",
+        "inactive"
+      ],
+      "type": "string"
+    },
+    "sourceDocuments": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "createdAt",
+    "createdBy",
+    "id",
+    "properties",
+    "sourceDocuments",
+    "status",
+    "type"
+  ],
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "http://som.tier0/schemas/v1/organization.schema.json"
+}

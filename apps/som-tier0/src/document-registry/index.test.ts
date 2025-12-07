@@ -5,7 +5,7 @@
 import { describe, test, expect, beforeEach } from 'vitest';
 import * as fc from 'fast-check';
 import { DocumentRegistry, RegisterDocumentParams } from './index';
-import { DocumentType, HolonType } from '../core/types/holon';
+import { DocumentType, HolonType } from '@som/shared-types';
 
 describe('Document Registry - Property-Based Tests', () => {
   let registry: DocumentRegistry;

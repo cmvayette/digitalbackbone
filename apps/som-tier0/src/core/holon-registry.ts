@@ -10,36 +10,59 @@
  */
 
 import { randomUUID } from 'crypto';
-import { Holon, HolonID, HolonType, EventID, DocumentID, Timestamp } from './types/holon';
-
-export interface CreateHolonParams {
-  type: HolonType;
-  properties: Record<string, any>;
-  createdBy: EventID;
-  sourceDocuments: DocumentID[];
-}
-
-export interface HolonQueryFilters {
-  status?: 'active' | 'inactive';
-  createdAfter?: Timestamp;
-  createdBefore?: Timestamp;
-}
+import { Holon, HolonID, HolonType } from '@som/shared-types';
+import { IHolonRepository, CreateHolonParams, HolonQueryFilters } from './interfaces/holon-repository';
+import { QueryOptions } from './interfaces/repository';
 
 /**
  * HolonRegistry manages the lifecycle and storage of all holons in the system
  */
-export class HolonRegistry {
+export class InMemoryHolonRepository implements IHolonRepository {
   private holons: Map<HolonID, Holon>;
   private holonsByType: Map<HolonType, Set<HolonID>>;
 
   constructor() {
     this.holons = new Map();
     this.holonsByType = new Map();
-    
+
     // Initialize type index for all holon types
     Object.values(HolonType).forEach(type => {
       this.holonsByType.set(type, new Set());
     });
+  }
+
+  // IRepository methods
+  async save(item: Holon): Promise<void> {
+    this.holons.set(item.id, item);
+    const typeSet = this.holonsByType.get(item.type);
+    if (typeSet) {
+      typeSet.add(item.id);
+    }
+  }
+
+  async findById(id: string): Promise<Holon | null> {
+    return this.holons.get(id) || null;
+  }
+
+  async find(query: Record<string, any>, options?: QueryOptions): Promise<Holon[]> {
+    // Basic implementation of find - can be expanded
+    return Array.from(this.holons.values()).filter(holon => {
+      for (const key in query) {
+        if ((holon as any)[key] !== query[key]) return false;
+      }
+      return true;
+    });
+  }
+
+  async delete(id: string): Promise<void> {
+    const holon = this.holons.get(id);
+    if (holon) {
+      this.holons.delete(id);
+      const typeSet = this.holonsByType.get(holon.type);
+      if (typeSet) {
+        typeSet.delete(id);
+      }
+    }
   }
 
   /**
@@ -55,8 +78,8 @@ export class HolonRegistry {
    * @param params - Holon creation parameters
    * @returns The created holon with assigned ID
    */
-  createHolon(params: CreateHolonParams): Holon {
-    const id = this.generateHolonID();
+  async createHolon(params: CreateHolonParams): Promise<Holon> {
+    const id = params.id || this.generateHolonID();
     const now = new Date();
 
     const holon: Holon = {
@@ -70,13 +93,7 @@ export class HolonRegistry {
     };
 
     // Store holon
-    this.holons.set(id, holon);
-    
-    // Update type index
-    const typeSet = this.holonsByType.get(params.type);
-    if (typeSet) {
-      typeSet.add(id);
-    }
+    await this.save(holon);
 
     return holon;
   }
@@ -86,17 +103,17 @@ export class HolonRegistry {
    * @param holonID - The ID of the holon to retrieve
    * @returns The holon if found, undefined otherwise
    */
-  getHolon(holonID: HolonID): Holon | undefined {
+  async getHolon(holonID: HolonID): Promise<Holon | undefined> {
     return this.holons.get(holonID);
   }
 
   /**
    * Get all holons of a specific type
-   * @param type - The holon type to query
+   * @param type - The holon
    * @param filters - Optional filters to apply
    * @returns Array of holons matching the type and filters
    */
-  getHolonsByType(type: HolonType, filters?: HolonQueryFilters): Holon[] {
+  async getHolonsByType(type: HolonType, filters?: HolonQueryFilters): Promise<Holon[]> {
     const typeSet = this.holonsByType.get(type);
     if (!typeSet) {
       return [];
@@ -119,7 +136,7 @@ export class HolonRegistry {
    * @param reason - The reason for inactivation (for audit purposes)
    * @returns true if the holon was inactivated, false if not found
    */
-  markHolonInactive(holonID: HolonID, reason?: string): boolean {
+  async markHolonInactive(holonID: HolonID, reason?: string): Promise<boolean> {
     const holon = this.holons.get(holonID);
     if (!holon) {
       return false;
@@ -127,7 +144,7 @@ export class HolonRegistry {
 
     // Mark as inactive (mutation is acceptable here as we're managing state)
     holon.status = 'inactive';
-    
+
     // Store the holon back (ensures any observers see the change)
     this.holons.set(holonID, holon);
 
@@ -139,7 +156,7 @@ export class HolonRegistry {
    * @param holonID - The ID of the holon
    * @returns The holon if it exists (active or inactive), undefined otherwise
    */
-  getHolonHistory(holonID: HolonID): Holon | undefined {
+  async getHolonHistory(holonID: HolonID): Promise<Holon | undefined> {
     return this.holons.get(holonID);
   }
 
@@ -147,7 +164,7 @@ export class HolonRegistry {
    * Get all holons (active and inactive)
    * @returns Array of all holons in the registry
    */
-  getAllHolons(): Holon[] {
+  async getAllHolons(): Promise<Holon[]> {
     return Array.from(this.holons.values());
   }
 
@@ -156,7 +173,7 @@ export class HolonRegistry {
    * @param holonID - The ID to check
    * @returns true if the holon exists, false otherwise
    */
-  hasHolon(holonID: HolonID): boolean {
+  async hasHolon(holonID: HolonID): Promise<boolean> {
     return this.holons.has(holonID);
   }
 
@@ -166,17 +183,17 @@ export class HolonRegistry {
    * @param includeInactive - Whether to include inactive holons in the count
    * @returns The count of holons
    */
-  getHolonCount(type?: HolonType, includeInactive: boolean = true): number {
+  async getHolonCount(type?: HolonType, includeInactive: boolean = true): Promise<number> {
     if (type) {
       const typeSet = this.holonsByType.get(type);
       if (!typeSet) {
         return 0;
       }
-      
+
       if (includeInactive) {
         return typeSet.size;
       }
-      
+
       let count = 0;
       for (const id of typeSet) {
         const holon = this.holons.get(id);
@@ -186,11 +203,11 @@ export class HolonRegistry {
       }
       return count;
     }
-    
+
     if (includeInactive) {
       return this.holons.size;
     }
-    
+
     let count = 0;
     for (const holon of this.holons.values()) {
       if (holon.status === 'active') {
@@ -203,7 +220,7 @@ export class HolonRegistry {
   /**
    * Clear all holons from the registry (for testing purposes)
    */
-  clear(): void {
+  async clear(): Promise<void> {
     this.holons.clear();
     this.holonsByType.forEach(set => set.clear());
   }
@@ -233,4 +250,5 @@ export class HolonRegistry {
 }
 
 // Export a singleton instance for convenience
-export const holonRegistry = new HolonRegistry();
+export const holonRepository = new InMemoryHolonRepository();
+

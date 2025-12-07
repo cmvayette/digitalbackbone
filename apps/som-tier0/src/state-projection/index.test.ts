@@ -9,9 +9,9 @@ import { describe, it, expect } from 'vitest';
 import * as fc from 'fast-check';
 import { StateProjectionEngine, createStateProjectionEngine } from './index';
 import { createEventStore } from '../event-store';
-import { Event, EventType } from '../core/types/event';
-import { HolonType } from '../core/types/holon';
-import { RelationshipType } from '../core/types/relationship';
+import { Event, EventType } from '@som/shared-types';
+import { HolonType } from '@som/shared-types';
+import { RelationshipType } from '@som/shared-types';
 
 describe('State Projection Engine - Property-Based Tests', () => {
   /**

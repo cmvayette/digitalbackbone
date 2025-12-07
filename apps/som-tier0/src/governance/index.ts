@@ -3,8 +3,8 @@
  * Manages schema change proposals, validation, decision logging, and impact analysis
  */
 
-import { HolonType, DocumentID } from '../core/types/holon';
-import { RelationshipType } from '../core/types/relationship';
+import { HolonType, DocumentID } from '@som/shared-types';
+import { RelationshipType } from '@som/shared-types';
 import { randomUUID } from 'crypto';
 import { DocumentRegistry, RegisterDocumentParams } from '../document-registry';
 import { SchemaVersioningEngine, HolonTypeDefinition, RelationshipTypeDefinition } from '../schema-versioning';

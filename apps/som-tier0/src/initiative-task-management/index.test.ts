@@ -4,18 +4,18 @@
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import * as fc from 'fast-check';
-import { 
-  InitiativeTaskManager, 
-  CreateInitiativeParams, 
+import {
+  InitiativeTaskManager,
+  CreateInitiativeParams,
   CreateTaskParams,
-  CreateDependencyParams 
+  CreateDependencyParams
 } from './index';
-import { HolonRegistry } from '../core/holon-registry';
+import { InMemoryHolonRepository as HolonRegistry } from '../core/holon-registry';
 import { RelationshipRegistry } from '../relationship-registry';
-import { EventStore, InMemoryEventStore } from '../event-store';
+import { IEventStore as EventStore, InMemoryEventStore } from '../event-store';
 import { ConstraintEngine } from '../constraint-engine';
 import { DocumentRegistry } from '../document-registry';
-import { HolonType, HolonID } from '../core/types/holon';
+import { HolonType, HolonID } from '@som/shared-types';
 
 describe('InitiativeTaskManager', () => {
   let manager: InitiativeTaskManager;
@@ -27,7 +27,7 @@ describe('InitiativeTaskManager', () => {
   let systemActorID: HolonID;
   let testDocID: string;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     holonRegistry = new HolonRegistry();
     documentRegistry = new DocumentRegistry();
     eventStore = new InMemoryEventStore();
@@ -46,7 +46,7 @@ describe('InitiativeTaskManager', () => {
       causalLinks: {},
     });
 
-    const systemActor = holonRegistry.createHolon({
+    const systemActor = await holonRegistry.createHolon({
       type: HolonType.System,
       properties: {
         systemName: 'Test System',
@@ -63,7 +63,7 @@ describe('InitiativeTaskManager', () => {
   });
 
   describe('Initiative Management', () => {
-    it('should create an initiative with all required fields', () => {
+    it('should create an initiative with all required fields', async () => {
       const params: CreateInitiativeParams = {
         name: 'Digital Transformation Initiative',
         scope: 'Enterprise-wide digital modernization',
@@ -75,13 +75,13 @@ describe('InitiativeTaskManager', () => {
         sourceSystem: 'test',
       };
 
-      const result = manager.createInitiative(params);
+      const result = await manager.createInitiative(params);
 
       expect(result.success).toBe(true);
       expect(result.holonID).toBeDefined();
       expect(result.validation.valid).toBe(true);
 
-      const initiative = holonRegistry.getHolon(result.holonID!);
+      const initiative = await holonRegistry.getHolon(result.holonID!);
       expect(initiative).toBeDefined();
       expect(initiative?.type).toBe(HolonType.Initiative);
       expect(initiative?.properties.name).toBe(params.name);
@@ -90,7 +90,7 @@ describe('InitiativeTaskManager', () => {
       expect(initiative?.properties.stage).toBe(params.stage);
     });
 
-    it('should reject initiative creation without a name', () => {
+    it('should reject initiative creation without a name', async () => {
       const params: CreateInitiativeParams = {
         name: '',
         scope: 'Test scope',
@@ -102,7 +102,7 @@ describe('InitiativeTaskManager', () => {
         sourceSystem: 'test',
       };
 
-      const result = manager.createInitiative(params);
+      const result = await manager.createInitiative(params);
 
       expect(result.success).toBe(false);
       expect(result.validation.valid).toBe(false);
@@ -110,7 +110,7 @@ describe('InitiativeTaskManager', () => {
       expect(result.validation.errors![0].message).toContain('name');
     });
 
-    it('should reject initiative creation without a scope', () => {
+    it('should reject initiative creation without a scope', async () => {
       const params: CreateInitiativeParams = {
         name: 'Test Initiative',
         scope: '',
@@ -122,7 +122,7 @@ describe('InitiativeTaskManager', () => {
         sourceSystem: 'test',
       };
 
-      const result = manager.createInitiative(params);
+      const result = await manager.createInitiative(params);
 
       expect(result.success).toBe(false);
       expect(result.validation.valid).toBe(false);
@@ -130,7 +130,7 @@ describe('InitiativeTaskManager', () => {
       expect(result.validation.errors![0].message).toContain('scope');
     });
 
-    it('should reject initiative creation without a sponsor', () => {
+    it('should reject initiative creation without a sponsor', async () => {
       const params: CreateInitiativeParams = {
         name: 'Test Initiative',
         scope: 'Test scope',
@@ -142,7 +142,7 @@ describe('InitiativeTaskManager', () => {
         sourceSystem: 'test',
       };
 
-      const result = manager.createInitiative(params);
+      const result = await manager.createInitiative(params);
 
       expect(result.success).toBe(false);
       expect(result.validation.valid).toBe(false);
@@ -152,7 +152,7 @@ describe('InitiativeTaskManager', () => {
   });
 
   describe('Task Management', () => {
-    it('should create a task with all required fields', () => {
+    it('should create a task with all required fields', async () => {
       const params: CreateTaskParams = {
         description: 'Implement user authentication',
         type: 'development',
@@ -164,13 +164,13 @@ describe('InitiativeTaskManager', () => {
         sourceSystem: 'test',
       };
 
-      const result = manager.createTask(params);
+      const result = await manager.createTask(params);
 
       expect(result.success).toBe(true);
       expect(result.holonID).toBeDefined();
       expect(result.validation.valid).toBe(true);
 
-      const task = holonRegistry.getHolon(result.holonID!);
+      const task = await holonRegistry.getHolon(result.holonID!);
       expect(task).toBeDefined();
       expect(task?.type).toBe(HolonType.Task);
       expect(task?.properties.description).toBe(params.description);
@@ -179,7 +179,7 @@ describe('InitiativeTaskManager', () => {
       expect(task?.properties.status).toBe(params.status);
     });
 
-    it('should reject task creation without a description', () => {
+    it('should reject task creation without a description', async () => {
       const params: CreateTaskParams = {
         description: '',
         type: 'development',
@@ -191,7 +191,7 @@ describe('InitiativeTaskManager', () => {
         sourceSystem: 'test',
       };
 
-      const result = manager.createTask(params);
+      const result = await manager.createTask(params);
 
       expect(result.success).toBe(false);
       expect(result.validation.valid).toBe(false);
@@ -199,7 +199,7 @@ describe('InitiativeTaskManager', () => {
       expect(result.validation.errors![0].message).toContain('description');
     });
 
-    it('should reject task creation without a type', () => {
+    it('should reject task creation without a type', async () => {
       const params: CreateTaskParams = {
         description: 'Test task',
         type: '',
@@ -211,7 +211,7 @@ describe('InitiativeTaskManager', () => {
         sourceSystem: 'test',
       };
 
-      const result = manager.createTask(params);
+      const result = await manager.createTask(params);
 
       expect(result.success).toBe(false);
       expect(result.validation.valid).toBe(false);
@@ -219,7 +219,7 @@ describe('InitiativeTaskManager', () => {
       expect(result.validation.errors![0].message).toContain('type');
     });
 
-    it('should reject task creation without a priority', () => {
+    it('should reject task creation without a priority', async () => {
       const params: CreateTaskParams = {
         description: 'Test task',
         type: 'development',
@@ -231,7 +231,7 @@ describe('InitiativeTaskManager', () => {
         sourceSystem: 'test',
       };
 
-      const result = manager.createTask(params);
+      const result = await manager.createTask(params);
 
       expect(result.success).toBe(false);
       expect(result.validation.valid).toBe(false);
@@ -239,7 +239,7 @@ describe('InitiativeTaskManager', () => {
       expect(result.validation.errors![0].message).toContain('priority');
     });
 
-    it('should reject task creation without a due date', () => {
+    it('should reject task creation without a due date', async () => {
       const params: CreateTaskParams = {
         description: 'Test task',
         type: 'development',
@@ -251,7 +251,7 @@ describe('InitiativeTaskManager', () => {
         sourceSystem: 'test',
       };
 
-      const result = manager.createTask(params);
+      const result = await manager.createTask(params);
 
       expect(result.success).toBe(false);
       expect(result.validation.valid).toBe(false);
@@ -259,7 +259,7 @@ describe('InitiativeTaskManager', () => {
       expect(result.validation.errors![0].message).toContain('due date');
     });
 
-    it('should reject task creation without a status', () => {
+    it('should reject task creation without a status', async () => {
       const params: CreateTaskParams = {
         description: 'Test task',
         type: 'development',
@@ -271,7 +271,7 @@ describe('InitiativeTaskManager', () => {
         sourceSystem: 'test',
       };
 
-      const result = manager.createTask(params);
+      const result = await manager.createTask(params);
 
       expect(result.success).toBe(false);
       expect(result.validation.valid).toBe(false);
@@ -281,7 +281,7 @@ describe('InitiativeTaskManager', () => {
   });
 
   describe('Initiative-Objective Relationships', () => {
-    it('should create ALIGNED_TO relationship between initiative and objective', () => {
+    it('should create ALIGNED_TO relationship between initiative and objective', async () => {
       // Create an objective first
       const objectiveEvent = eventStore.submitEvent({
         type: 'ObjectiveCreated' as any,
@@ -293,7 +293,7 @@ describe('InitiativeTaskManager', () => {
         causalLinks: {},
       });
 
-      const objective = holonRegistry.createHolon({
+      const objective = await holonRegistry.createHolon({
         type: HolonType.Objective,
         properties: {
           description: 'Test Objective',
@@ -306,7 +306,7 @@ describe('InitiativeTaskManager', () => {
       });
 
       // Create an initiative
-      const initiativeResult = manager.createInitiative({
+      const initiativeResult = await manager.createInitiative({
         name: 'Test Initiative',
         scope: 'Test scope',
         sponsor: 'Test sponsor',
@@ -318,7 +318,7 @@ describe('InitiativeTaskManager', () => {
       });
 
       // Align initiative to objective
-      const alignResult = manager.alignInitiativeToObjective({
+      const alignResult = await manager.alignInitiativeToObjective({
         initiativeID: initiativeResult.holonID!,
         objectiveID: objective.id,
         effectiveStart: new Date(),
@@ -331,18 +331,18 @@ describe('InitiativeTaskManager', () => {
       expect(alignResult.relationshipID).toBeDefined();
 
       // Verify relationship
-      const objectives = manager.getInitiativeObjectives(initiativeResult.holonID!);
+      const objectives = await manager.getInitiativeObjectives(initiativeResult.holonID!);
       expect(objectives).toContain(objective.id);
 
-      const initiatives = manager.getObjectiveInitiatives(objective.id);
+      const initiatives = await manager.getObjectiveInitiatives(objective.id);
       expect(initiatives).toContain(initiativeResult.holonID);
     });
   });
 
   describe('Task-Initiative Relationships', () => {
-    it('should create PART_OF relationship between task and initiative', () => {
+    it('should create PART_OF relationship between task and initiative', async () => {
       // Create an initiative
-      const initiativeResult = manager.createInitiative({
+      const initiativeResult = await manager.createInitiative({
         name: 'Test Initiative',
         scope: 'Test scope',
         sponsor: 'Test sponsor',
@@ -354,7 +354,7 @@ describe('InitiativeTaskManager', () => {
       });
 
       // Create a task
-      const taskResult = manager.createTask({
+      const taskResult = await manager.createTask({
         description: 'Test task',
         type: 'development',
         priority: 'high',
@@ -366,7 +366,7 @@ describe('InitiativeTaskManager', () => {
       });
 
       // Add task to initiative
-      const addResult = manager.addTaskToInitiative({
+      const addResult = await manager.addTaskToInitiative({
         taskID: taskResult.holonID!,
         initiativeID: initiativeResult.holonID!,
         effectiveStart: new Date(),
@@ -379,18 +379,18 @@ describe('InitiativeTaskManager', () => {
       expect(addResult.relationshipID).toBeDefined();
 
       // Verify relationship
-      const tasks = manager.getInitiativeTasks(initiativeResult.holonID!);
+      const tasks = await manager.getInitiativeTasks(initiativeResult.holonID!);
       expect(tasks).toContain(taskResult.holonID);
 
-      const initiative = manager.getTaskInitiative(taskResult.holonID!);
+      const initiative = await manager.getTaskInitiative(taskResult.holonID!);
       expect(initiative).toBe(initiativeResult.holonID);
     });
   });
 
   describe('Dependency Relationships', () => {
-    it('should create DEPENDS_ON relationship between tasks', () => {
+    it('should create DEPENDS_ON relationship between tasks', async () => {
       // Create two tasks
-      const task1Result = manager.createTask({
+      const task1Result = await manager.createTask({
         description: 'Task 1',
         type: 'development',
         priority: 'high',
@@ -401,7 +401,7 @@ describe('InitiativeTaskManager', () => {
         sourceSystem: 'test',
       });
 
-      const task2Result = manager.createTask({
+      const task2Result = await manager.createTask({
         description: 'Task 2',
         type: 'development',
         priority: 'high',
@@ -413,7 +413,7 @@ describe('InitiativeTaskManager', () => {
       });
 
       // Create dependency: task2 depends on task1
-      const depResult = manager.createDependency({
+      const depResult = await manager.createDependency({
         sourceID: task2Result.holonID!,
         targetID: task1Result.holonID!,
         dependencyType: 'prerequisite',
@@ -427,16 +427,16 @@ describe('InitiativeTaskManager', () => {
       expect(depResult.relationshipID).toBeDefined();
 
       // Verify dependency
-      const dependencies = manager.getDependencies(task2Result.holonID!);
+      const dependencies = await manager.getDependencies(task2Result.holonID!);
       expect(dependencies).toContain(task1Result.holonID);
 
-      const dependents = manager.getDependents(task1Result.holonID!);
+      const dependents = await manager.getDependents(task1Result.holonID!);
       expect(dependents).toContain(task2Result.holonID);
     });
 
-    it('should reject dependency that would create a cycle', () => {
+    it('should reject dependency that would create a cycle', async () => {
       // Create two tasks
-      const task1Result = manager.createTask({
+      const task1Result = await manager.createTask({
         description: 'Task 1',
         type: 'development',
         priority: 'high',
@@ -447,7 +447,7 @@ describe('InitiativeTaskManager', () => {
         sourceSystem: 'test',
       });
 
-      const task2Result = manager.createTask({
+      const task2Result = await manager.createTask({
         description: 'Task 2',
         type: 'development',
         priority: 'high',
@@ -459,7 +459,7 @@ describe('InitiativeTaskManager', () => {
       });
 
       // Create dependency: task2 depends on task1
-      manager.createDependency({
+      await manager.createDependency({
         sourceID: task2Result.holonID!,
         targetID: task1Result.holonID!,
         dependencyType: 'prerequisite',
@@ -470,7 +470,7 @@ describe('InitiativeTaskManager', () => {
       });
 
       // Try to create reverse dependency: task1 depends on task2 (would create cycle)
-      const cycleResult = manager.createDependency({
+      const cycleResult = await manager.createDependency({
         sourceID: task1Result.holonID!,
         targetID: task2Result.holonID!,
         dependencyType: 'prerequisite',
@@ -486,9 +486,9 @@ describe('InitiativeTaskManager', () => {
       expect(cycleResult.validation.errors![0].message).toContain('cycle');
     });
 
-    it('should detect cycles in longer dependency chains', () => {
+    it('should detect cycles in longer dependency chains', async () => {
       // Create three tasks
-      const task1Result = manager.createTask({
+      const task1Result = await manager.createTask({
         description: 'Task 1',
         type: 'development',
         priority: 'high',
@@ -499,7 +499,7 @@ describe('InitiativeTaskManager', () => {
         sourceSystem: 'test',
       });
 
-      const task2Result = manager.createTask({
+      const task2Result = await manager.createTask({
         description: 'Task 2',
         type: 'development',
         priority: 'high',
@@ -510,7 +510,7 @@ describe('InitiativeTaskManager', () => {
         sourceSystem: 'test',
       });
 
-      const task3Result = manager.createTask({
+      const task3Result = await manager.createTask({
         description: 'Task 3',
         type: 'development',
         priority: 'high',
@@ -522,7 +522,7 @@ describe('InitiativeTaskManager', () => {
       });
 
       // Create chain: task2 -> task1, task3 -> task2
-      manager.createDependency({
+      await manager.createDependency({
         sourceID: task2Result.holonID!,
         targetID: task1Result.holonID!,
         dependencyType: 'prerequisite',
@@ -532,7 +532,7 @@ describe('InitiativeTaskManager', () => {
         sourceSystem: 'test',
       });
 
-      manager.createDependency({
+      await manager.createDependency({
         sourceID: task3Result.holonID!,
         targetID: task2Result.holonID!,
         dependencyType: 'prerequisite',
@@ -543,7 +543,7 @@ describe('InitiativeTaskManager', () => {
       });
 
       // Try to create: task1 -> task3 (would create cycle)
-      const cycleResult = manager.createDependency({
+      const cycleResult = await manager.createDependency({
         sourceID: task1Result.holonID!,
         targetID: task3Result.holonID!,
         dependencyType: 'prerequisite',
@@ -567,9 +567,9 @@ describe('InitiativeTaskManager', () => {
      * 
      * For any Initiative holon created, it must contain SOM Initiative ID, name, scope, sponsor, and stage.
      */
-    it('Property 29: Initiative holon completeness', () => {
-      fc.assert(
-        fc.property(
+    it('Property 29: Initiative holon completeness', async () => {
+      await fc.assert(
+        fc.asyncProperty(
           fc.record({
             name: fc.string({ minLength: 1, maxLength: 200 }),
             scope: fc.string({ minLength: 1, maxLength: 500 }),
@@ -577,7 +577,7 @@ describe('InitiativeTaskManager', () => {
             targetOutcomes: fc.array(fc.string({ minLength: 1, maxLength: 100 }), { maxLength: 10 }),
             stage: fc.constantFrom('proposed', 'approved', 'planned', 'active', 'paused', 'completed', 'cancelled'),
           }),
-          (testCase) => {
+          async (testCase) => {
             const params: CreateInitiativeParams = {
               name: testCase.name,
               scope: testCase.scope,
@@ -589,7 +589,7 @@ describe('InitiativeTaskManager', () => {
               sourceSystem: 'test',
             };
 
-            const result = manager.createInitiative(params);
+            const result = await manager.createInitiative(params);
 
             // Check if any required field is whitespace-only (would be rejected)
             const hasEmptyName = testCase.name.trim().length === 0;
@@ -608,7 +608,7 @@ describe('InitiativeTaskManager', () => {
             }
 
             // Verify the initiative has all required fields
-            const initiative = holonRegistry.getHolon(result.holonID!);
+            const initiative = await holonRegistry.getHolon(result.holonID!);
             if (!initiative) {
               return false;
             }
@@ -635,9 +635,9 @@ describe('InitiativeTaskManager', () => {
      * 
      * For any Task holon created, it must contain SOM Task ID, description, type, priority, due date, and status.
      */
-    it('Property 30: Task holon completeness', () => {
-      fc.assert(
-        fc.property(
+    it('Property 30: Task holon completeness', async () => {
+      await fc.assert(
+        fc.asyncProperty(
           fc.record({
             description: fc.string({ minLength: 1, maxLength: 500 }),
             type: fc.string({ minLength: 1, maxLength: 50 }),
@@ -645,7 +645,7 @@ describe('InitiativeTaskManager', () => {
             dueDate: fc.date({ min: new Date('2024-01-01'), max: new Date('2025-12-31') }),
             status: fc.constantFrom('created', 'assigned', 'started', 'blocked', 'completed', 'cancelled'),
           }),
-          (testCase) => {
+          async (testCase) => {
             const params: CreateTaskParams = {
               description: testCase.description,
               type: testCase.type,
@@ -657,7 +657,7 @@ describe('InitiativeTaskManager', () => {
               sourceSystem: 'test',
             };
 
-            const result = manager.createTask(params);
+            const result = await manager.createTask(params);
 
             // Check if any required field is whitespace-only (would be rejected)
             const hasEmptyDescription = testCase.description.trim().length === 0;
@@ -675,7 +675,7 @@ describe('InitiativeTaskManager', () => {
             }
 
             // Verify the task has all required fields
-            const task = holonRegistry.getHolon(result.holonID!);
+            const task = await holonRegistry.getHolon(result.holonID!);
             if (!task) {
               return false;
             }
@@ -703,16 +703,16 @@ describe('InitiativeTaskManager', () => {
      * 
      * For any set of DEPENDS_ON relationships among tasks or initiatives, they must form a directed acyclic graph without cycles.
      */
-    it('Property 31: Dependency relationship validity - no cycles', () => {
-      fc.assert(
-        fc.property(
+    it('Property 31: Dependency relationship validity - no cycles', async () => {
+      await fc.assert(
+        fc.asyncProperty(
           fc.integer({ min: 3, max: 10 }),
           fc.array(fc.tuple(fc.nat(), fc.nat()), { minLength: 1, maxLength: 20 }),
-          (numTasks, edgePairs) => {
+          async (numTasks, edgePairs) => {
             // Create tasks
             const taskIDs: HolonID[] = [];
             for (let i = 0; i < numTasks; i++) {
-              const taskResult = manager.createTask({
+              const taskResult = await manager.createTask({
                 description: `Task ${i}`,
                 type: 'development',
                 priority: 'medium',
@@ -735,7 +735,7 @@ describe('InitiativeTaskManager', () => {
             const createdEdges = new Set<string>();
 
             for (const [sourceIdx, targetIdx] of validEdges) {
-              const result = manager.createDependency({
+              const result = await manager.createDependency({
                 sourceID: taskIDs[sourceIdx],
                 targetID: taskIDs[targetIdx],
                 dependencyType: 'prerequisite',
@@ -756,7 +756,7 @@ describe('InitiativeTaskManager', () => {
               const edgeKey = `${sourceIdx}->${targetIdx}`;
               if (createdEdges.has(edgeKey)) {
                 // This edge was created, so the reverse should fail
-                const reverseResult = manager.createDependency({
+                const reverseResult = await manager.createDependency({
                   sourceID: taskIDs[targetIdx],
                   targetID: taskIDs[sourceIdx],
                   dependencyType: 'prerequisite',

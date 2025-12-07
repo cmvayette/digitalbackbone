@@ -3,10 +3,10 @@
  * Derives current state from events through event replay
  */
 
-import { Event, EventType } from '../core/types/event';
-import { Holon, HolonID, HolonType, Timestamp } from '../core/types/holon';
-import { Relationship, RelationshipID } from '../core/types/relationship';
-import { EventStore } from '../event-store';
+import { Event, EventType } from '@som/shared-types';
+import { Holon, HolonID, HolonType, Timestamp } from '@som/shared-types';
+import { Relationship, RelationshipID } from '@som/shared-types';
+import { IEventStore } from '../core/interfaces/event-store';
 
 /**
  * Projected state of a holon at a specific point in time
@@ -40,10 +40,10 @@ export interface ProjectedState {
  * Derives current state from immutable event log
  */
 export class StateProjectionEngine {
-  private eventStore: EventStore;
+  private eventStore: IEventStore;
   private currentState: ProjectedState;
 
-  constructor(eventStore: EventStore) {
+  constructor(eventStore: IEventStore) {
     this.eventStore = eventStore;
     this.currentState = {
       holons: new Map(),
@@ -58,9 +58,10 @@ export class StateProjectionEngine {
    */
   replayAllEvents(): ProjectedState {
     const allEvents = this.eventStore.getAllEvents();
-    
+
+
     // Sort events by occurredAt timestamp to ensure correct ordering
-    const sortedEvents = [...allEvents].sort((a, b) => 
+    const sortedEvents = [...allEvents].sort((a, b) =>
       a.occurredAt.getTime() - b.occurredAt.getTime()
     );
 
@@ -87,14 +88,14 @@ export class StateProjectionEngine {
    */
   replayEventsAsOf(timestamp: Timestamp): ProjectedState {
     const allEvents = this.eventStore.getAllEvents();
-    
+
     // Filter events up to the specified timestamp
-    const eventsUpToTimestamp = allEvents.filter(event => 
+    const eventsUpToTimestamp = allEvents.filter(event =>
       event.occurredAt <= timestamp
     );
 
     // Sort events by occurredAt timestamp
-    const sortedEvents = [...eventsUpToTimestamp].sort((a, b) => 
+    const sortedEvents = [...eventsUpToTimestamp].sort((a, b) =>
       a.occurredAt.getTime() - b.occurredAt.getTime()
     );
 
@@ -166,6 +167,7 @@ export class StateProjectionEngine {
       // Structural events
       case EventType.OrganizationCreated:
       case EventType.PositionCreated:
+      case EventType.PersonCreated:
         this.handleHolonCreation(event, state);
         break;
 
@@ -578,6 +580,9 @@ export class StateProjectionEngine {
       case EventType.PositionDeactivated:
         return HolonType.Position;
 
+      case EventType.PersonCreated:
+        return HolonType.Person;
+
       case EventType.MissionPlanned:
       case EventType.MissionApproved:
       case EventType.MissionLaunched:
@@ -617,6 +622,6 @@ export class StateProjectionEngine {
 /**
  * Create a new state projection engine instance
  */
-export function createStateProjectionEngine(eventStore: EventStore): StateProjectionEngine {
+export function createStateProjectionEngine(eventStore: IEventStore): StateProjectionEngine {
   return new StateProjectionEngine(eventStore);
 }

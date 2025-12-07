@@ -3,13 +3,15 @@
  * Manages Position and Organization holon creation, hierarchies, and constraints
  */
 
-import { HolonRegistry } from '../core/holon-registry';
+import { IHolonRepository as HolonRegistry } from '../core/interfaces/holon-repository';
 import { RelationshipRegistry } from '../relationship-registry';
-import { EventStore } from '../event-store';
+import { IEventStore as EventStore } from '../event-store';
 import { ConstraintEngine, ValidationResult } from '../constraint-engine';
-import { Position, Organization, HolonType, HolonID, DocumentID, EventID, Timestamp } from '../core/types/holon';
-import { RelationshipType } from '../core/types/relationship';
-import { EventType } from '../core/types/event';
+import { Position, Organization, HolonType, HolonID, DocumentID, EventID, Timestamp } from '@som/shared-types';
+import { RelationshipType } from '@som/shared-types';
+import { EventType } from '@som/shared-types';
+import { AssignPersonToPositionParams } from '../person-management';
+import { randomUUID } from 'crypto';
 
 /**
  * Parameters for creating a Position holon
@@ -17,10 +19,14 @@ import { EventType } from '../core/types/event';
 export interface CreatePositionParams {
   billetIDs: string[];
   title: string;
+  roleCode?: string;
+  description?: string;
   gradeRange: { min: string; max: string };
   designatorExpectations: string[];
   criticality: 'critical' | 'important' | 'standard';
   billetType: 'command' | 'staff' | 'support';
+  isLeadership?: boolean;
+  organizationId?: string;
   sourceDocuments: DocumentID[];
   actor: HolonID;
   sourceSystem: string;
@@ -32,9 +38,12 @@ export interface CreatePositionParams {
 export interface CreateOrganizationParams {
   uics: string[];
   name: string;
+  orgCode?: string;
   type: string;
+  level?: string;
   echelonLevel: string;
   missionStatement: string;
+  parentOrganizationId?: string;
   sourceDocuments: DocumentID[];
   actor: HolonID;
   sourceSystem: string;
@@ -59,6 +68,19 @@ export interface AssignPositionToOrganizationParams {
 export interface CreateOrganizationHierarchyParams {
   parentOrganizationID: HolonID;
   childOrganizationID: HolonID;
+  effectiveStart: Timestamp;
+  effectiveEnd?: Timestamp;
+  sourceDocuments: DocumentID[];
+  actor: HolonID;
+  sourceSystem: string;
+}
+
+/**
+ * Parameters for aligning an organization under another (reports to)
+ */
+export interface AlignOrganizationParams {
+  childOrganizationID: HolonID;
+  parentOrganizationID: HolonID;
   effectiveStart: Timestamp;
   effectiveEnd?: Timestamp;
   sourceDocuments: DocumentID[];
@@ -112,19 +134,30 @@ export class OrganizationManager {
   }
 
   /**
-   * Create a new Position holon with required fields
+   * Create a new Position holon
    */
-  createPosition(params: CreatePositionParams): OrganizationOperationResult {
-    // Create event for position creation
+  async createPosition(params: CreatePositionParams): Promise<OrganizationOperationResult> {
+    const id = randomUUID();
+
+    // Event creation
     const eventId = this.eventStore.submitEvent({
       type: EventType.PositionCreated,
       occurredAt: new Date(),
       actor: params.actor,
-      subjects: [],
+      subjects: [id],
       payload: {
-        action: 'create_position',
-        title: params.title,
-        billetIDs: params.billetIDs,
+        properties: {
+          title: params.title,
+          roleCode: params.roleCode,
+          organizationId: params.organizationId,
+          billetIDs: params.billetIDs,
+          description: params.description,
+          gradeRange: params.gradeRange,
+          designatorExpectations: params.designatorExpectations,
+          criticality: params.criticality,
+          billetType: params.billetType,
+          isLeadership: params.isLeadership,
+        }
       },
       sourceSystem: params.sourceSystem,
       sourceDocument: params.sourceDocuments[0],
@@ -132,30 +165,46 @@ export class OrganizationManager {
     });
 
     // Create Position holon
-    const position = this.holonRegistry.createHolon({
+    const position = await this.holonRegistry.createHolon({
+      id,
       type: HolonType.Position,
       properties: {
         billetIDs: params.billetIDs,
         title: params.title,
+        roleCode: params.roleCode,
+        description: params.description,
         gradeRange: params.gradeRange,
         designatorExpectations: params.designatorExpectations,
         criticality: params.criticality,
         billetType: params.billetType,
+        isLeadership: params.isLeadership,
+        organizationId: params.organizationId,
       },
       createdBy: eventId,
       sourceDocuments: params.sourceDocuments,
     });
 
-    // Validate the created position
+    // Validate
     const validation = this.constraintEngine.validateHolon(position);
 
     if (!validation.valid) {
-      // Rollback: mark position as inactive
-      this.holonRegistry.markHolonInactive(position.id, 'Validation failed');
+      await this.holonRegistry.markHolonInactive(position.id, 'Validation failed');
       return {
         success: false,
         validation,
       };
+    }
+
+    // Link to organization
+    if (params.organizationId) {
+      await this.assignPositionToOrganization({
+        positionID: position.id,
+        organizationID: params.organizationId,
+        effectiveStart: new Date(),
+        actor: params.actor,
+        sourceSystem: params.sourceSystem,
+        sourceDocuments: params.sourceDocuments,
+      });
     }
 
     return {
@@ -167,49 +216,70 @@ export class OrganizationManager {
   }
 
   /**
-   * Create a new Organization holon with required fields
+   * Create a new Organization holon
    */
-  createOrganization(params: CreateOrganizationParams): OrganizationOperationResult {
-    // Create event for organization creation
+  async createOrganization(params: CreateOrganizationParams): Promise<OrganizationOperationResult> {
+    const id = randomUUID();
+
     const eventId = this.eventStore.submitEvent({
       type: EventType.OrganizationCreated,
       occurredAt: new Date(),
       actor: params.actor,
-      subjects: [],
+      subjects: [id],
       payload: {
-        action: 'create_organization',
-        name: params.name,
-        uics: params.uics,
+        properties: {
+          name: params.name,
+          orgCode: params.orgCode,
+          type: params.type,
+          uics: params.uics,
+          level: params.level,
+          echelonLevel: params.echelonLevel,
+          missionStatement: params.missionStatement,
+          parentOrganizationId: params.parentOrganizationId,
+        }
       },
       sourceSystem: params.sourceSystem,
       sourceDocument: params.sourceDocuments[0],
       causalLinks: {},
     });
 
-    // Create Organization holon
-    const organization = this.holonRegistry.createHolon({
+    const organization = await this.holonRegistry.createHolon({
+      id,
       type: HolonType.Organization,
       properties: {
         uics: params.uics,
         name: params.name,
+        orgCode: params.orgCode,
         type: params.type,
+        level: params.level,
         echelonLevel: params.echelonLevel,
         missionStatement: params.missionStatement,
+        parentOrganizationId: params.parentOrganizationId,
       },
       createdBy: eventId,
       sourceDocuments: params.sourceDocuments,
     });
 
-    // Validate the created organization
     const validation = this.constraintEngine.validateHolon(organization);
 
     if (!validation.valid) {
-      // Rollback: mark organization as inactive
-      this.holonRegistry.markHolonInactive(organization.id, 'Validation failed');
+      await this.holonRegistry.markHolonInactive(organization.id, 'Validation failed');
       return {
         success: false,
         validation,
       };
+    }
+
+    // Link to parent organization if specified
+    if (params.parentOrganizationId) {
+      await this.alignOrganization({
+        childOrganizationID: organization.id,
+        parentOrganizationID: params.parentOrganizationId,
+        effectiveStart: new Date(),
+        actor: params.actor,
+        sourceSystem: params.sourceSystem,
+        sourceDocuments: params.sourceDocuments,
+      });
     }
 
     return {
@@ -221,49 +291,36 @@ export class OrganizationManager {
   }
 
   /**
-   * Assign a Position to an Organization
+   * Assign a person to a position
    */
-  assignPositionToOrganization(params: AssignPositionToOrganizationParams): OrganizationOperationResult {
-    // Get position and organization holons
-    const position = this.holonRegistry.getHolon(params.positionID);
-    const organization = this.holonRegistry.getHolon(params.organizationID);
+  async assignPersonToPosition(params: AssignPersonToPositionParams): Promise<OrganizationOperationResult> {
+    // Check existence
+    const person = await this.holonRegistry.getHolon(params.personID);
+    const position = await this.holonRegistry.getHolon(params.positionID);
 
-    if (!position) {
+    if (!person || !position) {
       return {
         success: false,
         validation: {
           valid: false,
           errors: [{
-            constraintID: 'system',
-            message: 'Position not found',
+            constraintID: 'existence',
+            message: 'Person or Position not found',
             violatedRule: 'existence',
-            affectedHolons: [params.positionID],
+            affectedHolons: [params.personID, params.positionID],
           }],
         },
       };
     }
 
-    if (!organization) {
-      return {
-        success: false,
-        validation: {
-          valid: false,
-          errors: [{
-            constraintID: 'system',
-            message: 'Organization not found',
-            violatedRule: 'existence',
-            affectedHolons: [params.organizationID],
-          }],
-        },
-      };
-    }
-
-    // Create the BELONGS_TO relationship
-    const result = this.relationshipRegistry.createRelationship({
-      type: RelationshipType.BELONGS_TO,
-      sourceHolonID: params.positionID,
-      targetHolonID: params.organizationID,
-      properties: {},
+    // Create assignments relationship
+    const result = await this.relationshipRegistry.createRelationship({
+      type: RelationshipType.ASSIGNED_TO,
+      sourceHolonID: params.personID,
+      targetHolonID: params.positionID,
+      properties: {
+        status: 'active',
+      },
       effectiveStart: params.effectiveStart,
       effectiveEnd: params.effectiveEnd,
       sourceSystem: params.sourceSystem,
@@ -271,18 +328,109 @@ export class OrganizationManager {
       actor: params.actor,
     });
 
-    if (!result.relationship) {
-      return {
-        success: false,
-        validation: result.validation,
-      };
+    if (result.relationship) {
+      // Create event
+      this.eventStore.submitEvent({
+        type: EventType.AssignmentStarted,
+        occurredAt: params.effectiveStart,
+        actor: params.actor,
+        subjects: [params.personID, params.positionID],
+        payload: {
+          relationshipId: result.relationship.id,
+        },
+        sourceSystem: params.sourceSystem,
+        sourceDocument: params.sourceDocuments[0],
+        causalLinks: {},
+      });
     }
 
     return {
-      success: true,
-      relationshipID: result.relationship.id,
+      success: !!result.relationship,
+      relationshipID: result.relationship?.id,
       validation: result.validation,
-      eventID: result.relationship.createdBy,
+    };
+  }
+
+  /**
+   * Assign a position to an organization (reports to)
+   */
+  async assignPositionToOrganization(params: AssignPositionToOrganizationParams): Promise<OrganizationOperationResult> {
+    const position = await this.holonRegistry.getHolon(params.positionID);
+    const organization = await this.holonRegistry.getHolon(params.organizationID);
+
+    if (!position || !organization) {
+      return {
+        success: false,
+        validation: {
+          valid: false,
+          errors: [{ constraintID: 'existence', message: 'Position or Organization not found', violatedRule: 'existence', affectedHolons: [params.positionID, params.organizationID] }]
+        }
+      };
+    }
+
+    const result = await this.relationshipRegistry.createRelationship({
+      type: RelationshipType.BELONGS_TO,
+      sourceHolonID: params.positionID,
+      targetHolonID: params.organizationID,
+      properties: {},
+      effectiveStart: params.effectiveStart,
+      sourceSystem: params.sourceSystem,
+      sourceDocuments: params.sourceDocuments,
+      actor: params.actor,
+    });
+
+    return {
+      success: !!result.relationship,
+      relationshipID: result.relationship?.id,
+      validation: result.validation,
+    };
+  }
+
+  /**
+   * Align an organization under another (reports to)
+   */
+  async alignOrganization(params: AlignOrganizationParams): Promise<OrganizationOperationResult> {
+    const child = await this.holonRegistry.getHolon(params.childOrganizationID);
+    const parent = await this.holonRegistry.getHolon(params.parentOrganizationID);
+
+    if (!child || !parent) {
+      return {
+        success: false,
+        validation: {
+          valid: false,
+          errors: [{ constraintID: 'existence', message: 'Organization not found', violatedRule: 'existence', affectedHolons: [params.childOrganizationID, params.parentOrganizationID] }]
+        }
+      };
+    }
+
+    const result = await this.relationshipRegistry.createRelationship({
+      type: RelationshipType.BELONGS_TO,
+      sourceHolonID: params.childOrganizationID,
+      targetHolonID: params.parentOrganizationID,
+      properties: {},
+      effectiveStart: params.effectiveStart,
+      sourceSystem: params.sourceSystem,
+      sourceDocuments: params.sourceDocuments,
+      actor: params.actor,
+    });
+
+    if (result.relationship) {
+      this.eventStore.submitEvent({
+        type: EventType.OrganizationRealigned,
+        occurredAt: params.effectiveStart,
+        actor: params.actor,
+        subjects: [params.childOrganizationID, params.parentOrganizationID],
+        payload: { relationshipId: result.relationship.id },
+        sourceSystem: params.sourceSystem,
+        sourceDocument: params.sourceDocuments[0],
+        causalLinks: {},
+      });
+    }
+
+    return {
+      success: !!result.relationship,
+      relationshipID: result.relationship?.id,
+      validation: result.validation,
     };
   }
 
@@ -290,10 +438,10 @@ export class OrganizationManager {
    * Create an organizational hierarchy (Organization CONTAINS Organization)
    * with cycle detection
    */
-  createOrganizationHierarchy(params: CreateOrganizationHierarchyParams): OrganizationOperationResult {
+  async createOrganizationHierarchy(params: CreateOrganizationHierarchyParams): Promise<OrganizationOperationResult> {
     // Get parent and child organizations
-    const parent = this.holonRegistry.getHolon(params.parentOrganizationID);
-    const child = this.holonRegistry.getHolon(params.childOrganizationID);
+    const parent = await this.holonRegistry.getHolon(params.parentOrganizationID);
+    const child = await this.holonRegistry.getHolon(params.childOrganizationID);
 
     if (!parent) {
       return {
@@ -342,7 +490,7 @@ export class OrganizationManager {
     }
 
     // Check for cycles before creating the relationship
-    const cycleValidation = this.detectOrganizationalCycle(
+    const cycleValidation = await this.detectOrganizationalCycle(
       params.parentOrganizationID,
       params.childOrganizationID
     );
@@ -355,7 +503,7 @@ export class OrganizationManager {
     }
 
     // Create the CONTAINS relationship
-    const result = this.relationshipRegistry.createRelationship({
+    const result = await this.relationshipRegistry.createRelationship({
       type: RelationshipType.CONTAINS,
       sourceHolonID: params.parentOrganizationID,
       targetHolonID: params.childOrganizationID,
@@ -385,10 +533,10 @@ export class OrganizationManager {
   /**
    * Set a qualification requirement for a Position
    */
-  setPositionQualificationRequirement(params: SetPositionQualificationRequirementParams): OrganizationOperationResult {
+  async setPositionQualificationRequirement(params: SetPositionQualificationRequirementParams): Promise<OrganizationOperationResult> {
     // Get position and qualification holons
-    const position = this.holonRegistry.getHolon(params.positionID);
-    const qualification = this.holonRegistry.getHolon(params.qualificationID);
+    const position = await this.holonRegistry.getHolon(params.positionID);
+    const qualification = await this.holonRegistry.getHolon(params.qualificationID);
 
     if (!position) {
       return {
@@ -421,7 +569,7 @@ export class OrganizationManager {
     }
 
     // Create the REQUIRED_FOR relationship (Qualification REQUIRED_FOR Position)
-    const result = this.relationshipRegistry.createRelationship({
+    const result = await this.relationshipRegistry.createRelationship({
       type: RelationshipType.REQUIRED_FOR,
       sourceHolonID: params.qualificationID,
       targetHolonID: params.positionID,
@@ -451,8 +599,8 @@ export class OrganizationManager {
   /**
    * Get all positions belonging to an organization
    */
-  getOrganizationPositions(organizationID: HolonID, effectiveAt?: Timestamp): HolonID[] {
-    const relationships = this.relationshipRegistry.getRelationshipsTo(
+  async getOrganizationPositions(organizationID: HolonID, effectiveAt?: Timestamp): Promise<HolonID[]> {
+    const relationships = await this.relationshipRegistry.getRelationshipsTo(
       organizationID,
       RelationshipType.BELONGS_TO,
       { effectiveAt, includeEnded: false }
@@ -464,8 +612,8 @@ export class OrganizationManager {
   /**
    * Get all child organizations of a parent organization
    */
-  getChildOrganizations(parentOrganizationID: HolonID, effectiveAt?: Timestamp): HolonID[] {
-    const relationships = this.relationshipRegistry.getRelationshipsFrom(
+  async getChildOrganizations(parentOrganizationID: HolonID, effectiveAt?: Timestamp): Promise<HolonID[]> {
+    const relationships = await this.relationshipRegistry.getRelationshipsFrom(
       parentOrganizationID,
       RelationshipType.CONTAINS,
       { effectiveAt, includeEnded: false }
@@ -477,8 +625,8 @@ export class OrganizationManager {
   /**
    * Get the parent organization of a child organization
    */
-  getParentOrganization(childOrganizationID: HolonID, effectiveAt?: Timestamp): HolonID | undefined {
-    const relationships = this.relationshipRegistry.getRelationshipsTo(
+  async getParentOrganization(childOrganizationID: HolonID, effectiveAt?: Timestamp): Promise<HolonID | undefined> {
+    const relationships = await this.relationshipRegistry.getRelationshipsTo(
       childOrganizationID,
       RelationshipType.CONTAINS,
       { effectiveAt, includeEnded: false }
@@ -491,8 +639,8 @@ export class OrganizationManager {
   /**
    * Get all qualification requirements for a Position
    */
-  getPositionQualificationRequirements(positionID: HolonID, effectiveAt?: Timestamp): HolonID[] {
-    const relationships = this.relationshipRegistry.getRelationshipsTo(
+  async getPositionQualificationRequirements(positionID: HolonID, effectiveAt?: Timestamp): Promise<HolonID[]> {
+    const relationships = await this.relationshipRegistry.getRelationshipsTo(
       positionID,
       RelationshipType.REQUIRED_FOR,
       { effectiveAt, includeEnded: false }
@@ -505,11 +653,11 @@ export class OrganizationManager {
    * Detect if creating a CONTAINS relationship would create a cycle
    * Uses depth-first search to check if child is an ancestor of parent
    */
-  private detectOrganizationalCycle(
+  private async detectOrganizationalCycle(
     parentID: HolonID,
     childID: HolonID,
     visited: Set<HolonID> = new Set()
-  ): ValidationResult {
+  ): Promise<ValidationResult> {
     // If we've already visited this node, we have a cycle
     if (visited.has(parentID)) {
       return {
@@ -526,7 +674,7 @@ export class OrganizationManager {
     visited.add(parentID);
 
     // Get all ancestors of the parent (organizations that contain the parent)
-    const parentRelationships = this.relationshipRegistry.getRelationshipsTo(
+    const parentRelationships = await this.relationshipRegistry.getRelationshipsTo(
       parentID,
       RelationshipType.CONTAINS,
       { includeEnded: false }
@@ -548,7 +696,7 @@ export class OrganizationManager {
       }
 
       // Recursively check ancestors
-      const ancestorCheck = this.detectOrganizationalCycle(rel.sourceHolonID, childID, visited);
+      const ancestorCheck = await this.detectOrganizationalCycle(rel.sourceHolonID, childID, visited);
       if (!ancestorCheck.valid) {
         return ancestorCheck;
       }
@@ -560,14 +708,14 @@ export class OrganizationManager {
   /**
    * Get the complete organizational hierarchy tree starting from a root organization
    */
-  getOrganizationTree(rootOrganizationID: HolonID, effectiveAt?: Timestamp): OrganizationTree {
-    const root = this.holonRegistry.getHolon(rootOrganizationID);
+  async getOrganizationTree(rootOrganizationID: HolonID, effectiveAt?: Timestamp): Promise<OrganizationTree> {
+    const root = await this.holonRegistry.getHolon(rootOrganizationID);
     if (!root) {
       throw new Error(`Organization ${rootOrganizationID} not found`);
     }
 
-    const children = this.getChildOrganizations(rootOrganizationID, effectiveAt);
-    const childTrees = children.map(childID => this.getOrganizationTree(childID, effectiveAt));
+    const children = await this.getChildOrganizations(rootOrganizationID, effectiveAt);
+    const childTrees = await Promise.all(children.map(childID => this.getOrganizationTree(childID, effectiveAt)));
 
     return {
       organizationID: rootOrganizationID,

@@ -11,10 +11,10 @@ import {
 } from './index';
 import { InMemoryEventStore } from '../event-store';
 import { ConstraintEngine } from '../constraint-engine';
-import { HolonRegistry } from '../core/holon-registry';
+import { InMemoryHolonRepository as HolonRegistry } from '../core/holon-registry';
 import { DocumentRegistry } from '../document-registry';
-import { HolonType, EventID, ConstraintType, DocumentType } from '../core/types/holon';
-import { EventType } from '../core/types/event';
+import { HolonType, EventID, ConstraintType, DocumentType } from '@som/shared-types';
+import { EventType } from '@som/shared-types';
 
 describe('SemanticAccessLayer', () => {
   let sal: SemanticAccessLayer;
@@ -84,7 +84,7 @@ describe('SemanticAccessLayer', () => {
 
     it('should support multiple external systems mapping to same holon', () => {
       const holonID = 'holon-uuid-1';
-      
+
       sal.mapExternalID('NSIPS', 'EMP-12345', holonID);
       sal.mapExternalID('DRRS', 'PERS-67890', holonID);
 
@@ -116,7 +116,7 @@ describe('SemanticAccessLayer', () => {
       expect(result.events[0].payload).toEqual(externalData.payload);
     });
 
-    it('should create ID mapping when transforming new entity', () => {
+    it('should create ID mapping when transforming new entity', async () => {
       // First create a holon to get a valid event ID
       const eventID = eventStore.submitEvent({
         type: EventType.OrganizationCreated,
@@ -128,7 +128,7 @@ describe('SemanticAccessLayer', () => {
         causalLinks: {},
       });
 
-      const holon = holonRegistry.createHolon({
+      const holon = await holonRegistry.createHolon({
         type: HolonType.Person,
         properties: { name: 'Test' },
         createdBy: eventID,
@@ -150,7 +150,7 @@ describe('SemanticAccessLayer', () => {
 
       expect(result.success).toBe(true);
       expect(result.holonID).toBe(holon.id);
-      
+
       const mappedID = sal.getHolonID('NSIPS', 'EMP-12345');
       expect(mappedID).toBe(holon.id);
     });
@@ -194,7 +194,7 @@ describe('SemanticAccessLayer', () => {
   describe('Multi-System Consistency', () => {
     it('should detect consistent mappings across systems', () => {
       const holonID = 'holon-uuid-1';
-      
+
       sal.mapExternalID('NSIPS', 'EMP-12345', holonID);
       sal.mapExternalID('DRRS', 'PERS-67890', holonID);
 
@@ -210,7 +210,7 @@ describe('SemanticAccessLayer', () => {
     it('should detect inconsistent mappings across systems', () => {
       const holonID1 = 'holon-uuid-1';
       const holonID2 = 'holon-uuid-2';
-      
+
       sal.mapExternalID('NSIPS', 'EMP-12345', holonID1);
       sal.mapExternalID('DRRS', 'PERS-67890', holonID2);
 
@@ -278,7 +278,7 @@ describe('SemanticAccessLayer', () => {
   });
 
   describe('Query for System', () => {
-    it('should transform holon data to system-specific format', () => {
+    it('should transform holon data to system-specific format', async () => {
       const eventID = eventStore.submitEvent({
         type: EventType.OrganizationCreated,
         occurredAt: new Date(),
@@ -289,7 +289,7 @@ describe('SemanticAccessLayer', () => {
         causalLinks: {},
       });
 
-      const holon = holonRegistry.createHolon({
+      const holon = await holonRegistry.createHolon({
         type: HolonType.Person,
         properties: { name: 'John Doe', edipi: '1234567890' },
         createdBy: eventID,
@@ -298,7 +298,7 @@ describe('SemanticAccessLayer', () => {
 
       sal.mapExternalID('NSIPS', 'EMP-12345', holon.id);
 
-      const result = sal.queryForSystem('NSIPS', holon.id);
+      const result = await sal.queryForSystem('NSIPS', holon.id);
 
       expect(result).toBeDefined();
       expect(result!.externalID).toBe('EMP-12345');
@@ -307,8 +307,8 @@ describe('SemanticAccessLayer', () => {
       expect(result!.properties).toEqual(holon.properties);
     });
 
-    it('should return null for non-existent holon', () => {
-      const result = sal.queryForSystem('NSIPS', 'non-existent-id');
+    it('should return null for non-existent holon', async () => {
+      const result = await sal.queryForSystem('NSIPS', 'non-existent-id');
       expect(result).toBeNull();
     });
   });
@@ -392,12 +392,12 @@ describe('SemanticAccessLayer', () => {
             if (result.success) {
               // Events should be created
               expect(result.events.length).toBeGreaterThan(0);
-              
+
               // Events should have correct source system
               const allFromCorrectSystem = result.events.every(
                 e => e.sourceSystem === externalSystem
               );
-              
+
               // Events should have valid structure
               const allValid = result.events.every(
                 e => e.id && e.type && e.occurredAt && e.actor && e.subjects !== undefined

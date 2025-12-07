@@ -3,51 +3,22 @@
  * Provides immutable append-only log of all state changes
  */
 
-import { Event, EventType } from '../core/types/event';
-import { EventID, HolonID, Timestamp } from '../core/types/holon';
+import { Event, EventType } from '@som/shared-types';
+import { EventID, HolonID, Timestamp } from '@som/shared-types';
 import { randomUUID } from 'crypto';
 
 /**
  * Event store interface with append-only semantics
  */
-export interface EventStore {
-  /**
-   * Submit a new event to the store
-   * @returns The event ID of the submitted event
-   */
-  submitEvent(event: Omit<Event, 'id' | 'recordedAt'>): EventID;
-  
-  /**
-   * Get an event by its ID
-   */
-  getEvent(eventId: EventID): Event | undefined;
-  
-  /**
-   * Get all events for a specific holon
-   */
-  getEventsByHolon(holonId: HolonID, timeRange?: { start: Timestamp; end: Timestamp }): Event[];
-  
-  /**
-   * Get all events of a specific type
-   */
-  getEventsByType(eventType: EventType, timeRange?: { start: Timestamp; end: Timestamp }): Event[];
-  
-  /**
-   * Get all events within a time range
-   */
-  getEventsByTimeRange(timeRange: { start: Timestamp; end: Timestamp }): Event[];
-  
-  /**
-   * Get all events (for testing/debugging)
-   */
-  getAllEvents(): Event[];
-}
+import { IEventStore, EventFilter } from '../core/interfaces/event-store';
+
+export { IEventStore, EventFilter };
 
 /**
  * In-memory implementation of the event store
  * Events are immutable - no update or delete operations are provided
  */
-export class InMemoryEventStore implements EventStore {
+export class InMemoryEventStore implements IEventStore {
   private events: Map<EventID, Event> = new Map();
   private eventsByHolon: Map<HolonID, EventID[]> = new Map();
   private eventsByType: Map<EventType, EventID[]> = new Map();
@@ -67,11 +38,11 @@ export class InMemoryEventStore implements EventStore {
     if (!(occurredAt instanceof Date)) {
       throw new Error('occurredAt must be a Date object');
     }
-    
+
     if (isNaN(occurredAt.getTime())) {
       throw new Error('occurredAt must be a valid Date');
     }
-    
+
     // Check if timestamp is not too far in the future (allow 1 hour clock skew)
     const now = new Date();
     const maxFuture = new Date(now.getTime() + 60 * 60 * 1000);
@@ -87,11 +58,11 @@ export class InMemoryEventStore implements EventStore {
   submitEvent(eventData: Omit<Event, 'id' | 'recordedAt'>): EventID {
     // Validate timestamp
     this.validateTimestamp(eventData.occurredAt);
-    
+
     // Generate event ID and record timestamp
     const eventId = this.generateEventId();
     const recordedAt = new Date();
-    
+
     // Create immutable event
     const event: Event = {
       ...eventData,
@@ -106,11 +77,11 @@ export class InMemoryEventStore implements EventStore {
         groupedWith: eventData.causalLinks.groupedWith ? [...eventData.causalLinks.groupedWith] : undefined,
       },
     };
-    
+
     // Store event (immutable)
     this.events.set(eventId, Object.freeze(event));
     this.eventsInOrder.push(eventId);
-    
+
     // Index by holon
     for (const holonId of event.subjects) {
       if (!this.eventsByHolon.has(holonId)) {
@@ -118,14 +89,15 @@ export class InMemoryEventStore implements EventStore {
       }
       this.eventsByHolon.get(holonId)!.push(eventId);
     }
-    
+
     // Index by type
     if (!this.eventsByType.has(event.type)) {
       this.eventsByType.set(event.type, []);
     }
     this.eventsByType.get(event.type)!.push(eventId);
-    
+
     return eventId;
+
   }
 
   /**
@@ -137,47 +109,59 @@ export class InMemoryEventStore implements EventStore {
   }
 
   /**
-   * Get all events for a specific holon
+   * Get all events matching filter
    */
+  getEvents(filter?: EventFilter): Event[] {
+    let events = this.eventsInOrder.map(id => this.events.get(id)!);
+
+    if (filter) {
+      if (filter.type) {
+        events = events.filter(e => filter.type!.includes(e.type));
+      }
+      if (filter.startTime) {
+        events = events.filter(e => e.occurredAt >= filter.startTime!);
+      }
+      if (filter.endTime) {
+        events = events.filter(e => e.occurredAt <= filter.endTime!);
+      }
+      if (filter.actor) {
+        events = events.filter(e => e.actor === filter.actor);
+      }
+      if (filter.subjects) {
+        events = events.filter(e => e.subjects.some(s => filter.subjects!.includes(s)));
+      }
+    }
+    return events;
+  }
+
+  /**
+    * Legacy strict methods (can delegate to getEvents)
+    */
+
   getEventsByHolon(holonId: HolonID, timeRange?: { start: Timestamp; end: Timestamp }): Event[] {
-    const eventIds = this.eventsByHolon.get(holonId) || [];
-    let events = eventIds.map(id => this.events.get(id)!);
-    
-    if (timeRange) {
-      events = events.filter(event => 
-        event.occurredAt >= timeRange.start && event.occurredAt <= timeRange.end
-      );
-    }
-    
-    return events;
+    return this.getEvents({
+      subjects: [holonId],
+      startTime: timeRange?.start,
+      endTime: timeRange?.end
+    });
   }
 
-  /**
-   * Get all events of a specific type
-   */
   getEventsByType(eventType: EventType, timeRange?: { start: Timestamp; end: Timestamp }): Event[] {
-    const eventIds = this.eventsByType.get(eventType) || [];
-    let events = eventIds.map(id => this.events.get(id)!);
-    
-    if (timeRange) {
-      events = events.filter(event => 
-        event.occurredAt >= timeRange.start && event.occurredAt <= timeRange.end
-      );
-    }
-    
-    return events;
+    return this.getEvents({
+      type: [eventType],
+      startTime: timeRange?.start,
+      endTime: timeRange?.end
+    });
   }
 
-  /**
-   * Get all events within a time range
-   */
   getEventsByTimeRange(timeRange: { start: Timestamp; end: Timestamp }): Event[] {
-    return this.eventsInOrder
-      .map(id => this.events.get(id)!)
-      .filter(event => 
-        event.occurredAt >= timeRange.start && event.occurredAt <= timeRange.end
-      );
+    return this.getEvents({
+      startTime: timeRange.start,
+      endTime: timeRange.end
+    });
   }
+
+
 
   /**
    * Get all events (for testing/debugging)
@@ -190,6 +174,6 @@ export class InMemoryEventStore implements EventStore {
 /**
  * Create a new in-memory event store instance
  */
-export function createEventStore(): EventStore {
+export function createEventStore(): IEventStore {
   return new InMemoryEventStore();
 }

@@ -2,9 +2,9 @@
  * API Types and Request/Response Interfaces
  */
 
-import { HolonType, HolonID, Timestamp } from '../core/types/holon';
-import { RelationshipType, RelationshipID } from '../core/types/relationship';
-import { EventType, EventID } from '../core/types/event';
+import { HolonType, HolonID, Timestamp } from '@som/shared-types';
+import { RelationshipType, RelationshipID } from '@som/shared-types';
+import { EventType, EventID } from '@som/shared-types';
 import { UserContext } from '../access-control';
 
 /**

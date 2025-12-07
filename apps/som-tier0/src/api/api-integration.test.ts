@@ -28,7 +28,7 @@ import { SemanticAccessLayer } from '../semantic-access-layer';
 import { SchemaVersioningEngine } from '../schema-versioning';
 import { GovernanceEngine } from '../governance';
 import { MonitoringService } from '../monitoring';
-import { HolonRegistry } from '../core/holon-registry';
+import { InMemoryHolonRepository as HolonRegistry } from '../core/holon-registry';
 import { RelationshipRegistry } from '../relationship-registry';
 import { ConstraintEngine } from '../constraint-engine';
 import { DocumentRegistry } from '../document-registry';
@@ -38,10 +38,10 @@ import { AccessControlEngine, Role } from '../access-control';
 import { TemporalQueryEngine } from '../query/temporal-query-engine';
 import { PersonManager } from '../person-management';
 import { OrganizationManager } from '../organization-management';
-import { HolonType } from '../core/types/holon';
-import { RelationshipType } from '../core/types/relationship';
-import { EventType } from '../core/types/event';
-import { DocumentType } from '../core/types/holon';
+import { HolonType } from '@som/shared-types';
+import { RelationshipType } from '@som/shared-types';
+import { EventType } from '@som/shared-types';
+import { DocumentType } from '@som/shared-types';
 
 describe('API Server Integration Tests', () => {
   let apiServer: APIServer;
@@ -70,14 +70,14 @@ describe('API Server Integration Tests', () => {
     constraintEngine = new ConstraintEngine(documentRegistry);
     relationshipRegistry = new RelationshipRegistry(constraintEngine, eventStore);
     stateProjection = new StateProjectionEngine(eventStore);
-    graphStore = new GraphStore(stateProjection, holonRegistry, relationshipRegistry);
+    graphStore = new GraphStore(stateProjection, relationshipRegistry);
     accessControl = new AccessControlEngine(documentRegistry);
     temporalQueryEngine = new TemporalQueryEngine(eventStore, stateProjection, holonRegistry, relationshipRegistry);
     queryLayer = new QueryLayer(temporalQueryEngine, graphStore, accessControl, eventStore);
     semanticAccessLayer = new SemanticAccessLayer(eventStore, constraintEngine, holonRegistry, documentRegistry);
-    schemaVersioning = new SchemaVersioningEngine(documentRegistry);
+    schemaVersioning = new SchemaVersioningEngine();
     governance = new GovernanceEngine(documentRegistry, schemaVersioning);
-    monitoring = new MonitoringService(eventStore, graphStore, constraintEngine);
+    monitoring = new MonitoringService();
     personManager = new PersonManager(holonRegistry, relationshipRegistry, eventStore, constraintEngine);
     organizationManager = new OrganizationManager(holonRegistry, relationshipRegistry, eventStore, constraintEngine);
 
@@ -110,7 +110,7 @@ describe('API Server Integration Tests', () => {
       apiServer.registerAPIKey(apiKey, user);
 
       // Create a test person using PersonManager (proper way)
-      const result = personManager.createPerson({
+      const result = await personManager.createPerson({
         edipi: '1234567890',
         name: 'John Doe',
         serviceNumbers: ['123456'],
@@ -127,7 +127,7 @@ describe('API Server Integration Tests', () => {
       const personId = result.personID!;
 
       // Rebuild graph store indices to pick up the new holon from registry
-      graphStore.rebuildIndices();
+      await graphStore.rebuildIndices();
 
       // Query via API
       const response = await apiServer.handleRequest(
@@ -161,7 +161,7 @@ describe('API Server Integration Tests', () => {
       apiServer.registerAPIKey(apiKey, user);
 
       // Create a test holon
-      const result_personId = personManager.createPerson({
+      const result_personId = await personManager.createPerson({
         edipi: '9876543210',
         name: 'Jane Smith',
         serviceNumbers: ['654321'],
@@ -209,7 +209,7 @@ describe('API Server Integration Tests', () => {
       apiServer.registerAPIKey(apiKey, user);
 
       // Create a test holon
-      const result_personId = personManager.createPerson({
+      const result_personId = await personManager.createPerson({
         edipi: '1111111111',
         name: 'Test Person',
         serviceNumbers: ['000000'],
@@ -223,7 +223,7 @@ describe('API Server Integration Tests', () => {
       });
       expect(result_personId.success).toBe(true);
       const personId = result_personId.personID!;
-      graphStore.rebuildIndices();
+      await graphStore.rebuildIndices();
 
       // Submit event via API
       const response = await apiServer.handleRequest(
@@ -294,7 +294,7 @@ describe('API Server Integration Tests', () => {
       apiServer.registerAPIKey(apiKey, user);
 
       // Create test holons
-      const result_person1Id = personManager.createPerson({
+      const result_person1Id = await personManager.createPerson({
         edipi: '2222222222',
         name: 'Test Person',
         serviceNumbers: ['000000'],
@@ -308,9 +308,9 @@ describe('API Server Integration Tests', () => {
       });
       expect(result_person1Id.success).toBe(true);
       const person1Id = result_person1Id.personID!;
-      graphStore.rebuildIndices();
+      await graphStore.rebuildIndices();
 
-      const result_person2Id = personManager.createPerson({
+      const result_person2Id = await personManager.createPerson({
         edipi: '3333333333',
         name: 'Test Person',
         serviceNumbers: ['000000'],
@@ -324,7 +324,7 @@ describe('API Server Integration Tests', () => {
       });
       expect(result_person2Id.success).toBe(true);
       const person2Id = result_person2Id.personID!;
-      graphStore.rebuildIndices();
+      await graphStore.rebuildIndices();
 
       // Submit batch events
       const response = await apiServer.handleRequest(
@@ -373,7 +373,7 @@ describe('API Server Integration Tests', () => {
 
       // Create a holon at time T1
       const t1 = new Date('2024-01-01T00:00:00Z');
-      const result_personId = personManager.createPerson({
+      const result_personId = await personManager.createPerson({
         edipi: '4444444444',
         name: 'Test Person',
         serviceNumbers: ['000000'],
@@ -387,13 +387,12 @@ describe('API Server Integration Tests', () => {
       });
       expect(result_personId.success).toBe(true);
       const personId = result_personId.personID!;
-      graphStore.rebuildIndices();
+      await graphStore.rebuildIndices();
 
       // Submit an event at T1
       eventStore.submitEvent({
         type: EventType.AssignmentStarted,
         occurredAt: t1,
-        recordedAt: t1,
         actor: personId,
         subjects: [personId],
         payload: { assignment: 'Team 1' },
@@ -433,7 +432,7 @@ describe('API Server Integration Tests', () => {
       apiServer.registerAPIKey(apiKey, user);
 
       // Create holons
-      const result_personId = personManager.createPerson({
+      const result_personId = await personManager.createPerson({
         edipi: '5555555555',
         name: 'Test Person',
         serviceNumbers: ['000000'],
@@ -447,9 +446,9 @@ describe('API Server Integration Tests', () => {
       });
       expect(result_personId.success).toBe(true);
       const personId = result_personId.personID!;
-      graphStore.rebuildIndices();
+      await graphStore.rebuildIndices();
 
-      const positionResult = organizationManager.createPosition({
+      const positionResult = await organizationManager.createPosition({
         billetIDs: ['BILLET-001'],
         title: 'Team Leader',
         gradeRange: { min: 'E-7', max: 'E-9' },
@@ -461,10 +460,10 @@ describe('API Server Integration Tests', () => {
         sourceDocuments: [],
       });
       expect(positionResult.success).toBe(true);
-      const positionId = positionResult.positionID!;
+      const positionId = positionResult.holonID!;
 
       // Create relationship
-      const relResult = relationshipRegistry.createRelationship({
+      const relResult = await relationshipRegistry.createRelationship({
         type: RelationshipType.OCCUPIES,
         sourceHolonID: personId,
         targetHolonID: positionId,
@@ -478,7 +477,7 @@ describe('API Server Integration Tests', () => {
       const relId = relResult.relationship!.id;
 
       // Update graph store
-      graphStore.rebuildIndices();
+      await graphStore.rebuildIndices();
 
       // Query relationships
       const response = await apiServer.handleRequest(
@@ -510,7 +509,7 @@ describe('API Server Integration Tests', () => {
       apiServer.registerAPIKey(apiKey, user);
 
       // Create holons
-      const result_personId = personManager.createPerson({
+      const result_personId = await personManager.createPerson({
         edipi: '6666666666',
         name: 'Test Person',
         serviceNumbers: ['000000'],
@@ -524,9 +523,9 @@ describe('API Server Integration Tests', () => {
       });
       expect(result_personId.success).toBe(true);
       const personId = result_personId.personID!;
-      graphStore.rebuildIndices();
+      await graphStore.rebuildIndices();
 
-      const positionResult = organizationManager.createPosition({
+      const positionResult = await organizationManager.createPosition({
         billetIDs: ['BILLET-002'],
         title: 'Operator',
         gradeRange: { min: 'E-5', max: 'E-7' },
@@ -538,10 +537,10 @@ describe('API Server Integration Tests', () => {
         sourceDocuments: [],
       });
       expect(positionResult.success).toBe(true);
-      const positionId = positionResult.positionID!;
+      const positionId = positionResult.holonID!;
 
       // Create relationship
-      const relResult = relationshipRegistry.createRelationship({
+      const relResult = await relationshipRegistry.createRelationship({
         type: RelationshipType.OCCUPIES,
         sourceHolonID: personId,
         targetHolonID: positionId,
@@ -554,7 +553,7 @@ describe('API Server Integration Tests', () => {
       expect(relResult.validation.valid).toBe(true);
 
       // Update graph store
-      graphStore.rebuildIndices();
+      await graphStore.rebuildIndices();
 
       // Get connected holons
       const response = await apiServer.handleRequest(
@@ -587,7 +586,7 @@ describe('API Server Integration Tests', () => {
 
     it('should reject requests with invalid API key', async () => {
       // Create a holon first so the route exists
-      const result_personId = personManager.createPerson({
+      const result_personId = await personManager.createPerson({
         edipi: '8888888888',
         name: 'Test Person',
         serviceNumbers: ['000000'],
@@ -601,7 +600,7 @@ describe('API Server Integration Tests', () => {
       });
       expect(result_personId.success).toBe(true);
       const personId = result_personId.personID!;
-      graphStore.rebuildIndices();
+      await graphStore.rebuildIndices();
 
       const response = await apiServer.handleRequest(
         'POST',
@@ -672,7 +671,7 @@ describe('API Server Integration Tests', () => {
 
       // Create multiple test persons using PersonManager
       for (let i = 0; i < 10; i++) {
-        const result = personManager.createPerson({
+        const result = await personManager.createPerson({
           edipi: `777777777${i}`,
           name: `Test Person ${i}`,
           serviceNumbers: [`77777${i}`],
@@ -688,7 +687,7 @@ describe('API Server Integration Tests', () => {
       }
 
       // Update graph store to pick up holons from registry
-      graphStore.rebuildIndices();
+      await graphStore.rebuildIndices();
 
       const response = await apiServer.handleRequest(
         'POST',
@@ -760,9 +759,9 @@ describe('API Server Integration Tests', () => {
   describe('End-to-End: Route Registration', () => {
     it('should register all expected routes', () => {
       const routes = apiServer.getRoutes();
-      
+
       expect(routes.length).toBeGreaterThan(0);
-      
+
       // Check for key routes
       const routePaths = routes.map(r => r.path);
       expect(routePaths).toContain('/api/v1/holons/query');

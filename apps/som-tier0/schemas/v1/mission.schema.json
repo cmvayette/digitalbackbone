@@ -1,0 +1,83 @@
+{
+  "type": "object",
+  "properties": {
+    "type": {
+      "type": "string",
+      "const": "Mission"
+    },
+    "properties": {
+      "type": "object",
+      "properties": {
+        "operationName": {
+          "type": "string"
+        },
+        "operationNumber": {
+          "type": "string"
+        },
+        "type": {
+          "enum": [
+            "real_world",
+            "training"
+          ],
+          "type": "string"
+        },
+        "classificationMetadata": {
+          "type": "string"
+        },
+        "startTime": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "endTime": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "classificationMetadata",
+        "endTime",
+        "operationName",
+        "operationNumber",
+        "startTime",
+        "type"
+      ]
+    },
+    "id": {
+      "description": "Core holon type definitions for the Semantic Operating Model",
+      "type": "string"
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "createdBy": {
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "active",
+        "inactive"
+      ],
+      "type": "string"
+    },
+    "sourceDocuments": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "createdAt",
+    "createdBy",
+    "id",
+    "properties",
+    "sourceDocuments",
+    "status",
+    "type"
+  ],
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "http://som.tier0/schemas/v1/mission.schema.json"
+}

@@ -3,13 +3,13 @@
  * Provides as-of queries, historical state reconstruction, and causal chain traversal
  */
 
-import { EventStore } from '../event-store';
+import { IEventStore as EventStore } from '../event-store';
 import { StateProjectionEngine, HolonState, RelationshipState } from '../state-projection';
-import { HolonRegistry } from '../core/holon-registry';
+import { IHolonRepository as HolonRegistry } from '../core/interfaces/holon-repository';
 import { RelationshipRegistry } from '../relationship-registry';
-import { Holon, HolonID, HolonType, Timestamp } from '../core/types/holon';
-import { Relationship, RelationshipID, RelationshipType } from '../core/types/relationship';
-import { Event, EventID } from '../core/types/event';
+import { Holon, HolonID, HolonType, Timestamp } from '@som/shared-types';
+import { Relationship, RelationshipID, RelationshipType } from '@som/shared-types';
+import { Event, EventID } from '@som/shared-types';
 
 /**
  * Organizational structure at a specific point in time
@@ -94,11 +94,11 @@ export class TemporalQueryEngine {
     // Check all relationships in the historical state
     for (const relState of historicalState.relationships.values()) {
       const rel = relState.relationship;
-      
+
       // Check if this relationship involves the holon
-      const involvesHolon = 
+      const involvesHolon =
         rel.sourceHolonID === holonId || rel.targetHolonID === holonId;
-      
+
       if (!involvesHolon) {
         continue;
       }
@@ -109,7 +109,7 @@ export class TemporalQueryEngine {
       }
 
       // Check if relationship was effective at the timestamp
-      const isEffective = 
+      const isEffective =
         rel.effectiveStart <= timestamp &&
         (!rel.effectiveEnd || rel.effectiveEnd >= timestamp);
 
@@ -130,7 +130,7 @@ export class TemporalQueryEngine {
     timestamp: Timestamp
   ): OrganizationalStructure | undefined {
     const historicalState = this.stateProjection.replayEventsAsOf(timestamp);
-    
+
     // Get the organization holon
     const orgState = historicalState.holons.get(organizationId);
     if (!orgState || orgState.holon.type !== HolonType.Organization) {
@@ -141,7 +141,7 @@ export class TemporalQueryEngine {
     const subOrganizations: OrganizationalStructure[] = [];
     for (const relState of historicalState.relationships.values()) {
       const rel = relState.relationship;
-      
+
       if (
         rel.type === RelationshipType.CONTAINS &&
         rel.sourceHolonID === organizationId &&
@@ -165,7 +165,7 @@ export class TemporalQueryEngine {
 
     for (const relState of historicalState.relationships.values()) {
       const rel = relState.relationship;
-      
+
       if (
         rel.type === RelationshipType.BELONGS_TO &&
         rel.targetHolonID === organizationId &&
@@ -179,7 +179,7 @@ export class TemporalQueryEngine {
           // Find person assigned to this position (OCCUPIES relationships)
           for (const assignRelState of historicalState.relationships.values()) {
             const assignRel = assignRelState.relationship;
-            
+
             if (
               assignRel.type === RelationshipType.OCCUPIES &&
               assignRel.targetHolonID === rel.sourceHolonID &&
@@ -217,18 +217,18 @@ export class TemporalQueryEngine {
     holonId: HolonID,
     timeRange?: { start: Timestamp; end: Timestamp }
   ): EventHistory {
-    const events = this.eventStore.getEventsByHolon(holonId, timeRange);
-    
+    const events = this.eventStore.getEvents({ subjects: [holonId], startTime: timeRange?.start, endTime: timeRange?.end });
+
     // Sort events chronologically
-    const sortedEvents = [...events].sort((a, b) => 
+    const sortedEvents = [...events].sort((a, b) =>
       a.occurredAt.getTime() - b.occurredAt.getTime()
     );
 
-    const startDate = sortedEvents.length > 0 
-      ? sortedEvents[0].occurredAt 
+    const startDate = sortedEvents.length > 0
+      ? sortedEvents[0].occurredAt
       : new Date();
-    const endDate = sortedEvents.length > 0 
-      ? sortedEvents[sortedEvents.length - 1].occurredAt 
+    const endDate = sortedEvents.length > 0
+      ? sortedEvents[sortedEvents.length - 1].occurredAt
       : new Date();
 
     return {
@@ -243,11 +243,11 @@ export class TemporalQueryEngine {
    * Get complete event history for a relationship
    * Returns all events that affected the relationship in chronological order
    */
-  getRelationshipEventHistory(
+  async getRelationshipEventHistory(
     relationshipId: RelationshipID,
     timeRange?: { start: Timestamp; end: Timestamp }
-  ): EventHistory {
-    const relationship = this.relationshipRegistry.getRelationship(relationshipId);
+  ): Promise<EventHistory> {
+    const relationship = await this.relationshipRegistry.getRelationship(relationshipId);
     if (!relationship) {
       return {
         subjectId: relationshipId,
@@ -258,8 +258,8 @@ export class TemporalQueryEngine {
     }
 
     // Get events for both holons involved in the relationship
-    const sourceEvents = this.eventStore.getEventsByHolon(relationship.sourceHolonID, timeRange);
-    const targetEvents = this.eventStore.getEventsByHolon(relationship.targetHolonID, timeRange);
+    const sourceEvents = this.eventStore.getEvents({ subjects: [relationship.sourceHolonID], startTime: timeRange?.start, endTime: timeRange?.end });
+    const targetEvents = this.eventStore.getEvents({ subjects: [relationship.targetHolonID], startTime: timeRange?.start, endTime: timeRange?.end });
 
     // Filter events that mention this relationship in their payload
     const relationshipEvents = [...sourceEvents, ...targetEvents].filter(event =>
@@ -271,11 +271,11 @@ export class TemporalQueryEngine {
       new Map(relationshipEvents.map(e => [e.id, e])).values()
     ).sort((a, b) => a.occurredAt.getTime() - b.occurredAt.getTime());
 
-    const startDate = uniqueEvents.length > 0 
-      ? uniqueEvents[0].occurredAt 
+    const startDate = uniqueEvents.length > 0
+      ? uniqueEvents[0].occurredAt
       : new Date();
-    const endDate = uniqueEvents.length > 0 
-      ? uniqueEvents[uniqueEvents.length - 1].occurredAt 
+    const endDate = uniqueEvents.length > 0
+      ? uniqueEvents[uniqueEvents.length - 1].occurredAt
       : new Date();
 
     return {
@@ -405,13 +405,13 @@ export class TemporalQueryEngine {
 
     for (const relState of historicalState.relationships.values()) {
       const rel = relState.relationship;
-      
+
       if (rel.type !== type) {
         continue;
       }
 
       // Check if relationship was effective at the timestamp
-      const isEffective = 
+      const isEffective =
         rel.effectiveStart <= timestamp &&
         (!rel.effectiveEnd || rel.effectiveEnd >= timestamp);
 
@@ -438,7 +438,7 @@ export class TemporalQueryEngine {
       // Support nested property access with dot notation
       const keys = key.split('.');
       let current = obj;
-      
+
       for (const k of keys) {
         if (current && typeof current === 'object' && k in current) {
           current = current[k];

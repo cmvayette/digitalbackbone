@@ -3,7 +3,7 @@
  * Manages authoritative documents that define semantics, constraints, and measures
  */
 
-import { DocumentID, HolonID, Timestamp, HolonType, DocumentHolon, DocumentType } from '../core/types/holon';
+import { DocumentID, HolonID, Timestamp, HolonType, DocumentHolon, DocumentType } from '@som/shared-types';
 import { randomUUID } from 'crypto';
 
 export interface RegisterDocumentParams {

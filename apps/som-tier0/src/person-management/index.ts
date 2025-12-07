@@ -3,13 +3,14 @@
  * Manages Person holon creation, assignments, qualifications, and constraints
  */
 
-import { HolonRegistry } from '../core/holon-registry';
+import { IHolonRepository as HolonRegistry } from '../core/interfaces/holon-repository';
 import { RelationshipRegistry } from '../relationship-registry';
-import { EventStore } from '../event-store';
+import { IEventStore as EventStore } from '../event-store';
 import { ConstraintEngine, ValidationResult } from '../constraint-engine';
-import { Person, HolonType, HolonID, DocumentID, EventID, Timestamp } from '../core/types/holon';
-import { RelationshipType } from '../core/types/relationship';
-import { EventType } from '../core/types/event';
+import { Person, HolonType, HolonID, DocumentID, EventID, Timestamp } from '@som/shared-types';
+import { RelationshipType } from '@som/shared-types';
+import { EventType } from '@som/shared-types';
+import { randomUUID } from 'crypto';
 
 /**
  * Parameters for creating a Person holon
@@ -18,10 +19,13 @@ export interface CreatePersonParams {
   edipi: string;
   serviceNumbers: string[];
   name: string;
+  email?: string;
+  employeeId?: string;
   dob: Date;
   serviceBranch: string;
   designatorRating: string;
   category: 'active_duty' | 'reserve' | 'civilian' | 'contractor';
+  securityClearance?: string;
   sourceDocuments: DocumentID[];
   actor: HolonID;
   sourceSystem: string;
@@ -86,19 +90,30 @@ export class PersonManager {
   }
 
   /**
-   * Create a new Person holon with required fields
+   * Create a new Person holon
    */
-  createPerson(params: CreatePersonParams): PersonOperationResult {
-    // Create event for person creation
+  async createPerson(params: CreatePersonParams): Promise<PersonOperationResult> {
+    const id = randomUUID();
+
+    // Create event
     const eventId = this.eventStore.submitEvent({
-      type: EventType.AssignmentStarted, // Using as generic creation event
+      type: EventType.PersonCreated, // Using generic type if specific not available, or reuse existing
       occurredAt: new Date(),
       actor: params.actor,
-      subjects: [],
+      subjects: [id],
       payload: {
-        action: 'create_person',
-        edipi: params.edipi,
-        name: params.name,
+        properties: {
+          name: params.name,
+          email: params.email,
+          employeeId: params.employeeId,
+          edipi: params.edipi,
+          serviceNumbers: params.serviceNumbers,
+          dob: params.dob,
+          serviceBranch: params.serviceBranch,
+          designatorRating: params.designatorRating,
+          category: params.category,
+          securityClearance: params.securityClearance,
+        }
       },
       sourceSystem: params.sourceSystem,
       sourceDocument: params.sourceDocuments[0],
@@ -106,27 +121,30 @@ export class PersonManager {
     });
 
     // Create Person holon
-    const person = this.holonRegistry.createHolon({
+    const person = await this.holonRegistry.createHolon({
+      id,
       type: HolonType.Person,
       properties: {
         edipi: params.edipi,
         serviceNumbers: params.serviceNumbers,
         name: params.name,
+        email: params.email,
+        employeeId: params.employeeId,
         dob: params.dob,
         serviceBranch: params.serviceBranch,
         designatorRating: params.designatorRating,
         category: params.category,
+        securityClearance: params.securityClearance,
       },
       createdBy: eventId,
       sourceDocuments: params.sourceDocuments,
     });
 
-    // Validate the created person
+    // Validate
     const validation = this.constraintEngine.validateHolon(person);
 
     if (!validation.valid) {
-      // Rollback: mark person as inactive
-      this.holonRegistry.markHolonInactive(person.id, 'Validation failed');
+      await this.holonRegistry.markHolonInactive(person.id, 'Validation failed');
       return {
         success: false,
         validation,
@@ -144,10 +162,10 @@ export class PersonManager {
   /**
    * Assign a Person to a Position with qualification validation
    */
-  assignPersonToPosition(params: AssignPersonToPositionParams): PersonOperationResult {
+  async assignPersonToPosition(params: AssignPersonToPositionParams): Promise<PersonOperationResult> {
     // Get person and position holons
-    const person = this.holonRegistry.getHolon(params.personID);
-    const position = this.holonRegistry.getHolon(params.positionID);
+    const person = await this.holonRegistry.getHolon(params.personID);
+    const position = await this.holonRegistry.getHolon(params.positionID);
 
     if (!person) {
       return {
@@ -180,7 +198,7 @@ export class PersonManager {
     }
 
     // Check concurrent position constraints
-    const concurrentValidation = this.validateConcurrentPositions(params.personID, params.effectiveStart);
+    const concurrentValidation = await this.validateConcurrentPositions(params.personID, params.effectiveStart);
     if (!concurrentValidation.valid) {
       return {
         success: false,
@@ -189,7 +207,7 @@ export class PersonManager {
     }
 
     // Check qualification requirements
-    const qualificationValidation = this.validateQualifications(person, position);
+    const qualificationValidation = await this.validateQualifications(person, position);
     if (!qualificationValidation.valid) {
       return {
         success: false,
@@ -198,7 +216,7 @@ export class PersonManager {
     }
 
     // Create the OCCUPIES relationship
-    const result = this.relationshipRegistry.createRelationship({
+    const result = await this.relationshipRegistry.createRelationship({
       type: RelationshipType.OCCUPIES,
       sourceHolonID: params.personID,
       targetHolonID: params.positionID,
@@ -228,10 +246,10 @@ export class PersonManager {
   /**
    * Assign a qualification to a Person
    */
-  assignQualification(params: AssignQualificationParams): PersonOperationResult {
+  async assignQualification(params: AssignQualificationParams): Promise<PersonOperationResult> {
     // Get person and qualification holons
-    const person = this.holonRegistry.getHolon(params.personID);
-    const qualification = this.holonRegistry.getHolon(params.qualificationID);
+    const person = await this.holonRegistry.getHolon(params.personID);
+    const qualification = await this.holonRegistry.getHolon(params.qualificationID);
 
     if (!person) {
       return {
@@ -264,7 +282,7 @@ export class PersonManager {
     }
 
     // Create the HAS_QUAL relationship
-    const result = this.relationshipRegistry.createRelationship({
+    const result = await this.relationshipRegistry.createRelationship({
       type: RelationshipType.HAS_QUAL,
       sourceHolonID: params.personID,
       targetHolonID: params.qualificationID,
@@ -309,16 +327,16 @@ export class PersonManager {
   /**
    * Remove a qualification from a Person
    */
-  removeQualification(
+  async removeQualification(
     personID: HolonID,
     qualificationID: HolonID,
     endDate: Timestamp,
     reason: string,
     actor: HolonID,
     sourceSystem: string
-  ): PersonOperationResult {
+  ): Promise<PersonOperationResult> {
     // Find the HAS_QUAL relationship
-    const relationships = this.relationshipRegistry.getRelationshipsFrom(
+    const relationships = await this.relationshipRegistry.getRelationshipsFrom(
       personID,
       RelationshipType.HAS_QUAL,
       { includeEnded: false }
@@ -342,7 +360,7 @@ export class PersonManager {
     }
 
     // End the relationship
-    const result = this.relationshipRegistry.endRelationship({
+    const result = await this.relationshipRegistry.endRelationship({
       relationshipID: relationship.id,
       endDate,
       reason,
@@ -384,8 +402,8 @@ export class PersonManager {
   /**
    * Get all qualifications for a Person at a specific time
    */
-  getPersonQualifications(personID: HolonID, effectiveAt?: Timestamp): HolonID[] {
-    const relationships = this.relationshipRegistry.getRelationshipsFrom(
+  async getPersonQualifications(personID: HolonID, effectiveAt?: Timestamp): Promise<HolonID[]> {
+    const relationships = await this.relationshipRegistry.getRelationshipsFrom(
       personID,
       RelationshipType.HAS_QUAL,
       { effectiveAt, includeEnded: false }
@@ -397,8 +415,8 @@ export class PersonManager {
   /**
    * Get all positions occupied by a Person at a specific time
    */
-  getPersonPositions(personID: HolonID, effectiveAt?: Timestamp): HolonID[] {
-    const relationships = this.relationshipRegistry.getRelationshipsFrom(
+  async getPersonPositions(personID: HolonID, effectiveAt?: Timestamp): Promise<HolonID[]> {
+    const relationships = await this.relationshipRegistry.getRelationshipsFrom(
       personID,
       RelationshipType.OCCUPIES,
       { effectiveAt, includeEnded: false }
@@ -410,9 +428,9 @@ export class PersonManager {
   /**
    * Validate that a Person has the required qualifications for a Position
    */
-  private validateQualifications(person: any, position: any): ValidationResult {
+  private async validateQualifications(person: any, position: any): Promise<ValidationResult> {
     // Get required qualifications for the position
-    const requiredQuals = this.relationshipRegistry.getRelationshipsTo(
+    const requiredQuals = await this.relationshipRegistry.getRelationshipsTo(
       position.id,
       RelationshipType.REQUIRED_FOR,
       { includeEnded: false }
@@ -424,7 +442,7 @@ export class PersonManager {
     }
 
     // Get person's current qualifications
-    const personQuals = this.getPersonQualifications(person.id);
+    const personQuals = await this.getPersonQualifications(person.id);
 
     // Check if person has all required qualifications
     const missingQuals: string[] = [];
@@ -452,8 +470,8 @@ export class PersonManager {
   /**
    * Validate concurrent position constraints
    */
-  private validateConcurrentPositions(personID: HolonID, effectiveAt: Timestamp): ValidationResult {
-    const currentPositions = this.getPersonPositions(personID, effectiveAt);
+  private async validateConcurrentPositions(personID: HolonID, effectiveAt: Timestamp): Promise<ValidationResult> {
+    const currentPositions = await this.getPersonPositions(personID, effectiveAt);
 
     // For now, we'll implement a simple constraint: max 3 concurrent positions
     // This should be configurable via the constraint engine in a real implementation

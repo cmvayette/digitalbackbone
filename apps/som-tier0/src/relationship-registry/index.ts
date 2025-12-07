@@ -4,53 +4,20 @@
  */
 
 import { randomUUID } from 'crypto';
-import { Relationship, RelationshipID, RelationshipType } from '../core/types/relationship';
-import { HolonID, DocumentID, EventID, Timestamp } from '../core/types/holon';
-import { Event, EventType } from '../core/types/event';
+import { Relationship, RelationshipID, RelationshipType } from '@som/shared-types';
+import { HolonID, DocumentID, EventID, Timestamp } from '@som/shared-types';
+import { Event, EventType } from '@som/shared-types';
 import { ConstraintEngine, ValidationResult } from '../constraint-engine';
-import { EventStore } from '../event-store';
+import { IEventStore as EventStore } from '../event-store';
+import { IRelationshipRepository, CreateRelationshipParams, EndRelationshipParams, RelationshipQueryFilters, RelationshipOperationResult } from '../core/interfaces/relationship-repository';
+import { QueryOptions } from '../core/interfaces/repository';
 
-/**
- * Parameters for creating a new relationship
- */
-export interface CreateRelationshipParams {
-  type: RelationshipType;
-  sourceHolonID: HolonID;
-  targetHolonID: HolonID;
-  properties: Record<string, any>;
-  effectiveStart: Timestamp;
-  effectiveEnd?: Timestamp;
-  sourceSystem: string;
-  sourceDocuments: DocumentID[];
-  authorityLevel?: 'authoritative' | 'derived' | 'inferred';
-  confidenceScore?: number;
-  actor: HolonID;
-}
-
-/**
- * Parameters for ending a relationship
- */
-export interface EndRelationshipParams {
-  relationshipID: RelationshipID;
-  endDate: Timestamp;
-  reason: string;
-  actor: HolonID;
-  sourceSystem: string;
-}
-
-/**
- * Query filters for relationships
- */
-export interface RelationshipQueryFilters {
-  effectiveAt?: Timestamp;
-  includeEnded?: boolean;
-  authorityLevel?: 'authoritative' | 'derived' | 'inferred';
-}
+export { CreateRelationshipParams, EndRelationshipParams, RelationshipQueryFilters };
 
 /**
  * RelationshipRegistry manages the lifecycle and storage of all relationships
  */
-export class RelationshipRegistry {
+export class RelationshipRegistry implements IRelationshipRepository {
   private relationships: Map<RelationshipID, Relationship>;
   private relationshipsBySource: Map<HolonID, Set<RelationshipID>>;
   private relationshipsByTarget: Map<HolonID, Set<RelationshipID>>;
@@ -84,7 +51,7 @@ export class RelationshipRegistry {
    * @param params - Relationship creation parameters
    * @returns The created relationship with assigned ID, or validation errors
    */
-  createRelationship(params: CreateRelationshipParams): { relationship?: Relationship; validation: ValidationResult } {
+  async createRelationship(params: CreateRelationshipParams): Promise<RelationshipOperationResult> {
     const id = this.generateRelationshipID();
 
     // Create the relationship object
@@ -128,18 +95,44 @@ export class RelationshipRegistry {
   /**
    * Get a relationship by its ID
    */
-  getRelationship(relationshipID: RelationshipID): Relationship | undefined {
+  async getRelationship(relationshipID: RelationshipID): Promise<Relationship | undefined> {
     return this.relationships.get(relationshipID);
+  }
+
+  async save(item: Relationship): Promise<void> {
+    this.relationships.set(item.id, item);
+    this.updateIndices(item);
+  }
+
+  async findById(id: string): Promise<Relationship | null> {
+    return this.relationships.get(id) || null;
+  }
+
+  async find(query: Record<string, any>, options?: QueryOptions): Promise<Relationship[]> {
+    return Array.from(this.relationships.values()).filter(rel => {
+      for (const key in query) {
+        if ((rel as any)[key] !== query[key]) return false;
+      }
+      return true;
+    });
+  }
+
+  async delete(id: string): Promise<void> {
+    const rel = this.relationships.get(id);
+    if (rel) {
+      this.relationships.delete(id);
+      // Clean up indices would go here ideally
+    }
   }
 
   /**
    * Get all relationships from a specific holon
    */
-  getRelationshipsFrom(
+  async getRelationshipsFrom(
     holonID: HolonID,
     relationshipType?: RelationshipType,
     filters?: RelationshipQueryFilters
-  ): Relationship[] {
+  ): Promise<Relationship[]> {
     const relationshipIds = this.relationshipsBySource.get(holonID) || new Set();
     let relationships: Relationship[] = [];
 
@@ -156,11 +149,11 @@ export class RelationshipRegistry {
   /**
    * Get all relationships to a specific holon
    */
-  getRelationshipsTo(
+  async getRelationshipsTo(
     holonID: HolonID,
     relationshipType?: RelationshipType,
     filters?: RelationshipQueryFilters
-  ): Relationship[] {
+  ): Promise<Relationship[]> {
     const relationshipIds = this.relationshipsByTarget.get(holonID) || new Set();
     let relationships: Relationship[] = [];
 
@@ -177,10 +170,10 @@ export class RelationshipRegistry {
   /**
    * Get all relationships of a specific type
    */
-  getRelationshipsByType(
+  async getRelationshipsByType(
     type: RelationshipType,
     filters?: RelationshipQueryFilters
-  ): Relationship[] {
+  ): Promise<Relationship[]> {
     const relationshipIds = this.relationshipsByType.get(type) || new Set();
     let relationships: Relationship[] = [];
 
@@ -197,9 +190,9 @@ export class RelationshipRegistry {
   /**
    * End a relationship by setting its end date
    */
-  endRelationship(params: EndRelationshipParams): { success: boolean; validation: ValidationResult; event?: EventID } {
+  async endRelationship(params: EndRelationshipParams): Promise<RelationshipOperationResult> {
     const relationship = this.relationships.get(params.relationshipID);
-    
+
     if (!relationship) {
       return {
         success: false,
@@ -269,14 +262,14 @@ export class RelationshipRegistry {
   /**
    * Get all relationships (for testing/debugging)
    */
-  getAllRelationships(): Relationship[] {
+  async getAllRelationships(): Promise<Relationship[]> {
     return Array.from(this.relationships.values());
   }
 
   /**
    * Clear all relationships from the registry (for testing purposes)
    */
-  clear(): void {
+  async clear(): Promise<void> {
     this.relationships.clear();
     this.relationshipsBySource.clear();
     this.relationshipsByTarget.clear();
@@ -325,10 +318,10 @@ export class RelationshipRegistry {
 
     // Check if relationship is effective at a specific time
     if (filters.effectiveAt) {
-      const isEffective = 
+      const isEffective =
         relationship.effectiveStart <= filters.effectiveAt &&
         (!relationship.effectiveEnd || relationship.effectiveEnd >= filters.effectiveAt);
-      
+
       if (!isEffective) {
         return false;
       }

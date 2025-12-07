@@ -3,10 +3,10 @@
  * Manages measure definitions, lens definitions, measure emission, and lens evaluation
  */
 
-import { HolonID, DocumentID, Timestamp, EventID, MeasureDefinition, LensDefinition, HolonType } from '../core/types/holon';
-import { holonRegistry } from '../core/holon-registry';
-import { EventStore } from '../event-store';
-import { EventType } from '../core/types/event';
+import { HolonID, DocumentID, Timestamp, EventID, MeasureDefinition, LensDefinition, HolonType } from '@som/shared-types';
+import { IHolonRepository as HolonRegistry } from '../core/interfaces/holon-repository';
+import { IEventStore as EventStore } from '../event-store';
+import { EventType } from '@som/shared-types';
 
 export interface CreateMeasureDefinitionParams {
   name: string;
@@ -56,11 +56,13 @@ export interface LensOutput {
  */
 export class MeasureLensEngine {
   private eventStore: EventStore;
+  private holonRegistry: HolonRegistry;
   private measureVersions: Map<string, HolonID[]>; // Maps measure name to version history
   private lensVersions: Map<string, HolonID[]>; // Maps lens name to version history
 
-  constructor(eventStore: EventStore) {
+  constructor(eventStore: EventStore, holonRegistry: HolonRegistry) {
     this.eventStore = eventStore;
+    this.holonRegistry = holonRegistry;
     this.measureVersions = new Map();
     this.lensVersions = new Map();
   }
@@ -70,15 +72,15 @@ export class MeasureLensEngine {
    * @param params - Measure definition parameters
    * @returns The created MeasureDefinition holon
    */
-  createMeasureDefinition(params: CreateMeasureDefinitionParams): MeasureDefinition {
+  async createMeasureDefinition(params: CreateMeasureDefinitionParams): Promise<MeasureDefinition> {
     // Validate required fields
     this.validateMeasureDefinition(params);
 
     // Determine version number
-    const version = this.getNextVersion(params.name, this.measureVersions);
+    const version = await this.getNextVersion(params.name, this.measureVersions);
 
     // Create the measure definition holon
-    const measureDef = holonRegistry.createHolon({
+    const measureDef = (await this.holonRegistry.createHolon({
       type: HolonType.MeasureDefinition,
       properties: {
         name: params.name,
@@ -94,7 +96,7 @@ export class MeasureLensEngine {
       },
       createdBy: params.createdBy,
       sourceDocuments: params.sourceDocuments,
-    }) as MeasureDefinition;
+    })) as MeasureDefinition;
 
     // Track version history
     this.addToVersionHistory(params.name, measureDef.id, this.measureVersions);
@@ -107,15 +109,15 @@ export class MeasureLensEngine {
    * @param params - Lens definition parameters
    * @returns The created LensDefinition holon
    */
-  createLensDefinition(params: CreateLensDefinitionParams): LensDefinition {
+  async createLensDefinition(params: CreateLensDefinitionParams): Promise<LensDefinition> {
     // Validate required fields
     this.validateLensDefinition(params);
 
     // Determine version number
-    const version = this.getNextVersion(params.name, this.lensVersions);
+    const version = await this.getNextVersion(params.name, this.lensVersions);
 
     // Create the lens definition holon
-    const lensDef = holonRegistry.createHolon({
+    const lensDef = (await this.holonRegistry.createHolon({
       type: HolonType.LensDefinition,
       properties: {
         name: params.name,
@@ -128,7 +130,7 @@ export class MeasureLensEngine {
       },
       createdBy: params.createdBy,
       sourceDocuments: params.sourceDocuments,
-    }) as LensDefinition;
+    })) as LensDefinition;
 
     // Track version history
     this.addToVersionHistory(params.name, lensDef.id, this.lensVersions);
@@ -143,13 +145,13 @@ export class MeasureLensEngine {
    * @param sourceSystem - The source system
    * @returns The event ID of the generated event
    */
-  emitMeasure(
+  async emitMeasure(
     measureValue: MeasureValue,
     actor: HolonID,
     sourceSystem: string
-  ): EventID {
+  ): Promise<EventID> {
     // Validate that the measure definition exists
-    const measureDef = holonRegistry.getHolon(measureValue.measureDefinitionID);
+    const measureDef = await this.holonRegistry.getHolon(measureValue.measureDefinitionID);
     if (!measureDef || measureDef.type !== HolonType.MeasureDefinition) {
       throw new Error(`Measure definition ${measureValue.measureDefinitionID} not found`);
     }
@@ -189,15 +191,15 @@ export class MeasureLensEngine {
    * @param sourceSystem - The source system
    * @returns The lens output and event ID
    */
-  evaluateLens(
+  async evaluateLens(
     lensDefinitionID: HolonID,
     holonID: HolonID,
     timestamp: Timestamp,
     actor: HolonID,
     sourceSystem: string
-  ): { output: LensOutput; eventId: EventID } {
+  ): Promise<{ output: LensOutput; eventId: EventID }> {
     // Get the lens definition
-    const lensDef = holonRegistry.getHolon(lensDefinitionID) as LensDefinition | undefined;
+    const lensDef = await this.holonRegistry.getHolon(lensDefinitionID) as LensDefinition | undefined;
     if (!lensDef || lensDef.type !== HolonType.LensDefinition) {
       throw new Error(`Lens definition ${lensDefinitionID} not found`);
     }
@@ -219,7 +221,7 @@ export class MeasureLensEngine {
       inputValues,
       holonID,
       timestamp,
-      explanation: this.generateExplanation(lensDef, inputValues, output),
+      explanation: await this.generateExplanation(lensDef, inputValues, output),
     };
 
     // Create the LensEvaluated event
@@ -268,13 +270,13 @@ export class MeasureLensEngine {
    * @param measureName - The measure name
    * @returns The latest measure definition or undefined
    */
-  getLatestMeasureVersion(measureName: string): MeasureDefinition | undefined {
+  async getLatestMeasureVersion(measureName: string): Promise<MeasureDefinition | undefined> {
     const versions = this.measureVersions.get(measureName);
     if (!versions || versions.length === 0) {
       return undefined;
     }
     const latestId = versions[versions.length - 1];
-    return holonRegistry.getHolon(latestId) as MeasureDefinition | undefined;
+    return await this.holonRegistry.getHolon(latestId) as MeasureDefinition | undefined;
   }
 
   /**
@@ -282,13 +284,13 @@ export class MeasureLensEngine {
    * @param lensName - The lens name
    * @returns The latest lens definition or undefined
    */
-  getLatestLensVersion(lensName: string): LensDefinition | undefined {
+  async getLatestLensVersion(lensName: string): Promise<LensDefinition | undefined> {
     const versions = this.lensVersions.get(lensName);
     if (!versions || versions.length === 0) {
       return undefined;
     }
     const latestId = versions[versions.length - 1];
-    return holonRegistry.getHolon(latestId) as LensDefinition | undefined;
+    return await this.holonRegistry.getHolon(latestId) as LensDefinition | undefined;
   }
 
   /**
@@ -339,19 +341,19 @@ export class MeasureLensEngine {
   /**
    * Get the next version number for a definition
    */
-  private getNextVersion(name: string, versionMap: Map<string, HolonID[]>): number {
+  private async getNextVersion(name: string, versionMap: Map<string, HolonID[]>): Promise<number> {
     const versions = versionMap.get(name);
     if (!versions || versions.length === 0) {
       return 1;
     }
-    
+
     // Get the last version's number
     const lastId = versions[versions.length - 1];
-    const lastHolon = holonRegistry.getHolon(lastId);
+    const lastHolon = await this.holonRegistry.getHolon(lastId);
     if (!lastHolon) {
       return 1;
     }
-    
+
     const lastVersion = (lastHolon.properties as any).version || 0;
     return lastVersion + 1;
   }
@@ -380,7 +382,7 @@ export class MeasureLensEngine {
     const inputValues: MeasureValue[] = [];
 
     // Get all MeasureEmitted events for this holon
-    const events = this.eventStore.getEventsByHolon(holonID);
+    const events = this.eventStore.getEvents({ subjects: [holonID] });
     const measureEvents = events.filter(e => e.type === EventType.MeasureEmitted);
 
     // For each required input measure, find the most recent value before timestamp
@@ -417,7 +419,7 @@ export class MeasureLensEngine {
     // Simple threshold-based evaluation
     // In a real implementation, this would execute the logic string
     // For now, we'll use a simple threshold comparison
-    
+
     if (inputValues.length === 0) {
       return outputs[outputs.length - 1]; // Return worst case if no data
     }
@@ -446,15 +448,15 @@ export class MeasureLensEngine {
   /**
    * Generate explanation for lens output
    */
-  private generateExplanation(
+  private async generateExplanation(
     lensDef: LensDefinition,
     inputValues: MeasureValue[],
     output: string
-  ): string {
-    const measureNames = inputValues.map(v => {
-      const measureDef = holonRegistry.getHolon(v.measureDefinitionID);
+  ): Promise<string> {
+    const measureNames = await Promise.all(inputValues.map(async v => {
+      const measureDef = await this.holonRegistry.getHolon(v.measureDefinitionID);
       return measureDef ? (measureDef.properties as any).name : v.measureDefinitionID;
-    });
+    }));
 
     return `Lens "${lensDef.properties.name}" evaluated to "${output}" based on ${inputValues.length} input measure(s): ${measureNames.join(', ')}`;
   }
@@ -463,6 +465,6 @@ export class MeasureLensEngine {
 /**
  * Create a new measure-lens engine instance
  */
-export function createMeasureLensEngine(eventStore: EventStore): MeasureLensEngine {
-  return new MeasureLensEngine(eventStore);
+export function createMeasureLensEngine(eventStore: EventStore, holonRegistry: HolonRegistry): MeasureLensEngine {
+  return new MeasureLensEngine(eventStore, holonRegistry);
 }

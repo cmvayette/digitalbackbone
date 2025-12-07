@@ -6,14 +6,14 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import * as fc from 'fast-check';
 import { GraphStore, createGraphStore } from './index';
 import { StateProjectionEngine, createStateProjectionEngine } from '../state-projection';
-import { EventStore, createEventStore } from '../event-store';
-import { HolonRegistry } from '../core/holon-registry';
+import { IEventStore as EventStore, createEventStore } from '../event-store';
+import { InMemoryHolonRepository as HolonRegistry } from '../core/holon-registry';
 import { DocumentRegistry } from '../document-registry';
 import { ConstraintEngine } from '../constraint-engine';
 import { RelationshipRegistry } from '../relationship-registry';
-import { HolonType } from '../core/types/holon';
-import { RelationshipType } from '../core/types/relationship';
-import { EventType } from '../core/types/event';
+import { HolonType } from '@som/shared-types';
+import { RelationshipType } from '@som/shared-types';
+import { EventType } from '@som/shared-types';
 
 describe('GraphStore', () => {
   let eventStore: EventStore;
@@ -28,14 +28,14 @@ describe('GraphStore', () => {
     eventStore = createEventStore();
     documentRegistry = new DocumentRegistry();
     constraintEngine = new ConstraintEngine(documentRegistry);
-    holonRegistry = new HolonRegistry(constraintEngine, eventStore);
+    holonRegistry = new HolonRegistry();
     relationshipRegistry = new RelationshipRegistry(constraintEngine, eventStore);
     stateProjection = createStateProjectionEngine(eventStore);
     graphStore = createGraphStore(stateProjection);
   });
 
   describe('Basic Operations', () => {
-    it('should query holons by type', () => {
+    it('should query holons by type', async () => {
       // Create events for holons
       const person1Id = 'person-1';
       const person2Id = 'person-2';
@@ -82,7 +82,7 @@ describe('GraphStore', () => {
 
       // Replay events and rebuild indices
       stateProjection.replayAllEvents();
-      graphStore.rebuildIndices();
+      await graphStore.rebuildIndices();
 
       // Query persons
       const persons = graphStore.queryHolonsByType(HolonType.Person);
@@ -96,7 +96,7 @@ describe('GraphStore', () => {
       expect(orgs[0].id).toBe(orgId);
     });
 
-    it('should filter holons by properties', () => {
+    it('should filter holons by properties', async () => {
       // Create events for holons with different properties
       eventStore.submitEvent({
         type: EventType.OrganizationCreated,
@@ -125,7 +125,7 @@ describe('GraphStore', () => {
       });
 
       stateProjection.replayAllEvents();
-      graphStore.rebuildIndices();
+      await graphStore.rebuildIndices();
 
       // Query with property filter
       const activePersons = graphStore.queryHolonsByType(HolonType.Person, {
@@ -136,7 +136,7 @@ describe('GraphStore', () => {
       expect(activePersons[0].properties.name).toBe('Active Person');
     });
 
-    it('should traverse relationships bidirectionally', () => {
+    it('should traverse relationships bidirectionally', async () => {
       const personId = 'person-1';
       const positionId = 'position-1';
       const relationshipId = 'rel-1';
@@ -184,10 +184,10 @@ describe('GraphStore', () => {
       });
 
       stateProjection.replayAllEvents();
-      graphStore.rebuildIndices();
+      await graphStore.rebuildIndices();
 
       // Traverse outgoing from person
-      const outgoing = graphStore.traverseRelationships(
+      const outgoing = await graphStore.traverseRelationships(
         personId,
         undefined,
         'outgoing'
@@ -196,7 +196,7 @@ describe('GraphStore', () => {
       expect(outgoing[0].targetHolonID).toBe(positionId);
 
       // Traverse incoming to position
-      const incoming = graphStore.traverseRelationships(
+      const incoming = await graphStore.traverseRelationships(
         positionId,
         undefined,
         'incoming'
@@ -205,7 +205,7 @@ describe('GraphStore', () => {
       expect(incoming[0].sourceHolonID).toBe(personId);
 
       // Traverse both directions
-      const both = graphStore.traverseRelationships(
+      const both = await graphStore.traverseRelationships(
         personId,
         undefined,
         'both'
@@ -213,7 +213,7 @@ describe('GraphStore', () => {
       expect(both).toHaveLength(1);
     });
 
-    it('should get connected holons', () => {
+    it('should get connected holons', async () => {
       const personId = 'person-1';
       const position1Id = 'position-1';
       const position2Id = 'position-2';
@@ -288,10 +288,10 @@ describe('GraphStore', () => {
       });
 
       stateProjection.replayAllEvents();
-      graphStore.rebuildIndices();
+      await graphStore.rebuildIndices();
 
       // Get connected holons
-      const connected = graphStore.getConnectedHolons(
+      const connected = await graphStore.getConnectedHolons(
         personId,
         RelationshipType.OCCUPIES,
         'outgoing'
@@ -305,9 +305,9 @@ describe('GraphStore', () => {
 
   describe('Property-Based Tests', () => {
     // **Feature: semantic-operating-model, Property 47: Query completeness by type**
-    it('Property 47: Query completeness by type', () => {
-      fc.assert(
-        fc.property(
+    it('Property 47: Query completeness by type', async () => {
+      await fc.assert(
+        fc.asyncProperty(
           fc.array(
             fc.record({
               type: fc.constantFrom(
@@ -321,7 +321,7 @@ describe('GraphStore', () => {
             }),
             { minLength: 1, maxLength: 20 }
           ),
-          (holonSpecs) => {
+          async (holonSpecs) => {
             // Create fresh instances for this test run
             const localEventStore = createEventStore();
             const localStateProjection = createStateProjectionEngine(localEventStore);
@@ -348,7 +348,7 @@ describe('GraphStore', () => {
 
             // Replay events and rebuild indices
             localStateProjection.replayAllEvents();
-            localGraphStore.rebuildIndices();
+            await localGraphStore.rebuildIndices();
 
             // For each holon type, verify query completeness
             const typeGroups = new Map<HolonType, string[]>();
@@ -394,9 +394,9 @@ describe('GraphStore', () => {
     });
 
     // **Feature: semantic-operating-model, Property 48: Bidirectional relationship traversal**
-    it('Property 48: Bidirectional relationship traversal', () => {
-      fc.assert(
-        fc.property(
+    it('Property 48: Bidirectional relationship traversal', async () => {
+      await fc.assert(
+        fc.asyncProperty(
           fc.array(
             fc.record({
               sourceType: fc.constantFrom(
@@ -417,7 +417,7 @@ describe('GraphStore', () => {
             }),
             { minLength: 1, maxLength: 10 }
           ),
-          (relationshipSpecs) => {
+          async (relationshipSpecs) => {
             // Create fresh instances for this test run
             const localEventStore = createEventStore();
             const localStateProjection = createStateProjectionEngine(localEventStore);
@@ -425,7 +425,7 @@ describe('GraphStore', () => {
 
             // Create relationships via events
             const createdRelationships: Array<{ relationshipId: string; sourceId: string; targetId: string }> = [];
-            
+
             relationshipSpecs.forEach((spec, index) => {
               const sourceId = `source-${index}`;
               const targetId = `target-${index}`;
@@ -479,12 +479,12 @@ describe('GraphStore', () => {
 
             // Replay events and rebuild indices
             localStateProjection.replayAllEvents();
-            localGraphStore.rebuildIndices();
+            await localGraphStore.rebuildIndices();
 
             // Verify bidirectional traversal for each relationship
             for (const { relationshipId, sourceId, targetId } of createdRelationships) {
               // Query from source (outgoing)
-              const outgoing = localGraphStore.traverseRelationships(
+              const outgoing = await localGraphStore.traverseRelationships(
                 sourceId,
                 undefined,
                 'outgoing'
@@ -502,7 +502,7 @@ describe('GraphStore', () => {
               }
 
               // Query from target (incoming)
-              const incoming = localGraphStore.traverseRelationships(
+              const incoming = await localGraphStore.traverseRelationships(
                 targetId,
                 undefined,
                 'incoming'
@@ -534,7 +534,7 @@ describe('GraphStore', () => {
   });
 
   describe('Pattern Matching', () => {
-    it('should match simple holon patterns', () => {
+    it('should match simple holon patterns', async () => {
       // Create test data via events
       eventStore.submitEvent({
         type: EventType.OrganizationCreated,
@@ -563,10 +563,10 @@ describe('GraphStore', () => {
       });
 
       stateProjection.replayAllEvents();
-      graphStore.rebuildIndices();
+      await graphStore.rebuildIndices();
 
       // Match pattern
-      const matches = graphStore.matchPattern({
+      const matches = await graphStore.matchPattern({
         holonPatterns: [
           { type: HolonType.Person, properties: { role: 'commander' } },
         ],
@@ -576,7 +576,7 @@ describe('GraphStore', () => {
       expect(matches[0].holons.get('0')?.properties.name).toBe('John');
     });
 
-    it('should match relationship patterns', () => {
+    it('should match relationship patterns', async () => {
       const personId = 'person-john';
       const positionId = 'position-cmd';
 
@@ -622,10 +622,10 @@ describe('GraphStore', () => {
       });
 
       stateProjection.replayAllEvents();
-      graphStore.rebuildIndices();
+      await graphStore.rebuildIndices();
 
       // Match pattern
-      const matches = graphStore.matchPattern({
+      const matches = await graphStore.matchPattern({
         holonPatterns: [
           { type: HolonType.Person, alias: 'person' },
         ],

@@ -3,8 +3,8 @@
  * Manages schema evolution, version tracking, and type collision detection
  */
 
-import { HolonType, DocumentID } from '../core/types/holon';
-import { RelationshipType } from '../core/types/relationship';
+import { HolonType, DocumentID } from '@som/shared-types';
+import { RelationshipType } from '@som/shared-types';
 import { randomUUID } from 'crypto';
 
 export type SchemaVersionID = string;

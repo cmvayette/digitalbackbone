@@ -6,15 +6,15 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import * as fc from 'fast-check';
 import { TemporalQueryEngine, createTemporalQueryEngine } from './temporal-query-engine';
-import { EventStore, createEventStore } from '../event-store';
+import { IEventStore as EventStore, createEventStore } from '../event-store';
 import { StateProjectionEngine, createStateProjectionEngine } from '../state-projection';
-import { HolonRegistry } from '../core/holon-registry';
+import { InMemoryHolonRepository as HolonRegistry } from '../core/holon-registry';
 import { RelationshipRegistry } from '../relationship-registry';
 import { ConstraintEngine } from '../constraint-engine';
 import { DocumentRegistry } from '../document-registry';
-import { HolonType, Timestamp } from '../core/types/holon';
-import { RelationshipType } from '../core/types/relationship';
-import { EventType } from '../core/types/event';
+import { HolonType, Timestamp } from '@som/shared-types';
+import { RelationshipType } from '@som/shared-types';
+import { EventType } from '@som/shared-types';
 
 describe('TemporalQueryEngine', () => {
   let eventStore: EventStore;
@@ -41,9 +41,9 @@ describe('TemporalQueryEngine', () => {
   });
 
   describe('Basic functionality', () => {
-    it('should get holon state as of a specific timestamp', () => {
+    it('should get holon state as of a specific timestamp', async () => {
       // Create a holon
-      const holon = holonRegistry.createHolon({
+      const holon = await holonRegistry.createHolon({
         type: HolonType.Person,
         properties: { name: 'John Doe', edipi: '1234567890' },
         createdBy: 'event-1',
@@ -71,16 +71,16 @@ describe('TemporalQueryEngine', () => {
       expect(result?.id).toBe(holon.id);
     });
 
-    it('should get relationships as of a specific timestamp', () => {
+    it('should get relationships as of a specific timestamp', async () => {
       // Create holons
-      const person = holonRegistry.createHolon({
+      const person = await holonRegistry.createHolon({
         type: HolonType.Person,
         properties: { name: 'Jane Doe' },
         createdBy: 'event-1',
         sourceDocuments: ['doc-1'],
       });
 
-      const position = holonRegistry.createHolon({
+      const position = await holonRegistry.createHolon({
         type: HolonType.Position,
         properties: { title: 'Manager' },
         createdBy: 'event-2',
@@ -89,7 +89,7 @@ describe('TemporalQueryEngine', () => {
 
       // Create relationship
       const startTime = new Date('2024-01-01T10:00:00Z');
-      const result = relationshipRegistry.createRelationship({
+      const result = await relationshipRegistry.createRelationship({
         type: RelationshipType.OCCUPIES,
         sourceHolonID: person.id,
         targetHolonID: position.id,
@@ -154,8 +154,8 @@ describe('TemporalQueryEngine', () => {
       expect(chain?.causingEvents.length).toBeGreaterThan(0);
     });
 
-    it('should get event history for a holon', () => {
-      const holon = holonRegistry.createHolon({
+    it('should get event history for a holon', async () => {
+      const holon = await holonRegistry.createHolon({
         type: HolonType.Person,
         properties: { name: 'Test Person' },
         createdBy: 'event-1',
@@ -199,15 +199,15 @@ describe('TemporalQueryEngine', () => {
      * For any holon state at timestamp T, querying as-of T after subsequent 
      * modifications must return the original state at T.
      */
-    it('Property 5: Temporal query round-trip', () => {
-      fc.assert(
-        fc.property(
+    it('Property 5: Temporal query round-trip', async () => {
+      await fc.assert(
+        fc.asyncProperty(
           fc.record({
             holonType: fc.constantFrom(...Object.values(HolonType)),
             properties: fc.dictionary(fc.string(), fc.anything()),
             timestamps: fc.array(fc.date({ min: new Date('2024-01-01'), max: new Date('2024-12-31') }), { minLength: 2, maxLength: 5 }),
           }),
-          (data) => {
+          async (data) => {
             // Sort timestamps and ensure they are unique
             const uniqueTimestamps = Array.from(
               new Set(data.timestamps.map(t => t.getTime()))
@@ -221,7 +221,7 @@ describe('TemporalQueryEngine', () => {
             const [firstTimestamp, ...laterTimestamps] = uniqueTimestamps;
 
             // Create holon at first timestamp
-            const holon = holonRegistry.createHolon({
+            const holon = await holonRegistry.createHolon({
               type: data.holonType,
               properties: data.properties,
               createdBy: 'event-initial',
@@ -288,31 +288,31 @@ describe('TemporalQueryEngine', () => {
      * For any relationship graph at timestamp T, querying as-of T after subsequent 
      * changes must reconstruct the exact graph at T.
      */
-    it('Property 9: Relationship temporal reconstruction', () => {
-      fc.assert(
-        fc.property(
+    it('Property 9: Relationship temporal reconstruction', async () => {
+      await fc.assert(
+        fc.asyncProperty(
           fc.record({
             numRelationships: fc.integer({ min: 1, max: 5 }),
             timestamps: fc.array(fc.date({ min: new Date('2024-01-01'), max: new Date('2024-12-31') }), { minLength: 2, maxLength: 4 }),
           }),
-          (data) => {
+          async (data) => {
             const sortedTimestamps = [...data.timestamps].sort((a, b) => a.getTime() - b.getTime());
             const [firstTimestamp, ...laterTimestamps] = sortedTimestamps;
 
             // Create holons
-            const holons = Array.from({ length: data.numRelationships * 2 }, (_, i) =>
+            const holons = await Promise.all(Array.from({ length: data.numRelationships * 2 }, (_, i) =>
               holonRegistry.createHolon({
                 type: i % 2 === 0 ? HolonType.Person : HolonType.Position,
                 properties: { index: i },
                 createdBy: `event-${i}`,
                 sourceDocuments: ['doc-1'],
               })
-            );
+            ));
 
             // Create relationships at first timestamp
             const relationshipIds: string[] = [];
             for (let i = 0; i < data.numRelationships; i++) {
-              const result = relationshipRegistry.createRelationship({
+              const result = await relationshipRegistry.createRelationship({
                 type: RelationshipType.OCCUPIES,
                 sourceHolonID: holons[i * 2].id,
                 targetHolonID: holons[i * 2 + 1].id,
@@ -338,7 +338,7 @@ describe('TemporalQueryEngine', () => {
               // End some relationships
               if (relationshipIds.length > 0) {
                 const relToEnd = relationshipIds[0];
-                relationshipRegistry.endRelationship({
+                await relationshipRegistry.endRelationship({
                   relationshipID: relToEnd,
                   endDate: laterTimestamp,
                   reason: 'test',
@@ -407,7 +407,7 @@ describe('TemporalQueryEngine', () => {
             // Verify chain exists and contains all events
             expect(chain).toBeDefined();
             expect(chain?.rootEvent.id).toBe(lastEventId);
-            
+
             // The full chain should contain all events in the sequence
             expect(chain?.fullChain.length).toBeGreaterThanOrEqual(data.chainLength);
 
@@ -430,15 +430,15 @@ describe('TemporalQueryEngine', () => {
      * For any holon or relationship, querying its event history must return all 
      * events that affected it in chronological order.
      */
-    it('Property 42: Audit completeness', () => {
-      fc.assert(
-        fc.property(
+    it('Property 42: Audit completeness', async () => {
+      await fc.assert(
+        fc.asyncProperty(
           fc.record({
             numEvents: fc.integer({ min: 1, max: 10 }),
           }),
-          (data) => {
+          async (data) => {
             // Create a holon
-            const holon = holonRegistry.createHolon({
+            const holon = await holonRegistry.createHolon({
               type: HolonType.Person,
               properties: { name: 'Test' },
               createdBy: 'event-initial',
@@ -498,18 +498,18 @@ describe('TemporalQueryEngine', () => {
      * For any event with a validity window, as-of queries outside that window 
      * must not include the event's effects.
      */
-    it('Property 43: Validity window respect', () => {
-      fc.assert(
-        fc.property(
+    it('Property 43: Validity window respect', async () => {
+      await fc.assert(
+        fc.asyncProperty(
           fc.record({
             validityStart: fc.date({ min: new Date('2024-01-01'), max: new Date('2024-06-30') }),
             validityEnd: fc.date({ min: new Date('2024-07-01'), max: new Date('2024-12-31') }),
             queryBefore: fc.date({ min: new Date('2023-01-01'), max: new Date('2023-12-31') }),
             queryAfter: fc.date({ min: new Date('2025-01-01'), max: new Date('2025-12-31') }),
           }),
-          (data) => {
+          async (data) => {
             // Create a holon
-            const holon = holonRegistry.createHolon({
+            const holon = await holonRegistry.createHolon({
               type: HolonType.Person,
               properties: { name: 'Test' },
               createdBy: 'event-initial',
@@ -537,7 +537,7 @@ describe('TemporalQueryEngine', () => {
 
             // Query before validity window
             const stateBefore = temporalQueryEngine.getHolonAsOf(holon.id, data.queryBefore);
-            
+
             // Query after validity window
             const stateAfter = temporalQueryEngine.getHolonAsOf(holon.id, data.queryAfter);
 

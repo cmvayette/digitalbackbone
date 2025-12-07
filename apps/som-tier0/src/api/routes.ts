@@ -4,18 +4,18 @@
  */
 
 import { QueryLayer } from '../query/query-layer';
-import { EventStore } from '../event-store';
+import { IEventStore as EventStore } from '../event-store';
 import { SemanticAccessLayer } from '../semantic-access-layer';
 import { SchemaVersioningEngine } from '../schema-versioning';
 import { GovernanceEngine } from '../governance';
 import { MonitoringService } from '../monitoring';
-import { HolonRegistry } from '../core/holon-registry';
+import { IHolonRepository as HolonRegistry } from '../core/interfaces/holon-repository';
 import { RelationshipRegistry } from '../relationship-registry';
 import { ConstraintEngine } from '../constraint-engine';
 import { DocumentRegistry } from '../document-registry';
-import { HolonType, HolonID } from '../core/types/holon';
-import { RelationshipType, RelationshipID } from '../core/types/relationship';
-import { EventType, Event } from '../core/types/event';
+import { HolonType, HolonID } from '@som/shared-types';
+import { RelationshipType, RelationshipID } from '@som/shared-types';
+import { EventType, Event } from '@som/shared-types';
 import {
   APIRequest,
   APIResponse,
@@ -159,7 +159,7 @@ export class APIRoutes {
       ...(targetHolonID && { targetHolonID }),
     };
 
-    const result = this.queryLayer.queryCurrentRelationships(request.user, type, queryFilters);
+    const result = await this.queryLayer.queryCurrentRelationships(request.user, type, queryFilters);
 
     // Apply pagination
     let paginatedData = result.data;
@@ -195,7 +195,7 @@ export class APIRoutes {
     const relationshipType = request.query?.type as RelationshipType | undefined;
     const direction = (request.query?.direction as 'outgoing' | 'incoming' | 'both') || 'both';
 
-    const result = this.queryLayer.traverseRelationships(
+    const result = await this.queryLayer.traverseRelationships(
       request.user,
       holonId,
       relationshipType,
@@ -221,7 +221,7 @@ export class APIRoutes {
     const relationshipType = request.query?.type as RelationshipType | undefined;
     const direction = (request.query?.direction as 'outgoing' | 'incoming' | 'both') || 'both';
 
-    const result = this.queryLayer.getConnectedHolons(
+    const result = await this.queryLayer.getConnectedHolons(
       request.user,
       holonId,
       relationshipType,
@@ -726,7 +726,7 @@ export class APIRoutes {
       relationshipPatterns: pattern.relationshipTypes?.map(type => ({ type })) || [],
     };
 
-    const result = this.queryLayer.matchPattern(request.user, graphPattern);
+    const result = await this.queryLayer.matchPattern(request.user, graphPattern);
 
     // Limit results
     const limitedData = result.data.slice(0, maxResults);
