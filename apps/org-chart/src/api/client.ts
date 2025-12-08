@@ -1,19 +1,11 @@
-// Basic fetch wrapper for now, can be replaced with axios later
-const API_BASE_URL = '/api/v1';
+import { createSOMClient } from '@som/api-client';
 
-export async function fetchJson<T>(endpoint: string, options?: RequestInit): Promise<T> {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options?.headers,
-        },
-    });
+// Initialize the SOM API Client
+// In development, we use the local proxy or direct URL
+// In production (C-ATO), this will be behind a gateway
+export const client = createSOMClient('/api/v1', {
+    includeCredentials: true, // Enable cookie auth for Gateway compatibility
+});
 
-    if (!response.ok) {
-        throw new Error(`API Error: ${response.status} ${response.statusText}`);
-    }
-
-    const json = await response.json();
-    return json.data; // Assuming standard APIResponse wrapper
-}
+// Helper for legacy code if needed, but preferred to use client methods directly
+// export const fetchJson = ... (Removed, forcing refactor)

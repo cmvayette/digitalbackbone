@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { transformStructureToGraph } from './transformer';
-import type { OrganizationalStructureDTO } from '../types/api';
+import type { OrgStructure } from '@som/api-client';
 import { HolonType } from '@som/shared-types';
 import type { Holon } from '@som/shared-types';
 
@@ -20,7 +20,7 @@ describe('Graph Transformer', () => {
 
     it('should flatten a simple org structure into nodes and edges', () => {
         // 1. Mock Data: Root Org -> Child Org
-        const mockData: OrganizationalStructureDTO = {
+        const mockData: OrgStructure = {
             organization: createHolon('org-root', HolonType.Organization, { name: 'Root Org' }),
             subOrganizations: [
                 {
@@ -57,7 +57,7 @@ describe('Graph Transformer', () => {
         const mockPos = createHolon('pos-1', HolonType.Position, { title: 'Commander', billetIDs: ['B-001'] });
         const mockPerson = createHolon('person-1', HolonType.Person, { name: 'John Doe', rank: 'CAPT' });
 
-        const mockData: OrganizationalStructureDTO = {
+        const mockData: OrgStructure = {
             organization: mockOrg,
             subOrganizations: [],
             positions: [mockPos],

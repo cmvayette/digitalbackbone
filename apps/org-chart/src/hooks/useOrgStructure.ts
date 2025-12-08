@@ -1,7 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { fetchJson } from '../api/client';
+import { client } from '../api/client';
 import { transformStructureToGraph } from '../api/transformer';
-import type { OrganizationalStructureDTO } from '../types/api';
 import type { GraphData } from '../types/graph';
 
 export function useOrgStructure(orgId: string | undefined) {
@@ -10,8 +9,11 @@ export function useOrgStructure(orgId: string | undefined) {
         queryFn: async () => {
             if (!orgId) throw new Error('Organization ID is required');
 
-            const response = await fetchJson<OrganizationalStructureDTO>(`/temporal/organizations/${orgId}/structure`);
-            return transformStructureToGraph(response);
+            const result = await client.getOrgStructure(orgId);
+            if (!result.success || !result.data) {
+                throw new Error(result.error?.message || 'Failed to fetch organization structure');
+            }
+            return transformStructureToGraph(result.data);
         },
         enabled: !!orgId,
         staleTime: 1000 * 60 * 5, // 5 minutes

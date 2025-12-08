@@ -65,11 +65,14 @@ export interface SearchResult {
  */
 export interface OrgStructure {
   organization: Holon;
+  subOrganizations: OrgStructure[];
   positions: Holon[];
-  people: Holon[];
-  relationships: Relationship[];
-  childOrganizations: Holon[];
-  parentOrganization?: Holon;
+  assignments: Array<{
+    position: Holon;
+    person: Holon;
+    relationship: Relationship;
+  }>;
+  asOfTimestamp: string | Date; // Depending on serialization
 }
 
 /**
@@ -112,13 +115,29 @@ export interface EventResult {
 export class SOMClient {
   private baseUrl: string;
   private defaultHeaders: Record<string, string>;
+  private includeCredentials?: boolean;
 
-  constructor(baseUrl: string, options?: { headers?: Record<string, string> }) {
+  constructor(baseUrl: string, options?: { headers?: Record<string, string>; includeCredentials?: boolean }) {
     this.baseUrl = baseUrl.replace(/\/$/, ''); // Remove trailing slash
+    this.includeCredentials = options?.includeCredentials;
     this.defaultHeaders = {
       'Content-Type': 'application/json',
       ...options?.headers,
     };
+  }
+
+  /**
+   * Set the authentication token/key for subsequent requests
+   */
+  setAuthToken(token: string): void {
+    this.defaultHeaders['Authorization'] = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
+  }
+
+  /**
+   * Clear the authentication token
+   */
+  clearAuthToken(): void {
+    delete this.defaultHeaders['Authorization'];
   }
 
   /**
@@ -136,6 +155,7 @@ export class SOMClient {
         method,
         headers: this.defaultHeaders,
         body: body ? JSON.stringify(body) : undefined,
+        credentials: this.includeCredentials ? 'include' : undefined,
       });
 
       const data = await response.json();
@@ -260,12 +280,14 @@ export class SOMClient {
     orgId: HolonID,
     asOf?: Date
   ): Promise<APIResponse<OrgStructure>> {
-    const body: Record<string, unknown> = {};
-    if (asOf) body.asOf = asOf.toISOString();
+    const body: Record<string, unknown> = {
+      organizationID: orgId,
+    };
+    if (asOf) body.asOfTimestamp = asOf.toISOString();
 
     return this.request<OrgStructure>(
       'POST',
-      `/temporal/organizations/${orgId}/structure`,
+      '/temporal/organizations/structure',
       body
     );
   }
@@ -364,7 +386,7 @@ export class SOMClient {
  */
 export function createSOMClient(
   baseUrl?: string,
-  options?: { headers?: Record<string, string> }
+  options?: { headers?: Record<string, string>; includeCredentials?: boolean }
 ): SOMClient {
   // @ts-ignore
   const envUrl = typeof import.meta !== 'undefined' && import.meta.env ? import.meta.env.VITE_SOM_API_URL : undefined;
