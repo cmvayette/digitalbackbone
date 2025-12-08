@@ -2,11 +2,17 @@ import React, { useState } from 'react';
 import './SwimlaneEditor.css';
 import mockData from '../mocks/mock-policy.json';
 import { HolonType } from '@som/shared-types';
-import type { Process } from '@som/shared-types';
+import type { Process, ProcessStep } from '../types/process';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, horizontalListSortingStrategy } from '@dnd-kit/sortable';
 import { SortableStep } from './editor/SortableStep';
 import { StepCard } from './viewer/StepCard';
+import { OwnerPicker } from './editor/OwnerPicker';
+import { ObligationLinker } from './editor/ObligationLinker';
+import { validateProcess, ValidationIssue } from '../utils/ProcessValidator';
+import { AlertTriangle, AlertCircle } from 'lucide-react';
+import { DriftAlert } from './alerts/DriftAlert';
+import { useDriftDetection } from '../hooks/useDriftDetection';
 
 const { policies, agents } = mockData;
 
@@ -31,15 +37,16 @@ export const SwimlaneEditor: React.FC<SwimlaneEditorProps> = ({ initialProcess, 
             outputs: [],
             estimatedDuration: 3600,
             steps: [
-                { id: 'step-1', title: 'Initiate Request', description: 'Start the form', owner: 'pos-1' },
-                { id: 'step-2', title: 'Review & Approve', description: 'Manager review', owner: 'pos-2' },
-                { id: 'step-JIRA-123', title: 'Provision Hardware', description: 'IT Dept Ticket', owner: 'pos-3', source: 'external', externalId: 'JIRA-123', externalSource: 'jira' },
-                { id: 'step-3', title: 'Finalize Logistics', description: 'Supply check', owner: 'pos-3' }
+                { id: 'step-1', title: 'Initiate Request', description: 'Start the form', owner: 'pos-1', obligations: [] },
+                { id: 'step-2', title: 'Review & Approve', description: 'Manager review', owner: 'pos-2', obligations: [] },
+                { id: 'step-JIRA-123', title: 'Provision Hardware', description: 'IT Dept Ticket', owner: 'pos-3', source: 'external', externalId: 'JIRA-123', externalSource: 'jira', obligations: [] },
+                { id: 'step-3', title: 'Finalize Logistics', description: 'Supply check', owner: 'pos-3', obligations: [] }
             ]
         }
     });
 
     const [editingStepId, setEditingStepId] = useState<string | null>(null);
+    const [validationIssues, setValidationIssues] = useState<ValidationIssue[]>([]);
 
     const sensors = useSensors(
         useSensor(PointerSensor),
@@ -47,27 +54,6 @@ export const SwimlaneEditor: React.FC<SwimlaneEditorProps> = ({ initialProcess, 
             coordinateGetter: sortableKeyboardCoordinates,
         })
     );
-
-    // Helper to find relevant obligations for a position
-    const getObligationsForPosition = (posId: string) => {
-        return policies.obligations.filter(o => o.assignedTo === posId);
-    };
-
-    const addStep = () => {
-        const newStep = {
-            id: `step-${Date.now()}`,
-            title: 'New Step',
-            description: 'Describe action',
-            owner: 'pos-1' // Default to a human position
-        };
-        setProcess((prev: Process) => ({
-            ...prev,
-            properties: {
-                ...prev.properties,
-                steps: [...prev.properties.steps, newStep]
-            }
-        }));
-    };
 
     const updateStepOwner = (stepId: string, newOwnerId: string) => {
         setProcess((prev: Process) => ({
@@ -81,6 +67,51 @@ export const SwimlaneEditor: React.FC<SwimlaneEditorProps> = ({ initialProcess, 
         }));
         setEditingStepId(null);
     };
+
+    const updateStepObligations = (stepId: string, action: 'add' | 'remove', obligationData: any) => {
+        setProcess((prev: Process) => ({
+            ...prev,
+            properties: {
+                ...prev.properties,
+                steps: prev.properties.steps.map(step => {
+                    if (step.id !== stepId) return step;
+
+                    const currentObligations = step.obligations || [];
+                    let newObligations = [...currentObligations];
+
+                    if (action === 'add') {
+                        if (!newObligations.some(o => o.id === obligationData.id)) {
+                            newObligations.push({ id: obligationData.id });
+                        }
+                    } else if (action === 'remove') {
+                        newObligations = newObligations.filter(o => o.id !== obligationData.id);
+                    }
+
+                    return { ...step, obligations: newObligations };
+                })
+            }
+        }));
+    };
+
+    const addStep = () => {
+        const newStep: ProcessStep = {
+            id: `step-${Date.now()}`,
+            title: 'New Step',
+            description: 'Describe action',
+            owner: 'pos-1', // Default to a human position
+            obligations: []
+        };
+        setProcess((prev: Process) => ({
+            ...prev,
+            properties: {
+                ...prev.properties,
+                steps: [...prev.properties.steps, newStep]
+            }
+        }));
+    };
+
+    // Drift Detection
+    const drift = useDriftDetection(process);
 
     const handleDragEnd = (event: DragEndEvent) => {
         const { active, over } = event;
@@ -101,15 +132,57 @@ export const SwimlaneEditor: React.FC<SwimlaneEditorProps> = ({ initialProcess, 
         }
     };
 
+    const runValidation = () => {
+        const issues = validateProcess(process);
+        setValidationIssues(issues);
+        if (issues.length === 0) {
+            alert('Process is valid! (Mock Save)');
+        }
+    };
+
     return (
-        <div className="swimlane-editor">
-            <div className="toolbar">
-                {onBack && <button className="secondary-btn" onClick={onBack}>← Back</button>}
-                <h1>Process Designer</h1>
-                <div className="actions">
-                    <button className="primary-btn" onClick={addStep}>+ Add Step</button>
-                    <button className="secondary-btn">Save Process</button>
+        <div className="swimlane-editor flex flex-col h-full bg-slate-900 text-slate-100 p-4">
+            <div className="toolbar flex justify-between items-center mb-6">
+                <div className="flex items-center gap-4">
+                    {onBack && <button className="text-slate-400 hover:text-slate-200" onClick={onBack}>← Back</button>}
+                    <div>
+                        <h1 className="text-xl font-bold">Process Designer</h1>
+                        <p className="text-xs text-slate-500">Edit and validate your workflow.</p>
+                    </div>
                 </div>
+                <div className="actions flex gap-2">
+                    <button className="px-3 py-1 bg-slate-800 border border-slate-700 rounded text-sm hover:bg-slate-700" onClick={addStep}>+ Add Step</button>
+                    <button
+                        className={`px-3 py-1 rounded text-sm font-medium ${validationIssues.filter(i => i.type === 'error').length > 0 ? 'bg-red-600/50 cursor-not-allowed' : 'bg-green-600 hover:bg-green-500'}`}
+                        onClick={runValidation}
+                    >
+                        Validate & Save
+                    </button>
+                </div>
+            </div>
+
+            {validationIssues.length > 0 && (
+                <div className="mb-4 bg-slate-800 border border-slate-700 rounded p-2">
+                    <h4 className="text-sm font-bold text-slate-300 mb-2 flex items-center gap-2">
+                        <AlertTriangle size={16} className="text-amber-400" /> Validation Issues
+                    </h4>
+                    <div className="space-y-1">
+                        {validationIssues.map((issue, idx) => (
+                            <div key={idx} className={`text-xs flex items-center gap-2 ${issue.type === 'error' ? 'text-red-400' : 'text-amber-400'}`}>
+                                {issue.type === 'error' ? <AlertCircle size={12} /> : <AlertTriangle size={12} />}
+                                {issue.message}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* Governance Drift Alert */}
+            <div className="mb-4">
+                <DriftAlert
+                    issues={drift.issues}
+                    onFix={(issue) => alert(`Mock fix for: ${issue.message}`)}
+                />
             </div>
 
             <DndContext
@@ -117,57 +190,42 @@ export const SwimlaneEditor: React.FC<SwimlaneEditorProps> = ({ initialProcess, 
                 collisionDetection={closestCenter}
                 onDragEnd={handleDragEnd}
             >
-                <div className="canvas flex gap-4 overflow-x-auto pb-4">
+                <div className="canvas flex gap-4 overflow-x-auto pb-4 items-start min-h-[400px]">
                     <SortableContext
                         items={process.properties.steps.map(s => s.id)}
                         strategy={horizontalListSortingStrategy}
                     >
                         {process.properties.steps.map((step, index) => {
-                            const obligations = getObligationsForPosition(step.owner);
                             const isAgent = agents?.some(a => a.id === step.owner);
                             const ownerName = isAgent
                                 ? agents.find(a => a.id === step.owner)?.name
                                 : step.owner;
 
+                            const stepIssues = validationIssues.filter(i => i.stepId === step.id);
+                            const hasError = stepIssues.some(i => i.type === 'error');
+
                             return (
                                 <SortableStep key={step.id} id={step.id}>
-                                    <div className="swimlane-column min-w-[300px]">
+                                    <div className={`swimlane-column min-w-[320px] p-2 rounded ${hasError ? 'bg-red-900/10 border border-red-900/50' : ''}`}>
                                         <div className="swimlane-header flex justify-between items-center mb-2">
-                                            <div className={`role-badge ${isAgent ? 'agent-badge' : ''}`}>
+                                            <div className={`role-badge ${isAgent ? 'agent-badge' : ''} text-xs font-mono bg-slate-800 px-2 py-1 rounded`}>
                                                 {ownerName}
                                                 {isAgent && " 🤖"}
                                             </div>
 
-                                            {/* Inline Owner Edit Control (kept from original editor) */}
                                             <div className="step-controls relative">
                                                 {editingStepId === step.id ? (
-                                                    <select
-                                                        autoFocus
+                                                    <OwnerPicker
                                                         value={step.owner}
-                                                        onChange={(e) => updateStepOwner(step.id, e.target.value)}
-                                                        onBlur={() => setEditingStepId(null)}
-                                                        className="text-xs p-1 border rounded"
-                                                    >
-                                                        <optgroup label="Positions">
-                                                            <option value="pos-1">pos-1</option>
-                                                            <option value="pos-2">pos-2</option>
-                                                            <option value="pos-3">pos-3</option>
-                                                        </optgroup>
-                                                        <optgroup label="Agents">
-                                                            {agents?.map(agent => (
-                                                                <option key={agent.id} value={agent.id}>
-                                                                    {agent.name}
-                                                                </option>
-                                                            ))}
-                                                        </optgroup>
-                                                    </select>
+                                                        onChange={(newOwner) => updateStepOwner(step.id, newOwner)}
+                                                        onClose={() => setEditingStepId(null)}
+                                                    />
                                                 ) : (
                                                     <button
-                                                        className="text-xs text-slate-400 hover:text-blue-500"
+                                                        className="text-[10px] text-slate-500 hover:text-blue-400 uppercase font-bold tracking-wider"
                                                         onClick={() => setEditingStepId(step.id)}
-                                                        aria-label="Edit Owner"
                                                     >
-                                                        ✎ Change Owner
+                                                        Change Owner
                                                     </button>
                                                 )}
                                             </div>
@@ -178,12 +236,21 @@ export const SwimlaneEditor: React.FC<SwimlaneEditorProps> = ({ initialProcess, 
                                             index={index}
                                             ownerName={ownerName}
                                             isAgent={isAgent}
-                                            obligations={obligations as any}
+                                            obligations={[]} // We pass empty here because StepCard shows badges, but we want the linker below
                                             viewMode="swimlane"
                                         />
 
+                                        <div className="mt-2 border-t border-slate-700/50 pt-2">
+                                            <div className="text-[10px] text-slate-500 uppercase font-bold mb-1">Obligations</div>
+                                            <ObligationLinker
+                                                linkedObligationIds={step.obligations || []}
+                                                onLink={(obl) => updateStepObligations(step.id, 'add', obl)}
+                                                onUnlink={(id) => updateStepObligations(step.id, 'remove', { id })}
+                                            />
+                                        </div>
+
                                         {index < process.properties.steps.length - 1 && (
-                                            <div className="connector-arrow text-center text-slate-400 mt-2">→</div>
+                                            <div className="connector-arrow text-center text-slate-600 mt-4 text-2xl">→</div>
                                         )}
                                     </div>
                                 </SortableStep>
