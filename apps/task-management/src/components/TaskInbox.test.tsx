@@ -12,7 +12,7 @@ describe('TaskInbox', () => {
                 {
                     id: 't1',
                     title: 'Urgent Task',
-                    status: 'todo',
+                    state: 'todo',
                     priority: 'critical',
                     ownerId: 'pos-1',
                     ownerType: 'Position',
@@ -24,7 +24,7 @@ describe('TaskInbox', () => {
                 {
                     id: 't2',
                     title: 'Done Task',
-                    status: 'done',
+                    state: 'done',
                     priority: 'low',
                     ownerId: 'pos-1',
                     ownerType: 'Position',
@@ -55,6 +55,6 @@ describe('TaskInbox', () => {
 
         // Check if store updated
         const tasks = useTaskStore.getState().tasks;
-        expect(tasks.find(t => t.id === 't1')?.status).toBe('done');
+        expect(tasks.find(t => t.id === 't1')?.state).toBe('done');
     });
 });

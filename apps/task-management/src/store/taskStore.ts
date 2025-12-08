@@ -8,6 +8,7 @@ interface TaskState {
     milestones: Milestone[];
 
     // Actions
+    loadData: () => Promise<void>;
     addProject: (project: Omit<Project, 'id' | 'progress'>) => void;
     addTask: (task: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>) => void;
     updateTaskStatus: (taskId: string, status: Task['state']) => void;
@@ -89,9 +90,42 @@ const generateMockTasks = (): Task[] => [
 ];
 
 export const useTaskStore = create<TaskState>((set, get) => ({
-    projects: generateMockProjects(),
-    tasks: generateMockTasks(),
+    projects: [],
+    tasks: [],
     milestones: [],
+
+    loadData: async () => {
+        try {
+            const { createSOMClient } = await import('@som/api-client');
+            const client = createSOMClient();
+
+            // Using string literals matching the enum to avoid complex dynamic imports
+            const [tasksRes, projectsRes] = await Promise.all([
+                client.queryHolons('Task' as any),
+                client.queryHolons('Project' as any)
+            ]);
+
+            if (tasksRes.success && tasksRes.data) {
+                const tasks = tasksRes.data.map((h: any) => ({
+                    id: h.id,
+                    ...h.properties,
+                })) as Task[];
+                set({ tasks });
+            }
+
+            if (projectsRes.success && projectsRes.data) {
+                const projects = projectsRes.data.map((h: any) => ({
+                    id: h.id,
+                    ...h.properties,
+                })) as Project[];
+                set({ projects });
+            }
+        } catch (error) {
+            console.error("Failed to load task data", error);
+            // Fallback for demo if API fails
+            set({ projects: generateMockProjects(), tasks: generateMockTasks() });
+        }
+    },
 
     addProject: (project) => set((state) => ({
         projects: [...state.projects, { ...project, id: uuidv4(), progress: 0 }]

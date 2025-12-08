@@ -7,7 +7,12 @@ export * from '@som/shared-types';
 export * from './core/holon-registry';
 export * from './event-store';
 export * from './document-registry';
-export * from './constraint-engine';
+export {
+  ConstraintEngine,
+  type RegisterConstraintParams,
+  jsonLogicEvaluator,
+  type JsonLogicRule
+} from './constraint-engine';
 export * from './relationship-registry';
 export * from './state-projection';
 

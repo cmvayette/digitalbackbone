@@ -13,6 +13,7 @@ import {
   Holon,
 } from '@som/shared-types';
 import { JsonLogicRule, jsonLogicEvaluator } from './json-logic-evaluator';
+export { JsonLogicRule, jsonLogicEvaluator };
 import { Relationship, RelationshipType } from '@som/shared-types';
 import { Event, EventType } from '@som/shared-types';
 import { DocumentRegistry } from '../document-registry';

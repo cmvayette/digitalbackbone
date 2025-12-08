@@ -5,10 +5,10 @@ This document outlines the technical design and roadmap for transitioning the `s
 
 ## 2. Current State Assessment
 - **Architecture**: In-memory event sourcing monolith with Node.js/TypeScript.
-- **Authentication**: Simple API Key-based middleware (dev-only implementation).
+- **Authentication**: **[UPDATED]** Adapter-based Middleware supporting API Keys (Dev) and Gateway Headers (Prod).
 - **Persistence**: Application state is lost on restart (In-Memory stores).
 - **Deployment**: Local Node.js execution.
-- **Compliance**: Lacks structured logging, health probes, and secure identity propagation.
+- **Compliance**: Lacks structured logging, health probes. Identity propagation is **Ready**.
 
 ## 3. C-ATO Architecture Design
 
@@ -70,10 +70,10 @@ interface IAuthProvider {
 
 ## 4. Implementation Roadmap
 
-### Phase 1: Authentication Refactor (Immediate)
-1.  Refactor `middleware.ts` to use `IAuthProvider`.
-2.  Implement `GatewayHeaderAuthProvider`.
-3.  Add tests with mock headers.
+### Phase 1: Authentication Refactor (Completed)
+- [x] Refactor `middleware.ts` to use `IAuthProvider`.
+- [x] Implement `GatewayHeaderAuthProvider`.
+- [x] Add tests with mock headers.
 
 ### Phase 2: Observability & Configuration
 1.  Replace `console.log` with a structured logger (`pino` or `winston`).
@@ -91,8 +91,8 @@ interface IAuthProvider {
 3.  Configure CI pipeline (Lint, Test, Build, Scan).
 
 ## 5. Next Steps
-1.  **Approval**: Review this design spec.
-2.  **Execution**: Begin Phase 1 (Auth Refactor).
+1.  **Observability**: Begin Phase 2 (Logging & Health Checks).
+2.  **Persistence**: Plan Phase 3 (Postgres).
 
 ## 6. Tier-1 Ecosystem Strategy
 
@@ -122,8 +122,9 @@ To (C-ATO) compliance, all Tier-1 apps must adhere to the following standard:
     *   **Auth**: No local auth logic; rely on Gateway injection/Tier-0 validation.
 
 ### 6.3 Implementation Plan (Tier-1)
-*   **Phase 1 (Concurrent with Auth)**: Update `@som/api-client` to support new Auth mechanisms.
-*   **Phase 2**: Refactor `org-chart` and `how-do` to use updated client.
+*   **Phase 1 (Concurrent with Auth)**: Update `@som/api-client` to support new Auth mechanisms. **(Completed)**
+*   **Phase 2**: Refactor `org-chart` and `how-do` to use updated client. **(Completed)**
+*   **Phase 2 Extension**: Refactor `policy-governance`, `task-management`, and `objectives-okr` to use updated client. **(Completed)**
 *   **Phase 3**: Dockerize all Tier-1 apps and add to `docker-compose`.
 
 ### 6.4 Scalability & Onboarding (New Systems)

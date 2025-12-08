@@ -1,0 +1,315 @@
+
+> policy-governance@0.0.0 test
+> vitest
+
+
+[7m[1m[34m DEV [39m[22m[27m [34mv1.6.1[39m [90mC:/devProjects/semantic-baseline/digitalbackbone/apps/policy-governance[39m
+
+ [32m✓[39m src/store/policyStore.test.ts [2m ([22m[2m3 tests[22m[2m)[22m[90m 5[2mms[22m[39m
+ [32m✓[39m src/components/dashboard/ComplianceDashboard.test.tsx [2m ([22m[2m3 tests[22m[2m)[22m[90m 64[2mms[22m[39m
+ [33m❯[39m src/components/editor/PolicyEditor.test.tsx [2m ([22m[2m4 tests[22m [2m|[22m [31m4 failed[39m[2m)[22m[90m 85[2mms[22m[39m
+[31m   [33m❯[31m src/components/editor/PolicyEditor.test.tsx[2m > [22mPolicyEditor[2m > [22mrenders policy title[39m
+[31m     → editor?.setEditable is not a function[39m
+[31m   [33m❯[31m src/components/editor/PolicyEditor.test.tsx[2m > [22mPolicyEditor[2m > [22mrenders editor content[39m
+[31m     → editor?.setEditable is not a function[39m
+[31m   [33m❯[31m src/components/editor/PolicyEditor.test.tsx[2m > [22mPolicyEditor[2m > [22mswitches tabs[39m
+[31m     → editor?.setEditable is not a function[39m
+[31m   [33m❯[31m src/components/editor/PolicyEditor.test.tsx[2m > [22mPolicyEditor[2m > [22mopens and closes obligation composer[39m
+[31m     → editor?.setEditable is not a function[39m
+[90mstdout[2m | src/components/editor/PolicyEditor.test.tsx[2m > [22m[2mPolicyEditor[2m > [22m[2mrenders policy title[22m[39m
+DEBUG: BubbleMenu type: function [36m[Function: BubbleMenu][39m
+
+[90mstdout[2m | src/components/editor/PolicyEditor.test.tsx[2m > [22m[2mPolicyEditor[2m > [22m[2mrenders editor content[22m[39m
+DEBUG: BubbleMenu type: function [36m[Function: BubbleMenu][39m
+
+[90mstdout[2m | src/components/editor/PolicyEditor.test.tsx[2m > [22m[2mPolicyEditor[2m > [22m[2mswitches tabs[22m[39m
+DEBUG: BubbleMenu type: function [36m[Function: BubbleMenu][39m
+
+[90mstdout[2m | src/components/editor/PolicyEditor.test.tsx[2m > [22m[2mPolicyEditor[2m > [22m[2mopens and closes obligation composer[22m[39m
+DEBUG: BubbleMenu type: function [36m[Function: BubbleMenu][39m
+
+
+[31m⎯⎯⎯⎯⎯⎯⎯[1m[7m Failed Tests 4 [27m[22m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[31m[1m[7m FAIL [27m[22m[39m src/components/editor/PolicyEditor.test.tsx[2m > [22mPolicyEditor[2m > [22mrenders policy title
+[31m[1m[7m FAIL [27m[22m[39m src/components/editor/PolicyEditor.test.tsx[2m > [22mPolicyEditor[2m > [22mrenders editor content
+[31m[1m[7m FAIL [27m[22m[39m src/components/editor/PolicyEditor.test.tsx[2m > [22mPolicyEditor[2m > [22mswitches tabs
+[31m[1m[7m FAIL [27m[22m[39m src/components/editor/PolicyEditor.test.tsx[2m > [22mPolicyEditor[2m > [22mopens and closes obligation composer
+[31m[1mTypeError[22m: editor?.setEditable is not a function[39m
+[36m [2m❯[22m src/components/editor/PolicyEditor.tsx:[2m85:17[22m[39m
+    [90m 83| [39m            }
+    [90m 84| [39m        }
+    [90m 85| [39m        editor[33m?.[39m[34msetEditable[39m([33m![39misReadOnly)[33m;[39m
+    [90m   | [39m                [31m^[39m
+    [90m 86| [39m    }[33m,[39m [currentPolicy[33m.[39mid[33m,[39m editor[33m,[39m isReadOnly])[33m;[39m
+    [90m 87| [39m
+[90m [2m❯[22m Object.react_stack_bottom_frame ../../node_modules/react-dom/cjs/react-dom-client.development.js:[2m25989:20[22m[39m
+[90m [2m❯[22m runWithFiberInDEV ../../node_modules/react-dom/cjs/react-dom-client.development.js:[2m874:13[22m[39m
+[90m [2m❯[22m commitHookEffectListMount ../../node_modules/react-dom/cjs/react-dom-client.development.js:[2m13249:29[22m[39m
+[90m [2m❯[22m commitHookPassiveMountEffects ../../node_modules/react-dom/cjs/react-dom-client.development.js:[2m13336:11[22m[39m
+[90m [2m❯[22m commitPassiveMountOnFiber ../../node_modules/react-dom/cjs/react-dom-client.development.js:[2m15484:13[22m[39m
+[90m [2m❯[22m recursivelyTraversePassiveMountEffects ../../node_modules/react-dom/cjs/react-dom-client.development.js:[2m15439:11[22m[39m
+[90m [2m❯[22m commitPassiveMountOnFiber ../../node_modules/react-dom/cjs/react-dom-client.development.js:[2m15519:11[22m[39m
+[90m [2m❯[22m flushPassiveEffects ../../node_modules/react-dom/cjs/react-dom-client.development.js:[2m18432:9[22m[39m
+[90m [2m❯[22m ../../node_modules/react-dom/cjs/react-dom-client.development.js:[2m17923:15[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯[22m[39m
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m2 passed[39m[22m[90m (3)[39m
+[2m      Tests [22m [1m[31m4 failed[39m[22m[2m | [22m[1m[32m6 passed[39m[22m[90m (10)[39m
+[2m   Start at [22m 11:02:17
+[2m   Duration [22m 1.96s[2m (transform 354ms, setup 470ms, collect 1.33s, tests 154ms, environment 1.41s, prepare 396ms)[22m
+
+
+[1m[7m[31m FAIL [39m[27m[22m[31m Tests failed. Watching for file changes...[39m
+       [2mpress [22m[1mh[22m[2m to show help[22m[2m, [22m[2mpress [22m[1mq[22m[2m to quit[22m
+[3Jc
+[7m[1m[34m RERUN [39m[22m[27m[2m src/components/editor/ClauseHighlighter.tsx[22m [34mx1[39m
+
+ [33m❯[39m src/components/editor/PolicyEditor.test.tsx [2m ([22m[2m4 tests[22m [2m|[22m [31m4 failed[39m[2m)[22m[90m 64[2mms[22m[39m
+[31m   [33m❯[31m src/components/editor/PolicyEditor.test.tsx[2m > [22mPolicyEditor[2m > [22mrenders policy title[39m
+[31m     → editor?.setEditable is not a function[39m
+[31m   [33m❯[31m src/components/editor/PolicyEditor.test.tsx[2m > [22mPolicyEditor[2m > [22mrenders editor content[39m
+[31m     → editor?.setEditable is not a function[39m
+[31m   [33m❯[31m src/components/editor/PolicyEditor.test.tsx[2m > [22mPolicyEditor[2m > [22mswitches tabs[39m
+[31m     → editor?.setEditable is not a function[39m
+[31m   [33m❯[31m src/components/editor/PolicyEditor.test.tsx[2m > [22mPolicyEditor[2m > [22mopens and closes obligation composer[39m
+[31m     → editor?.setEditable is not a function[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[1m[7m Failed Tests 4 [27m[22m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[31m[1m[7m FAIL [27m[22m[39m src/components/editor/PolicyEditor.test.tsx[2m > [22mPolicyEditor[2m > [22mrenders policy title
+[31m[1m[7m FAIL [27m[22m[39m src/components/editor/PolicyEditor.test.tsx[2m > [22mPolicyEditor[2m > [22mrenders editor content
+[31m[1m[7m FAIL [27m[22m[39m src/components/editor/PolicyEditor.test.tsx[2m > [22mPolicyEditor[2m > [22mswitches tabs
+[31m[1m[7m FAIL [27m[22m[39m src/components/editor/PolicyEditor.test.tsx[2m > [22mPolicyEditor[2m > [22mopens and closes obligation composer
+[31m[1mTypeError[22m: editor?.setEditable is not a function[39m
+[36m [2m❯[22m src/components/editor/PolicyEditor.tsx:[2m85:17[22m[39m
+    [90m 83| [39m            }
+    [90m 84| [39m        }
+    [90m 85| [39m        editor[33m?.[39m[34msetEditable[39m([33m![39misReadOnly)[33m;[39m
+    [90m   | [39m                [31m^[39m
+    [90m 86| [39m    }[33m,[39m [currentPolicy[33m.[39mid[33m,[39m editor[33m,[39m isReadOnly])[33m;[39m
+    [90m 87| [39m
+[90m [2m❯[22m Object.react_stack_bottom_frame ../../node_modules/react-dom/cjs/react-dom-client.development.js:[2m25989:20[22m[39m
+[90m [2m❯[22m runWithFiberInDEV ../../node_modules/react-dom/cjs/react-dom-client.development.js:[2m874:13[22m[39m
+[90m [2m❯[22m commitHookEffectListMount ../../node_modules/react-dom/cjs/react-dom-client.development.js:[2m13249:29[22m[39m
+[90m [2m❯[22m commitHookPassiveMountEffects ../../node_modules/react-dom/cjs/react-dom-client.development.js:[2m13336:11[22m[39m
+[90m [2m❯[22m commitPassiveMountOnFiber ../../node_modules/react-dom/cjs/react-dom-client.development.js:[2m15484:13[22m[39m
+[90m [2m❯[22m recursivelyTraversePassiveMountEffects ../../node_modules/react-dom/cjs/react-dom-client.development.js:[2m15439:11[22m[39m
+[90m [2m❯[22m commitPassiveMountOnFiber ../../node_modules/react-dom/cjs/react-dom-client.development.js:[2m15519:11[22m[39m
+[90m [2m❯[22m flushPassiveEffects ../../node_modules/react-dom/cjs/react-dom-client.development.js:[2m18432:9[22m[39m
+[90m [2m❯[22m ../../node_modules/react-dom/cjs/react-dom-client.development.js:[2m17923:15[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯[22m[39m
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m4 failed[39m[22m[90m (4)[39m
+[2m   Start at [22m 11:03:12
+[2m   Duration [22m 499ms
+
+
+[1m[7m[31m FAIL [39m[27m[22m[31m Tests failed. Watching for file changes...[39m
+       [2mpress [22m[1mh[22m[2m to show help[22m[2m, [22m[2mpress [22m[1mq[22m[2m to quit[22m
+       [34mrerun x1[39m
+[2K[1A[2K[G       [90mrerun x1[39m
+[2K[1A[2K[G       [2m[90mrerun x1[39m[22m
+[2K[1A[2K[G[3Jc
+[7m[1m[34m RERUN [39m[22m[27m[2m src/components/editor/PolicyEditor.test.tsx[22m [34mx2[39m
+
+ [33m❯[39m src/components/editor/PolicyEditor.test.tsx [2m ([22m[2m4 tests[22m [2m|[22m [31m1 failed[39m[2m)[22m[90m 130[2mms[22m[39m
+[31m   [33m❯[31m src/components/editor/PolicyEditor.test.tsx[2m > [22mPolicyEditor[2m > [22mopens and closes obligation composer[39m
+[31m     → [vitest] No "useExternalOrgData" export is defined on the "@som/api-client" mock. Did you forget to return it from "vi.mock"?
+If you need to partially mock a module, you can use "importOriginal" helper inside:
+[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[1m[7m Failed Tests 1 [27m[22m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[31m[1m[7m FAIL [27m[22m[39m src/components/editor/PolicyEditor.test.tsx[2m > [22mPolicyEditor[2m > [22mopens and closes obligation composer
+[31m[1mError[22m: [vitest] No "useExternalOrgData" export is defined on the "@som/api-client" mock. Did you forget to return it from "vi.mock"?
+If you need to partially mock a module, you can use "importOriginal" helper inside:
+[39m
+vi[33m.[39m[34mmock[39m([32m"@som/api-client"[39m[33m,[39m [35masync[39m (importOriginal) [33m=>[39m {
+  [35mconst[39m actual [33m=[39m [35mawait[39m [34mimportOriginal[39m()
+  [35mreturn[39m {
+    [33m...[39mactual[33m,[39m
+    [90m// your mocked methods[39m
+  }
+})
+
+[36m [2m❯[22m ObligationComposer src/components/editor/ObligationComposer.tsx:[2m22:31[22m[39m
+    [90m 20| [39m
+    [90m 21| [39m    [90m// Access External Org Data (Simulated Integration)[39m
+    [90m 22| [39m    [35mconst[39m { getCandidates } [33m=[39m [34museExternalOrgData[39m()[33m;[39m
+    [90m   | [39m                              [31m^[39m
+    [90m 23| [39m    [35mconst[39m candidates [33m=[39m [34mgetCandidates[39m()[33m;[39m
+    [90m 24| [39m
+[90m [2m❯[22m Object.react_stack_bottom_frame ../../node_modules/react-dom/cjs/react-dom-client.development.js:[2m25904:20[22m[39m
+[90m [2m❯[22m renderWithHooks ../../node_modules/react-dom/cjs/react-dom-client.development.js:[2m7662:22[22m[39m
+[90m [2m❯[22m updateFunctionComponent ../../node_modules/react-dom/cjs/react-dom-client.development.js:[2m10166:19[22m[39m
+[90m [2m❯[22m beginWork ../../node_modules/react-dom/cjs/react-dom-client.development.js:[2m11778:18[22m[39m
+[90m [2m❯[22m runWithFiberInDEV ../../node_modules/react-dom/cjs/react-dom-client.development.js:[2m874:13[22m[39m
+[90m [2m❯[22m performUnitOfWork ../../node_modules/react-dom/cjs/react-dom-client.development.js:[2m17641:22[22m[39m
+[90m [2m❯[22m workLoopSync ../../node_modules/react-dom/cjs/react-dom-client.development.js:[2m17469:41[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m3 passed[39m[22m[90m (4)[39m
+[2m   Start at [22m 11:03:14
+[2m   Duration [22m 551ms
+
+
+[1m[7m[31m FAIL [39m[27m[22m[31m Tests failed. Watching for file changes...[39m
+       [2mpress [22m[1mh[22m[2m to show help[22m[2m, [22m[2mpress [22m[1mq[22m[2m to quit[22m
+       [34mrerun x2[39m
+[2K[1A[2K[G       [90mrerun x2[39m
+[2K[1A[2K[G       [2m[90mrerun x2[39m[22m
+[2K[1A[2K[G[3Jc
+[7m[1m[34m RERUN [39m[22m[27m[2m ../../packages/api-client/package.json[22m
+
+ [32m✓[39m src/store/policyStore.test.ts [2m ([22m[2m3 tests[22m[2m)[22m[90m 13[2mms[22m[39m
+ [33m❯[39m src/components/editor/PolicyEditor.test.tsx [2m ([22m[2m4 tests[22m [2m|[22m [31m1 failed[39m[2m)[22m[90m 159[2mms[22m[39m
+[31m   [33m❯[31m src/components/editor/PolicyEditor.test.tsx[2m > [22mPolicyEditor[2m > [22mopens and closes obligation composer[39m
+[31m     → [vitest] No "useExternalOrgData" export is defined on the "@som/api-client" mock. Did you forget to return it from "vi.mock"?
+If you need to partially mock a module, you can use "importOriginal" helper inside:
+[39m
+ [32m✓[39m src/components/dashboard/ComplianceDashboard.test.tsx [2m ([22m[2m3 tests[22m[2m)[22m[90m 101[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[1m[7m Failed Tests 1 [27m[22m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[31m[1m[7m FAIL [27m[22m[39m src/components/editor/PolicyEditor.test.tsx[2m > [22mPolicyEditor[2m > [22mopens and closes obligation composer
+[31m[1mError[22m: [vitest] No "useExternalOrgData" export is defined on the "@som/api-client" mock. Did you forget to return it from "vi.mock"?
+If you need to partially mock a module, you can use "importOriginal" helper inside:
+[39m
+vi[33m.[39m[34mmock[39m([32m"@som/api-client"[39m[33m,[39m [35masync[39m (importOriginal) [33m=>[39m {
+  [35mconst[39m actual [33m=[39m [35mawait[39m [34mimportOriginal[39m()
+  [35mreturn[39m {
+    [33m...[39mactual[33m,[39m
+    [90m// your mocked methods[39m
+  }
+})
+
+[36m [2m❯[22m ObligationComposer src/components/editor/ObligationComposer.tsx:[2m22:31[22m[39m
+    [90m 20| [39m
+    [90m 21| [39m    [90m// Access External Org Data (Simulated Integration)[39m
+    [90m 22| [39m    [35mconst[39m { getCandidates } [33m=[39m [34museExternalOrgData[39m()[33m;[39m
+    [90m   | [39m                              [31m^[39m
+    [90m 23| [39m    [35mconst[39m candidates [33m=[39m [34mgetCandidates[39m()[33m;[39m
+    [90m 24| [39m
+[90m [2m❯[22m Object.react_stack_bottom_frame ../../node_modules/react-dom/cjs/react-dom-client.development.js:[2m25904:20[22m[39m
+[90m [2m❯[22m renderWithHooks ../../node_modules/react-dom/cjs/react-dom-client.development.js:[2m7662:22[22m[39m
+[90m [2m❯[22m updateFunctionComponent ../../node_modules/react-dom/cjs/react-dom-client.development.js:[2m10166:19[22m[39m
+[90m [2m❯[22m beginWork ../../node_modules/react-dom/cjs/react-dom-client.development.js:[2m11778:18[22m[39m
+[90m [2m❯[22m runWithFiberInDEV ../../node_modules/react-dom/cjs/react-dom-client.development.js:[2m874:13[22m[39m
+[90m [2m❯[22m performUnitOfWork ../../node_modules/react-dom/cjs/react-dom-client.development.js:[2m17641:22[22m[39m
+[90m [2m❯[22m workLoopSync ../../node_modules/react-dom/cjs/react-dom-client.development.js:[2m17469:41[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m2 passed[39m[22m[90m (3)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m9 passed[39m[22m[90m (10)[39m
+[2m   Start at [22m 11:03:59
+[2m   Duration [22m 6.87s
+
+
+[1m[7m[31m FAIL [39m[27m[22m[31m Tests failed. Watching for file changes...[39m
+       [2mpress [22m[1mh[22m[2m to show help[22m[2m, [22m[2mpress [22m[1mq[22m[2m to quit[22m
+[3Jc
+[7m[1m[34m RERUN [39m[22m[27m[2m src/setupTests.ts[22m
+
+ [32m✓[39m src/store/policyStore.test.ts [2m ([22m[2m3 tests[22m[2m)[22m[90m 6[2mms[22m[39m
+ [32m✓[39m src/components/dashboard/ComplianceDashboard.test.tsx [2m ([22m[2m3 tests[22m[2m)[22m[90m 76[2mms[22m[39m
+ [33m❯[39m src/components/editor/PolicyEditor.test.tsx [2m ([22m[2m4 tests[22m [2m|[22m [31m1 failed[39m[2m)[22m[90m 99[2mms[22m[39m
+[31m   [33m❯[31m src/components/editor/PolicyEditor.test.tsx[2m > [22mPolicyEditor[2m > [22mopens and closes obligation composer[39m
+[31m     → [vitest] No "ChevronDown" export is defined on the "lucide-react" mock. Did you forget to return it from "vi.mock"?
+If you need to partially mock a module, you can use "importOriginal" helper inside:
+[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[1m[7m Failed Tests 1 [27m[22m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[31m[1m[7m FAIL [27m[22m[39m src/components/editor/PolicyEditor.test.tsx[2m > [22mPolicyEditor[2m > [22mopens and closes obligation composer
+[31m[1mError[22m: [vitest] No "ChevronDown" export is defined on the "lucide-react" mock. Did you forget to return it from "vi.mock"?
+If you need to partially mock a module, you can use "importOriginal" helper inside:
+[39m
+vi[33m.[39m[34mmock[39m([32m"lucide-react"[39m[33m,[39m [35masync[39m (importOriginal) [33m=>[39m {
+  [35mconst[39m actual [33m=[39m [35mawait[39m [34mimportOriginal[39m()
+  [35mreturn[39m {
+    [33m...[39mactual[33m,[39m
+    [90m// your mocked methods[39m
+  }
+})
+
+[36m [2m❯[22m ObligationComposer src/components/editor/ObligationComposer.tsx:[2m72:26[22m[39m
+    [90m 70| [39m                                [33m:[39m [33m<[39m[33mspan[39m [33mclassName[39m[33m=[39m[32m"text-slate-500"[39m[33m>[39mSel…
+    [90m 71| [39m                        [33m<[39m[33m/[39m[33mspan[39m[33m>[39m
+    [90m 72| [39m                        [33m<[39m[33mChevronDown[39m [33msize[39m[33m=[39m[33m{[39m[34m14[39m[33m}[39m [33mclassName[39m[33m=[39m[32m"text-slate-5[39m…
+    [90m   | [39m                         [31m^[39m
+    [90m 73| [39m                    [33m<[39m[33m/[39m[33mbutton[39m[33m>[39m
+    [90m 74| [39m
+[90m [2m❯[22m Object.react_stack_bottom_frame ../../node_modules/react-dom/cjs/react-dom-client.development.js:[2m25904:20[22m[39m
+[90m [2m❯[22m renderWithHooks ../../node_modules/react-dom/cjs/react-dom-client.development.js:[2m7662:22[22m[39m
+[90m [2m❯[22m updateFunctionComponent ../../node_modules/react-dom/cjs/react-dom-client.development.js:[2m10166:19[22m[39m
+[90m [2m❯[22m beginWork ../../node_modules/react-dom/cjs/react-dom-client.development.js:[2m11778:18[22m[39m
+[90m [2m❯[22m runWithFiberInDEV ../../node_modules/react-dom/cjs/react-dom-client.development.js:[2m874:13[22m[39m
+[90m [2m❯[22m performUnitOfWork ../../node_modules/react-dom/cjs/react-dom-client.development.js:[2m17641:22[22m[39m
+[90m [2m❯[22m workLoopSync ../../node_modules/react-dom/cjs/react-dom-client.development.js:[2m17469:41[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m2 passed[39m[22m[90m (3)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m9 passed[39m[22m[90m (10)[39m
+[2m   Start at [22m 11:05:32
+[2m   Duration [22m 1.35s
+
+
+[1m[7m[31m FAIL [39m[27m[22m[31m Tests failed. Watching for file changes...[39m
+       [2mpress [22m[1mh[22m[2m to show help[22m[2m, [22m[2mpress [22m[1mq[22m[2m to quit[22m
+[3Jc
+[7m[1m[34m RERUN [39m[22m[27m[2m src/components/editor/PolicyEditor.test.tsx[22m [34mx5[39m
+
+ [32m✓[39m src/components/editor/PolicyEditor.test.tsx [2m ([22m[2m4 tests[22m[2m)[22m[90m 92[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m4 passed[39m[22m[90m (4)[39m
+[2m   Start at [22m 11:08:09
+[2m   Duration [22m 570ms
+
+
+[1m[7m[32m PASS [39m[27m[22m[32m Waiting for file changes...[39m
+       [2mpress [22m[1mh[22m[2m to show help[22m[2m, [22m[2mpress [22m[1mq[22m[2m to quit[22m
+       [34mrerun x5[39m
+[2K[1A[2K[G       [90mrerun x5[39m
+[2K[1A[2K[G       [2m[90mrerun x5[39m[22m
+[2K[1A[2K[G[3Jc
+[7m[1m[34m RERUN [39m[22m[27m[2m src/components/editor/PolicyEditor.test.tsx[22m [34mx6[39m
+
+ [32m✓[39m src/components/editor/PolicyEditor.test.tsx [2m ([22m[2m4 tests[22m[2m)[22m[90m 99[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m4 passed[39m[22m[90m (4)[39m
+[2m   Start at [22m 11:08:30
+[2m   Duration [22m 576ms
+
+
+[1m[7m[32m PASS [39m[27m[22m[32m Waiting for file changes...[39m
+       [2mpress [22m[1mh[22m[2m to show help[22m[2m, [22m[2mpress [22m[1mq[22m[2m to quit[22m
+       [34mrerun x6[39m
+[2K[1A[2K[G       [90mrerun x6[39m
+[2K[1A[2K[G       [2m[90mrerun x6[39m[22m
+[2K[1A[2K[G[3Jc
+[7m[1m[34m RERUN [39m[22m[27m[2m src/components/editor/PolicyEditor.test.tsx[22m [34mx7[39m
+
+ [32m✓[39m src/components/editor/PolicyEditor.test.tsx [2m ([22m[2m4 tests[22m[2m)[22m[90m 110[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m4 passed[39m[22m[90m (4)[39m
+[2m   Start at [22m 11:08:57
+[2m   Duration [22m 619ms
+
+
+[1m[7m[32m PASS [39m[27m[22m[32m Waiting for file changes...[39m
+       [2mpress [22m[1mh[22m[2m to show help[22m[2m, [22m[2mpress [22m[1mq[22m[2m to quit[22m
+       [34mrerun x7[39m
+[2K[1A[2K[G       [90mrerun x7[39m
+[2K[1A[2K[G       [2m[90mrerun x7[39m[22m
+[2K[1A[2K[G

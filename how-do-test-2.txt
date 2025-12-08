@@ -1,0 +1,3661 @@
+
+> how-do@0.0.0 test
+> vitest
+
+
+[7m[1m[34m DEV [39m[22m[27m [34mv1.6.1[39m [90mC:/devProjects/semantic-baseline/digitalbackbone/apps/how-do[39m
+
+ [32m✓[39m src/simple.test.ts [2m ([22m[2m1 test[22m[2m)[22m[90m 2[2mms[22m[39m
+ [32m✓[39m src/utils/ProcessValidator.test.ts [2m ([22m[2m4 tests[22m[2m)[22m[90m 5[2mms[22m[39m
+ [32m✓[39m src/utils/health-calculator.test.ts [2m ([22m[2m4 tests[22m[2m)[22m[90m 7[2mms[22m[39m
+ [32m✓[39m src/hooks/useDriftDetection.test.ts [2m ([22m[2m3 tests[22m[2m)[22m[90m 15[2mms[22m[39m
+ [32m✓[39m src/components/health/ProcessHealthDashboard.test.tsx [2m ([22m[2m2 tests[22m[2m)[22m[90m 52[2mms[22m[39m
+ [32m✓[39m src/components/alerts/DriftAlert.test.tsx [2m ([22m[2m3 tests[22m[2m)[22m[90m 42[2mms[22m[39m
+ [33m❯[39m src/components/ProcessSearch.test.tsx [2m ([22m[2m4 tests[22m [2m|[22m [31m4 failed[39m[2m)[22m[90m 61[2mms[22m[39m
+[31m   [33m❯[31m src/components/ProcessSearch.test.tsx[2m > [22mProcessSearch[2m > [22mrenders list of processes[39m
+[31m     → Unable to find an element with the text: New Operational Workflow. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[31m
+  [36m<div>[31m
+    [36m<div[31m
+      [33mclass[31m=[32m"process-search p-4"[31m
+    [36m>[31m
+      [36m<h1[31m
+        [33mclass[31m=[32m"text-xl font-bold mb-4 text-slate-100"[31m
+      [36m>[31m
+        [0mHow Do I...[0m
+      [36m</h1>[31m
+      [36m<input[31m
+        [33mclass[31m=[32m"search-input w-full p-2 rounded bg-slate-900 border border-slate-700 text-slate-100 mb-6 focus:outline-none focus:border-blue-500"[31m
+        [33mplaceholder[31m=[32m"Search for a process..."[31m
+        [33mtype[31m=[32m"text"[31m
+        [33mvalue[31m=[32m""[31m
+      [36m/>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"results-list"[31m
+      [36m>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"process-card flex justify-between items-center p-3 mb-2 bg-slate-800 rounded hover:bg-slate-700 cursor-pointer border border-slate-700"[31m
+        [36m>[31m
+          [36m<div>[31m
+            [36m<h3[31m
+              [33mclass[31m=[32m"flex items-center gap-2 font-bold text-slate-200"[31m
+            [36m>[31m
+              [0mTest Process[0m
+            [36m</h3>[31m
+            [36m<p[31m
+              [33mclass[31m=[32m"text-sm text-slate-400"[31m
+            [36m>[31m
+              [0mDescription[0m
+            [36m</p>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"text-right"[31m
+          [36m>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"status-badge block mb-1 text-xs px-2 py-1 rounded bg-green-900 text-green-300"[31m
+            [36m>[31m
+              [0mactive[0m
+            [36m</span>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"step-count text-xs text-slate-500"[31m
+            [36m>[31m
+              [0m0[0m
+              [0m Steps[0m
+            [36m</span>[31m
+          [36m</div>[31m
+        [36m</div>[31m
+      [36m</div>[31m
+    [36m</div>[31m
+  [36m</div>[31m
+[36m</body>[31m[39m
+[31m   [33m❯[31m src/components/ProcessSearch.test.tsx[2m > [22mProcessSearch[2m > [22mshows DRIFT badge for drifting process[39m
+[31m     → Unable to find an element with the text: DRIFT. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[31m
+  [36m<div>[31m
+    [36m<div[31m
+      [33mclass[31m=[32m"process-search p-4"[31m
+    [36m>[31m
+      [36m<h1[31m
+        [33mclass[31m=[32m"text-xl font-bold mb-4 text-slate-100"[31m
+      [36m>[31m
+        [0mHow Do I...[0m
+      [36m</h1>[31m
+      [36m<input[31m
+        [33mclass[31m=[32m"search-input w-full p-2 rounded bg-slate-900 border border-slate-700 text-slate-100 mb-6 focus:outline-none focus:border-blue-500"[31m
+        [33mplaceholder[31m=[32m"Search for a process..."[31m
+        [33mtype[31m=[32m"text"[31m
+        [33mvalue[31m=[32m""[31m
+      [36m/>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"results-list"[31m
+      [36m>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"process-card flex justify-between items-center p-3 mb-2 bg-slate-800 rounded hover:bg-slate-700 cursor-pointer border border-slate-700"[31m
+        [36m>[31m
+          [36m<div>[31m
+            [36m<h3[31m
+              [33mclass[31m=[32m"flex items-center gap-2 font-bold text-slate-200"[31m
+            [36m>[31m
+              [0mTest Process[0m
+            [36m</h3>[31m
+            [36m<p[31m
+              [33mclass[31m=[32m"text-sm text-slate-400"[31m
+            [36m>[31m
+              [0mDescription[0m
+            [36m</p>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"text-right"[31m
+          [36m>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"status-badge block mb-1 text-xs px-2 py-1 rounded bg-green-900 text-green-300"[31m
+            [36m>[31m
+              [0mactive[0m
+            [36m</span>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"step-count text-xs text-slate-500"[31m
+            [36m>[31m
+              [0m0[0m
+              [0m Steps[0m
+            [36m</span>[31m
+          [36m</div>[31m
+        [36m</div>[31m
+      [36m</div>[31m
+    [36m</div>[31m
+  [36m</div>[31m
+[36m</body>[31m[39m
+[31m   [33m❯[31m src/components/ProcessSearch.test.tsx[2m > [22mProcessSearch[2m > [22mfilters processes by search term[39m
+[31m     → Unable to find an element with the text: Onboarding Checklist. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[31m
+  [36m<div>[31m
+    [36m<div[31m
+      [33mclass[31m=[32m"process-search p-4"[31m
+    [36m>[31m
+      [36m<h1[31m
+        [33mclass[31m=[32m"text-xl font-bold mb-4 text-slate-100"[31m
+      [36m>[31m
+        [0mHow Do I...[0m
+      [36m</h1>[31m
+      [36m<input[31m
+        [33mclass[31m=[32m"search-input w-full p-2 rounded bg-slate-900 border border-slate-700 text-slate-100 mb-6 focus:outline-none focus:border-blue-500"[31m
+        [33mplaceholder[31m=[32m"Search for a process..."[31m
+        [33mtype[31m=[32m"text"[31m
+        [33mvalue[31m=[32m"Onboarding"[31m
+      [36m/>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"results-list"[31m
+      [36m>[31m
+        [36m<p[31m
+          [33mclass[31m=[32m"text-slate-500"[31m
+        [36m>[31m
+          [0mNo processes found.[0m
+        [36m</p>[31m
+      [36m</div>[31m
+    [36m</div>[31m
+  [36m</div>[31m
+[36m</body>[31m[39m
+[31m   [33m❯[31m src/components/ProcessSearch.test.tsx[2m > [22mProcessSearch[2m > [22mcalls onSelectProcess when clicked[39m
+[31m     → Unable to find an element with the text: Onboarding Checklist. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[31m
+  [36m<div>[31m
+    [36m<div[31m
+      [33mclass[31m=[32m"process-search p-4"[31m
+    [36m>[31m
+      [36m<h1[31m
+        [33mclass[31m=[32m"text-xl font-bold mb-4 text-slate-100"[31m
+      [36m>[31m
+        [0mHow Do I...[0m
+      [36m</h1>[31m
+      [36m<input[31m
+        [33mclass[31m=[32m"search-input w-full p-2 rounded bg-slate-900 border border-slate-700 text-slate-100 mb-6 focus:outline-none focus:border-blue-500"[31m
+        [33mplaceholder[31m=[32m"Search for a process..."[31m
+        [33mtype[31m=[32m"text"[31m
+        [33mvalue[31m=[32m""[31m
+      [36m/>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"results-list"[31m
+      [36m>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"process-card flex justify-between items-center p-3 mb-2 bg-slate-800 rounded hover:bg-slate-700 cursor-pointer border border-slate-700"[31m
+        [36m>[31m
+          [36m<div>[31m
+            [36m<h3[31m
+              [33mclass[31m=[32m"flex items-center gap-2 font-bold text-slate-200"[31m
+            [36m>[31m
+              [0mTest Process[0m
+            [36m</h3>[31m
+            [36m<p[31m
+              [33mclass[31m=[32m"text-sm text-slate-400"[31m
+            [36m>[31m
+              [0mDescription[0m
+            [36m</p>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"text-right"[31m
+          [36m>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"status-badge block mb-1 text-xs px-2 py-1 rounded bg-green-900 text-green-300"[31m
+            [36m>[31m
+              [0mactive[0m
+            [36m</span>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"step-count text-xs text-slate-500"[31m
+            [36m>[31m
+              [0m0[0m
+              [0m Steps[0m
+            [36m</span>[31m
+          [36m</div>[31m
+        [36m</div>[31m
+      [36m</div>[31m
+    [36m</div>[31m
+  [36m</div>[31m
+[36m</body>[31m[39m
+ [32m✓[39m src/components/editor/ObligationLinker.test.tsx [2m ([22m[2m3 tests[22m[2m)[22m[90m 61[2mms[22m[39m
+ [33m❯[39m src/components/TimelineViewer.test.tsx [2m ([22m[2m3 tests[22m [2m|[22m [31m1 failed[39m[2m)[22m[90m 69[2mms[22m[39m
+[31m   [33m❯[31m src/components/TimelineViewer.test.tsx[2m > [22mTimelineViewer[2m > [22mrenders process title and steps[39m
+[31m     → Unable to find an element with the text: Second Step. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[31m
+  [36m<div>[31m
+    [36m<div[31m
+      [33mclass[31m=[32m"flex flex-col h-full bg-slate-900 text-slate-100 overflow-hidden"[31m
+    [36m>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"flex items-center justify-between px-6 py-4 border-b border-slate-700 bg-slate-800"[31m
+      [36m>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"flex items-center gap-2 text-slate-400 hover:text-white transition-colors"[31m
+        [36m>[31m
+          [0m← Back[0m
+        [36m</button>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"text-center"[31m
+        [36m>[31m
+          [36m<h1[31m
+            [33mclass[31m=[32m"text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400"[31m
+          [36m>[31m
+            [0mTest Process[0m
+          [36m</h1>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"text-xs text-slate-500 uppercase tracking-widest mt-1"[31m
+          [36m>[31m
+            [0mTimeline View[0m
+          [36m</div>[31m
+        [36m</div>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"flex gap-3"[31m
+        [36m>[31m
+          [36m<button[31m
+            [33mclass[31m=[32m"px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded text-sm font-medium transition-colors"[31m
+          [36m>[31m
+            [0mEdit Process[0m
+          [36m</button>[31m
+        [36m</div>[31m
+      [36m</div>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"flex-1 overflow-y-auto p-6 md:p-12 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent"[31m
+      [36m>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"max-w-3xl mx-auto relative"[31m
+        [36m>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"absolute left-8 top-4 bottom-0 w-0.5 bg-slate-700"[31m
+          [36m/>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"relative pl-24 pb-12 group animate-in slide-in-from-bottom-4 duration-500"[31m
+            [33mstyle[31m=[32m"animation-delay: 0ms;"[31m
+          [36m>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"
+            step-card-component relative bg-slate-800/50 border border-slate-700 rounded-lg p-5
+            hover:border-slate-600 hover:bg-slate-800 transition-all shadow-lg backdrop-blur-sm
+            
+        "[31m
+            [36m>[31m
+              [36m<div[31m
+                [33mclass[31m=[32m"absolute -top-3 -left-3 w-8 h-8 bg-slate-800 border-2 border-blue-500 rounded-full flex items-center justify-center font-bold text-blue-400 shadow-md z-10 text-sm"[31m
+              [36m>[31m
+                [0m1[0m
+              [36m</div>[31m
+              [36m<div[31m
+                [33mclass[31m=[32m"flex items-center justify-between mb-3 border-b border-slate-700/50 pb-3 pl-4"[31m
+              [36m>[31m
+                [36m<div[31m
+                  [33mclass[31m=[32m"flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-400"[31m
+                [36m>[31m
+                  [36m<svg[31m
+                    [33maria-hidden[31m=[32m"true"[31m
+                    [33mclass[31m=[32m"lucide lucide-user text-blue-400"[31m
+                    [33mfill[31m=[32m"none"[31m
+                    [33mheight[31m=[32m"14"[31m
+                    [33mstroke[31m=[32m"currentColor"[31m
+                    [33mstroke-linecap[31m=[32m"round"[31m
+                    [33mstroke-linejoin[31m=[32m"round"[31m
+                    [33mstroke-width[31m=[32m"2"[31m
+                    [33mviewBox[31m=[32m"0 0 24 24"[31m
+                    [33mwidth[31m=[32m"14"[31m
+                    [33mxmlns[31m=[32m"http://www.w3.org/2000/svg"[31m
+                  [36m>[31m
+                    [36m<path[31m
+                      [33md[31m=[32m"M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"[31m
+                    [36m/>[31m
+                    [36m<circle[31m
+                      [33mcx[31m=[32m"12"[31m
+                      [33mcy[31m=[32m"7"[31m
+                      [33mr[31m=[32m"4"[31m
+                    [36m/>[31m
+                  [36m</svg>[31m
+                  [36m<span[31m
+                    [33mclass[31m=[32m"text-blue-300"[31m
+                  [36m>[31m
+                    [0mCommand Duty Officer[0m
+                  [36m</span>[31m
+                [36m</div>[31m
+              [36m</div>[31m
+              [36m<h3[31m
+                [33mclass[31m=[32m"text-lg font-semibold text-slate-100 mb-2"[31m
+              [36m>[31m
+                [0mFirst Step[0m
+              [36m</h3>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-slate-400 text-sm leading-relaxed mb-4"[31m
+              [36m>[31m
+                [0mDo the first thing[0m
+              [36m</p>[31m
+            [36m</div>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"relative pl-24 pb-12 group animate-in slide-in-from-bottom-4 duration-500"[31m
+            [33mstyle[31m=[32m"animation-delay: 100ms;"[31m
+          [36m>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"
+            step-card-component relative bg-slate-800/50 border border-slate-700 rounded-lg p-5
+            hover:border-slate-600 hover:bg-slate-800 transition-all shadow-lg backdrop-blur-sm
+            
+        "[31m
+            [36m>[31m
+              [36m<div[31m
+                [33mclass[31m=[32m"absolute -top-3 -left-3 w-8 h-8 bg-slate-800 border-2 border-blue-500 rounded-full flex items-center justify-center font-bold text-blue-400 shadow-md z-10 text-sm"[31m
+              [36m>[31m
+                [0m2[0m
+              [36m</div>[31m
+              [36m<div[31m
+                [33mclass[31m=[32m"flex items-center justify-between mb-3 border-b border-slate-700/50 pb-3 pl-4"[31m
+              [36m>[31m
+                [36m<div[31m
+                  [33mclass[31m=[32m"flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-400"[31m
+                [36m>[31m
+                  [36m<svg[31m
+                    [33maria-hidden[31m=[32m"true"[31m
+                    [33mclass[31m=[32m"lucide lucide-user text-blue-400"[31m
+                    [33mfill[31m=[32m"none"[31m
+                    [33mheight[31m=[32m"14"[31m
+                    [33mstroke[31m=[32m"currentColor"[31m
+                    [33mstroke-linecap[31m=[32m"round"[31m
+                    [33mstroke-linejoin[31m=[32m"round"[31m
+                    [33mstroke-width[31m=[32m"2"[31m
+                    [33mviewBox[31m=[32m"0 0 24 24"[31m
+                    [33mwidth[31m=[32m"14"[31m
+                    [33mxmlns[31m=[32m"http://www.w3.org/2000/svg"[31m
+                  [36m>[31m
+                    [36m<path[31m
+                      [33md[31m=[32m"M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"[31m
+                    [36m/>[31m
+                    [36m<circle[31m
+                      [33mcx[31m=[32m"12"[31m
+                      [33mcy[31m=[32m"7"[31m
+                      [33mr[31m=[32m"4"[31m
+                    [36m/>[31m
+                  [36m</svg>[31m
+                  [36m<span[31m
+                    [33mclass[31m=[32m"text-blue-300"[31m
+                  [36m>[31m
+                    [0mpos-2[0m
+                  [36m</span>[31m
+                [36m</div>[31m
+              [36m</div>[31m
+              [36m<h3[31m
+                [33mclass[31m=[32m"text-lg font-semibold text-slate-100 mb-2"[31m
+              [36m>[31m
+                [0mStep 2[0m
+              [36m</h3>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-slate-400 text-sm leading-relaxed mb-4"[31m
+              [36m>[31m
+                [0mStep 2 description[0m
+              [36m</p>[31m
+            [36m</div>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"absolute left-4 -bottom-1 w-9 h-9 bg-slate-800 border-2 border-slate-600 rounded-full flex items-center justify-center z-10"[31m
+          [36m>[31m
+            [36m<svg[31m
+              [33maria-hidden[31m=[32m"true"[31m
+              [33mclass[31m=[32m"lucide lucide-circle-check text-green-500"[31m
+              [33mfill[31m=[32m"none"[31m
+              [33mheight[31m=[32m"24"[31m
+              [33mstroke[31m=[32m"currentColor"[31m
+              [33mstroke-linecap[31m=[32m"round"[31m
+              [33mstroke-linejoin[31m=[32m"round"[31m
+              [33mstroke-width[31m=[32m"2"[31m
+              [33mviewBox[31m=[32m"0 0 24 24"[31m
+              [33mwidth[31m=[32m"24"[31m
+              [33mxmlns[31m=[32m"http://www.w3.org/2000/svg"[31m
+            [36m>[31m
+              [36m<circle[31m
+                [33mcx[31m=[32m"12"[31m
+                [33mcy[31m=[32m"12"[31m
+                [33mr[31m=[32m"10"[31m
+              [36m/>[31m
+              [36m<path[31m
+                [33md[31m=[32m"m9 12 2 2 4-4"[31m
+              [36m/>[31m
+            [36m</svg>[31m
+          [36m</div>[31m
+        [36m</div>[31m
+      [36m</div>[31m
+    [36m</div>[31m
+  [36m</div>[31m
+[36m</body>[31m[39m
+ [32m✓[39m src/components/SwimlaneViewer.test.tsx [2m ([22m[2m4 tests[22m[2m)[22m[90m 73[2mms[22m[39m
+ [32m✓[39m src/components/editor/OwnerPicker.test.tsx [2m ([22m[2m3 tests[22m[2m)[22m[90m 73[2mms[22m[39m
+ [33m❯[39m src/components/SwimlaneEditor.test.tsx [2m ([22m[2m3 tests[22m [2m|[22m [31m1 failed[39m[2m)[22m[90m 142[2mms[22m[39m
+[31m   [33m❯[31m src/components/SwimlaneEditor.test.tsx[2m > [22mSwimlaneEditor[2m > [22mrenders semantic proxy steps with badge[39m
+[31m     → Unable to find an element with the text: Provision Hardware. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[31m
+  [36m<div>[31m
+    [36m<div[31m
+      [33mclass[31m=[32m"swimlane-editor flex flex-col h-full bg-slate-900 text-slate-100 p-4"[31m
+    [36m>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"toolbar flex justify-between items-center mb-6"[31m
+      [36m>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"flex items-center gap-4"[31m
+        [36m>[31m
+          [36m<div>[31m
+            [36m<h1[31m
+              [33mclass[31m=[32m"text-xl font-bold"[31m
+            [36m>[31m
+              [0mProcess Designer[0m
+            [36m</h1>[31m
+            [36m<p[31m
+              [33mclass[31m=[32m"text-xs text-slate-500"[31m
+            [36m>[31m
+              [0mEdit and validate your workflow.[0m
+            [36m</p>[31m
+          [36m</div>[31m
+        [36m</div>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"actions flex gap-2"[31m
+        [36m>[31m
+          [36m<button[31m
+            [33mclass[31m=[32m"px-3 py-1 bg-slate-800 border border-slate-700 rounded text-sm hover:bg-slate-700"[31m
+          [36m>[31m
+            [0m+ Add Step[0m
+          [36m</button>[31m
+          [36m<button[31m
+            [33mclass[31m=[32m"px-3 py-1 rounded text-sm font-medium bg-green-600 hover:bg-green-500"[31m
+          [36m>[31m
+            [0mValidate & Save[0m
+          [36m</button>[31m
+        [36m</div>[31m
+      [36m</div>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"mb-4"[31m
+      [36m>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"bg-amber-900/20 border-b border-amber-900/50 p-3 animate-in slide-in-from-top-2"[31m
+        [36m>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"flex items-start gap-3"[31m
+          [36m>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"p-2 bg-amber-900/30 rounded-lg shrink-0"[31m
+            [36m>[31m
+              [36m<svg[31m
+                [33maria-hidden[31m=[32m"true"[31m
+                [33mclass[31m=[32m"lucide lucide-triangle-alert text-amber-500"[31m
+                [33mfill[31m=[32m"none"[31m
+                [33mheight[31m=[32m"20"[31m
+                [33mstroke[31m=[32m"currentColor"[31m
+                [33mstroke-linecap[31m=[32m"round"[31m
+                [33mstroke-linejoin[31m=[32m"round"[31m
+                [33mstroke-width[31m=[32m"2"[31m
+                [33mviewBox[31m=[32m"0 0 24 24"[31m
+                [33mwidth[31m=[32m"20"[31m
+                [33mxmlns[31m=[32m"http://www.w3.org/2000/svg"[31m
+              [36m>[31m
+                [36m<path[31m
+                  [33md[31m=[32m"m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"[31m
+                [36m/>[31m
+                [36m<path[31m
+                  [33md[31m=[32m"M12 9v4"[31m
+                [36m/>[31m
+                [36m<path[31m
+                  [33md[31m=[32m"M12 17h.01"[31m
+                [36m/>[31m
+              [36m</svg>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"flex-1"[31m
+            [36m>[31m
+              [36m<h3[31m
+                [33mclass[31m=[32m"text-sm font-bold text-amber-200 mb-1"[31m
+              [36m>[31m
+                [0mGovernance Drift Detected[0m
+              [36m</h3>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-xs text-amber-400/80 mb-3"[31m
+              [36m>[31m
+                [0mThis process has drifted from current organizational policy.[0m
+              [36m</p>[31m
+              [36m<div[31m
+                [33mclass[31m=[32m"space-y-2"[31m
+              [36m>[31m
+                [36m<div[31m
+                  [33mclass[31m=[32m"flex items-center justify-between bg-amber-950/40 rounded p-2 border border-amber-900/30"[31m
+                [36m>[31m
+                  [36m<div[31m
+                    [33mclass[31m=[32m"flex items-center gap-2 overflow-hidden"[31m
+                  [36m>[31m
+                    [36m<svg[31m
+                      [33maria-hidden[31m=[32m"true"[31m
+                      [33mclass[31m=[32m"lucide lucide-info text-blue-400 shrink-0"[31m
+                      [33mfill[31m=[32m"none"[31m
+                      [33mheight[31m=[32m"14"[31m
+                      [33mstroke[31m=[32m"currentColor"[31m
+                      [33mstroke-linecap[31m=[32m"round"[31m
+                      [33mstroke-linejoin[31m=[32m"round"[31m
+                      [33mstroke-width[31m=[32m"2"[31m
+                      [33mviewBox[31m=[32m"0 0 24 24"[31m
+                      [33mwidth[31m=[32m"14"[31m
+                      [33mxmlns[31m=[32m"http://www.w3.org/2000/svg"[31m
+                    [36m>[31m
+                      [36m<circle[31m
+                        [33mcx[31m=[32m"12"[31m
+                        [33mcy[31m=[32m"12"[31m
+                        [33mr[31m=[32m"10"[31m
+                      [36m/>[31m
+                      [36m<path[31m
+                        [33md[31m=[32m"M12 16v-4"[31m
+                      [36m/>[31m
+                      [36m<path[31m
+                        [33md[31m=[32m"M12 8h.01"[31m
+                      [36m/>[31m
+                    [36m</svg>[31m
+                    [36m<span[31m
+                      [33mclass[31m=[32m"text-xs text-slate-300 truncate"[31m
+                    [36m>[31m
+                      [0mHigh priority obligation obl-1 ("The Operations Officer must review all mission plans within 24 hours of submission.") assigned to pos-2 is not linked.[0m
+                    [36m</span>[31m
+                  [36m</div>[31m
+                  [36m<button[31m
+                    [33mclass[31m=[32m"text-[10px] font-bold text-amber-500 hover:text-amber-300 flex items-center gap-1 ml-2 whitespace-nowrap"[31m
+                  [36m>[31m
+                    [0mFIX [0m
+                    [36m<svg[31m
+                      [33maria-hidden[31m=[32m"true"[31m
+                      [33mclass[31m=[32m"lucide lucide-arrow-right"[31m
+                      [33mfill[31m=[32m"none"[31m
+                      [33mheight[31m=[32m"10"[31m
+                      [33mstroke[31m=[32m"currentColor"[31m
+                      [33mstroke-linecap[31m=[32m"round"[31m
+                      [33mstroke-linejoin[31m=[32m"round"[31m
+                      [33mstroke-width[31m=[32m"2"[31m
+                      [33mviewBox[31m=[32m"0 0 24 24"[31m
+                      [33mwidth[31m=[32m"10"[31m
+                      [33mxmlns[31m=[32m"http://www.w3.org/2000/svg"[31m
+                    [36m>[31m
+                      [36m<path[31m
+                        [33md[31m=[32m"M5 12h14"[31m
+                      [36m/>[31m
+                      [36m<path[31m
+ ...[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[1m[7m Failed Tests 6 [27m[22m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[31m[1m[7m FAIL [27m[22m[39m src/components/ProcessSearch.test.tsx[2m > [22mProcessSearch[2m > [22mrenders list of processes
+[31m[1mTestingLibraryElementError[22m: Unable to find an element with the text: New Operational Workflow. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[31m
+  [36m<div>[31m
+    [36m<div[31m
+      [33mclass[31m=[32m"process-search p-4"[31m
+    [36m>[31m
+      [36m<h1[31m
+        [33mclass[31m=[32m"text-xl font-bold mb-4 text-slate-100"[31m
+      [36m>[31m
+        [0mHow Do I...[0m
+      [36m</h1>[31m
+      [36m<input[31m
+        [33mclass[31m=[32m"search-input w-full p-2 rounded bg-slate-900 border border-slate-700 text-slate-100 mb-6 focus:outline-none focus:border-blue-500"[31m
+        [33mplaceholder[31m=[32m"Search for a process..."[31m
+        [33mtype[31m=[32m"text"[31m
+        [33mvalue[31m=[32m""[31m
+      [36m/>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"results-list"[31m
+      [36m>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"process-card flex justify-between items-center p-3 mb-2 bg-slate-800 rounded hover:bg-slate-700 cursor-pointer border border-slate-700"[31m
+        [36m>[31m
+          [36m<div>[31m
+            [36m<h3[31m
+              [33mclass[31m=[32m"flex items-center gap-2 font-bold text-slate-200"[31m
+            [36m>[31m
+              [0mTest Process[0m
+            [36m</h3>[31m
+            [36m<p[31m
+              [33mclass[31m=[32m"text-sm text-slate-400"[31m
+            [36m>[31m
+              [0mDescription[0m
+            [36m</p>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"text-right"[31m
+          [36m>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"status-badge block mb-1 text-xs px-2 py-1 rounded bg-green-900 text-green-300"[31m
+            [36m>[31m
+              [0mactive[0m
+            [36m</span>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"step-count text-xs text-slate-500"[31m
+            [36m>[31m
+              [0m0[0m
+              [0m Steps[0m
+            [36m</span>[31m
+          [36m</div>[31m
+        [36m</div>[31m
+      [36m</div>[31m
+    [36m</div>[31m
+  [36m</div>[31m
+[36m</body>[31m[39m
+[90m [2m❯[22m Object.getElementError ../../node_modules/@testing-library/dom/dist/config.js:[2m37:19[22m[39m
+[90m [2m❯[22m ../../node_modules/@testing-library/dom/dist/query-helpers.js:[2m76:38[22m[39m
+[90m [2m❯[22m ../../node_modules/@testing-library/dom/dist/query-helpers.js:[2m52:17[22m[39m
+[90m [2m❯[22m ../../node_modules/@testing-library/dom/dist/query-helpers.js:[2m95:19[22m[39m
+[36m [2m❯[22m src/components/ProcessSearch.test.tsx:[2m20:23[22m[39m
+    [90m 18| [39m    [34mit[39m([32m'renders list of processes'[39m[33m,[39m () [33m=>[39m {
+    [90m 19| [39m        [34mrender[39m([33m<[39m[33mProcessSearch[39m [33monSelectProcess[39m[33m=[39m[33m{[39m() [33m=>[39m { }[33m}[39m [33m/[39m[33m>[39m)[33m;[39m
+    [90m 20| [39m        [34mexpect[39m(screen[33m.[39m[34mgetByText[39m([32m'New Operational Workflow'[39m))[33m.[39m[34mtoBeDefin[39m…
+    [90m   | [39m                      [31m^[39m
+    [90m 21| [39m        [34mexpect[39m(screen[33m.[39m[34mgetByText[39m([32m'Onboarding Checklist'[39m))[33m.[39m[34mtoBeDefined[39m()[33m;[39m
+    [90m 22| [39m    })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯[22m[39m
+
+[31m[1m[7m FAIL [27m[22m[39m src/components/ProcessSearch.test.tsx[2m > [22mProcessSearch[2m > [22mshows DRIFT badge for drifting process
+[31m[1mTestingLibraryElementError[22m: Unable to find an element with the text: DRIFT. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[31m
+  [36m<div>[31m
+    [36m<div[31m
+      [33mclass[31m=[32m"process-search p-4"[31m
+    [36m>[31m
+      [36m<h1[31m
+        [33mclass[31m=[32m"text-xl font-bold mb-4 text-slate-100"[31m
+      [36m>[31m
+        [0mHow Do I...[0m
+      [36m</h1>[31m
+      [36m<input[31m
+        [33mclass[31m=[32m"search-input w-full p-2 rounded bg-slate-900 border border-slate-700 text-slate-100 mb-6 focus:outline-none focus:border-blue-500"[31m
+        [33mplaceholder[31m=[32m"Search for a process..."[31m
+        [33mtype[31m=[32m"text"[31m
+        [33mvalue[31m=[32m""[31m
+      [36m/>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"results-list"[31m
+      [36m>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"process-card flex justify-between items-center p-3 mb-2 bg-slate-800 rounded hover:bg-slate-700 cursor-pointer border border-slate-700"[31m
+        [36m>[31m
+          [36m<div>[31m
+            [36m<h3[31m
+              [33mclass[31m=[32m"flex items-center gap-2 font-bold text-slate-200"[31m
+            [36m>[31m
+              [0mTest Process[0m
+            [36m</h3>[31m
+            [36m<p[31m
+              [33mclass[31m=[32m"text-sm text-slate-400"[31m
+            [36m>[31m
+              [0mDescription[0m
+            [36m</p>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"text-right"[31m
+          [36m>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"status-badge block mb-1 text-xs px-2 py-1 rounded bg-green-900 text-green-300"[31m
+            [36m>[31m
+              [0mactive[0m
+            [36m</span>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"step-count text-xs text-slate-500"[31m
+            [36m>[31m
+              [0m0[0m
+              [0m Steps[0m
+            [36m</span>[31m
+          [36m</div>[31m
+        [36m</div>[31m
+      [36m</div>[31m
+    [36m</div>[31m
+  [36m</div>[31m
+[36m</body>[31m[39m
+[90m [2m❯[22m Object.getElementError ../../node_modules/@testing-library/dom/dist/config.js:[2m37:19[22m[39m
+[90m [2m❯[22m ../../node_modules/@testing-library/dom/dist/query-helpers.js:[2m76:38[22m[39m
+[90m [2m❯[22m ../../node_modules/@testing-library/dom/dist/query-helpers.js:[2m109:15[22m[39m
+[36m [2m❯[22m src/components/ProcessSearch.test.tsx:[2m28:36[22m[39m
+    [90m 26| [39m
+    [90m 27| [39m        [90m// proc-1 is mocked to have drift[39m
+    [90m 28| [39m        [35mconst[39m driftBadges [33m=[39m screen[33m.[39m[34mgetAllByText[39m([32m'DRIFT'[39m)[33m;[39m
+    [90m   | [39m                                   [31m^[39m
+    [90m 29| [39m        [34mexpect[39m(driftBadges[33m.[39mlength)[33m.[39m[34mtoBeGreaterThan[39m([34m0[39m)[33m;[39m
+    [90m 30| [39m    })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯[22m[39m
+
+[31m[1m[7m FAIL [27m[22m[39m src/components/ProcessSearch.test.tsx[2m > [22mProcessSearch[2m > [22mfilters processes by search term
+[31m[1mTestingLibraryElementError[22m: Unable to find an element with the text: Onboarding Checklist. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[31m
+  [36m<div>[31m
+    [36m<div[31m
+      [33mclass[31m=[32m"process-search p-4"[31m
+    [36m>[31m
+      [36m<h1[31m
+        [33mclass[31m=[32m"text-xl font-bold mb-4 text-slate-100"[31m
+      [36m>[31m
+        [0mHow Do I...[0m
+      [36m</h1>[31m
+      [36m<input[31m
+        [33mclass[31m=[32m"search-input w-full p-2 rounded bg-slate-900 border border-slate-700 text-slate-100 mb-6 focus:outline-none focus:border-blue-500"[31m
+        [33mplaceholder[31m=[32m"Search for a process..."[31m
+        [33mtype[31m=[32m"text"[31m
+        [33mvalue[31m=[32m"Onboarding"[31m
+      [36m/>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"results-list"[31m
+      [36m>[31m
+        [36m<p[31m
+          [33mclass[31m=[32m"text-slate-500"[31m
+        [36m>[31m
+          [0mNo processes found.[0m
+        [36m</p>[31m
+      [36m</div>[31m
+    [36m</div>[31m
+  [36m</div>[31m
+[36m</body>[31m[39m
+[90m [2m❯[22m Object.getElementError ../../node_modules/@testing-library/dom/dist/config.js:[2m37:19[22m[39m
+[90m [2m❯[22m ../../node_modules/@testing-library/dom/dist/query-helpers.js:[2m76:38[22m[39m
+[90m [2m❯[22m ../../node_modules/@testing-library/dom/dist/query-helpers.js:[2m52:17[22m[39m
+[90m [2m❯[22m ../../node_modules/@testing-library/dom/dist/query-helpers.js:[2m95:19[22m[39m
+[36m [2m❯[22m src/components/ProcessSearch.test.tsx:[2m39:23[22m[39m
+    [90m 37| [39m
+    [90m 38| [39m        [34mexpect[39m(screen[33m.[39m[34mqueryByText[39m([32m'New Operational Workflow'[39m))[33m.[39m[34mtoBeNul[39m…
+    [90m 39| [39m        [34mexpect[39m(screen[33m.[39m[34mgetByText[39m([32m'Onboarding Checklist'[39m))[33m.[39m[34mtoBeDefined[39m()[33m;[39m
+    [90m   | [39m                      [31m^[39m
+    [90m 40| [39m    })[33m;[39m
+    [90m 41| [39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯[22m[39m
+
+[31m[1m[7m FAIL [27m[22m[39m src/components/ProcessSearch.test.tsx[2m > [22mProcessSearch[2m > [22mcalls onSelectProcess when clicked
+[31m[1mTestingLibraryElementError[22m: Unable to find an element with the text: Onboarding Checklist. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[31m
+  [36m<div>[31m
+    [36m<div[31m
+      [33mclass[31m=[32m"process-search p-4"[31m
+    [36m>[31m
+      [36m<h1[31m
+        [33mclass[31m=[32m"text-xl font-bold mb-4 text-slate-100"[31m
+      [36m>[31m
+        [0mHow Do I...[0m
+      [36m</h1>[31m
+      [36m<input[31m
+        [33mclass[31m=[32m"search-input w-full p-2 rounded bg-slate-900 border border-slate-700 text-slate-100 mb-6 focus:outline-none focus:border-blue-500"[31m
+        [33mplaceholder[31m=[32m"Search for a process..."[31m
+        [33mtype[31m=[32m"text"[31m
+        [33mvalue[31m=[32m""[31m
+      [36m/>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"results-list"[31m
+      [36m>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"process-card flex justify-between items-center p-3 mb-2 bg-slate-800 rounded hover:bg-slate-700 cursor-pointer border border-slate-700"[31m
+        [36m>[31m
+          [36m<div>[31m
+            [36m<h3[31m
+              [33mclass[31m=[32m"flex items-center gap-2 font-bold text-slate-200"[31m
+            [36m>[31m
+              [0mTest Process[0m
+            [36m</h3>[31m
+            [36m<p[31m
+              [33mclass[31m=[32m"text-sm text-slate-400"[31m
+            [36m>[31m
+              [0mDescription[0m
+            [36m</p>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"text-right"[31m
+          [36m>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"status-badge block mb-1 text-xs px-2 py-1 rounded bg-green-900 text-green-300"[31m
+            [36m>[31m
+              [0mactive[0m
+            [36m</span>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"step-count text-xs text-slate-500"[31m
+            [36m>[31m
+              [0m0[0m
+              [0m Steps[0m
+            [36m</span>[31m
+          [36m</div>[31m
+        [36m</div>[31m
+      [36m</div>[31m
+    [36m</div>[31m
+  [36m</div>[31m
+[36m</body>[31m[39m
+[90m [2m❯[22m Object.getElementError ../../node_modules/@testing-library/dom/dist/config.js:[2m37:19[22m[39m
+[90m [2m❯[22m ../../node_modules/@testing-library/dom/dist/query-helpers.js:[2m76:38[22m[39m
+[90m [2m❯[22m ../../node_modules/@testing-library/dom/dist/query-helpers.js:[2m52:17[22m[39m
+[90m [2m❯[22m ../../node_modules/@testing-library/dom/dist/query-helpers.js:[2m95:19[22m[39m
+[36m [2m❯[22m src/components/ProcessSearch.test.tsx:[2m46:32[22m[39m
+    [90m 44| [39m        [34mrender[39m([33m<[39m[33mProcessSearch[39m [33monSelectProcess[39m[33m=[39m[33m{[39monSelect[33m}[39m [33m/[39m[33m>[39m)[33m;[39m
+    [90m 45| [39m
+    [90m 46| [39m        fireEvent[33m.[39m[34mclick[39m(screen[33m.[39m[34mgetByText[39m([32m'Onboarding Checklist'[39m))[33m;[39m
+    [90m   | [39m                               [31m^[39m
+    [90m 47| [39m        [34mexpect[39m(onSelect)[33m.[39m[34mtoHaveBeenCalled[39m()[33m;[39m
+    [90m 48| [39m    })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯[22m[39m
+
+[31m[1m[7m FAIL [27m[22m[39m src/components/SwimlaneEditor.test.tsx[2m > [22mSwimlaneEditor[2m > [22mrenders semantic proxy steps with badge
+[31m[1mTestingLibraryElementError[22m[39m: Unable to find an element with the text: Provision Hardware. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"swimlane-editor flex flex-col h-full bg-slate-900 text-slate-100 p-4"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"toolbar flex justify-between items-center mb-6"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center gap-4"[39m
+        [36m>[39m
+          [36m<div>[39m
+            [36m<h1[39m
+              [33mclass[39m=[32m"text-xl font-bold"[39m
+            [36m>[39m
+              [0mProcess Designer[0m
+            [36m</h1>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"text-xs text-slate-500"[39m
+            [36m>[39m
+              [0mEdit and validate your workflow.[0m
+            [36m</p>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"actions flex gap-2"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"px-3 py-1 bg-slate-800 border border-slate-700 rounded text-sm hover:bg-slate-700"[39m
+          [36m>[39m
+            [0m+ Add Step[0m
+          [36m</button>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"px-3 py-1 rounded text-sm font-medium bg-green-600 hover:bg-green-500"[39m
+          [36m>[39m
+            [0mValidate & Save[0m
+          [36m</button>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"mb-4"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"bg-amber-900/20 border-b border-amber-900/50 p-3 animate-in slide-in-from-top-2"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-start gap-3"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"p-2 bg-amber-900/30 rounded-lg shrink-0"[39m
+            [36m>[39m
+              [36m<svg[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mclass[39m=[32m"lucide lucide-triangle-alert text-amber-500"[39m
+                [33mfill[39m=[32m"none"[39m
+                [33mheight[39m=[32m"20"[39m
+                [33mstroke[39m=[32m"currentColor"[39m
+                [33mstroke-linecap[39m=[32m"round"[39m
+                [33mstroke-linejoin[39m=[32m"round"[39m
+                [33mstroke-width[39m=[32m"2"[39m
+                [33mviewBox[39m=[32m"0 0 24 24"[39m
+                [33mwidth[39m=[32m"20"[39m
+                [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+              [36m>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"[39m
+                [36m/>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M12 9v4"[39m
+                [36m/>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M12 17h.01"[39m
+                [36m/>[39m
+              [36m</svg>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex-1"[39m
+            [36m>[39m
+              [36m<h3[39m
+                [33mclass[39m=[32m"text-sm font-bold text-amber-200 mb-1"[39m
+              [36m>[39m
+                [0mGovernance Drift Detected[0m
+              [36m</h3>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"text-xs text-amber-400/80 mb-3"[39m
+              [36m>[39m
+                [0mThis process has drifted from current organizational policy.[0m
+              [36m</p>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"space-y-2"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex items-center justify-between bg-amber-950/40 rounded p-2 border border-amber-900/30"[39m
+                [36m>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"flex items-center gap-2 overflow-hidden"[39m
+                  [36m>[39m
+                    [36m<svg[39m
+                      [33maria-hidden[39m=[32m"true"[39m
+                      [33mclass[39m=[32m"lucide lucide-info text-blue-400 shrink-0"[39m
+                      [33mfill[39m=[32m"none"[39m
+                      [33mheight[39m=[32m"14"[39m
+                      [33mstroke[39m=[32m"currentColor"[39m
+                      [33mstroke-linecap[39m=[32m"round"[39m
+                      [33mstroke-linejoin[39m=[32m"round"[39m
+                      [33mstroke-width[39m=[32m"2"[39m
+                      [33mviewBox[39m=[32m"0 0 24 24"[39m
+                      [33mwidth[39m=[32m"14"[39m
+                      [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                    [36m>[39m
+                      [36m<circle[39m
+                        [33mcx[39m=[32m"12"[39m
+                        [33mcy[39m=[32m"12"[39m
+                        [33mr[39m=[32m"10"[39m
+                      [36m/>[39m
+                      [36m<path[39m
+                        [33md[39m=[32m"M12 16v-4"[39m
+                      [36m/>[39m
+                      [36m<path[39m
+                        [33md[39m=[32m"M12 8h.01"[39m
+                      [36m/>[39m
+                    [36m</svg>[39m
+                    [36m<span[39m
+                      [33mclass[39m=[32m"text-xs text-slate-300 truncate"[39m
+                    [36m>[39m
+                      [0mHigh priority obligation obl-1 ("The Operations Officer must review all mission plans within 24 hours of submission.") assigned to pos-2 is not linked.[0m
+                    [36m</span>[39m
+                  [36m</div>[39m
+                  [36m<button[39m
+                    [33mclass[39m=[32m"text-[10px] font-bold text-amber-500 hover:text-amber-300 flex items-center gap-1 ml-2 whitespace-nowrap"[39m
+                  [36m>[39m
+                    [0mFIX [0m
+                    [36m<svg[39m
+                      [33maria-hidden[39m=[32m"true"[39m
+                      [33mclass[39m=[32m"lucide lucide-arrow-right"[39m
+                      [33mfill[39m=[32m"none"[39m
+                      [33mheight[39m=[32m"10"[39m
+                      [33mstroke[39m=[32m"currentColor"[39m
+                      [33mstroke-linecap[39m=[32m"round"[39m
+                      [33mstroke-linejoin[39m=[32m"round"[39m
+                      [33mstroke-width[39m=[32m"2"[39m
+                      [33mviewBox[39m=[32m"0 0 24 24"[39m
+                      [33mwidth[39m=[32m"10"[39m
+                      [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                    [36m>[39m
+                      [36m<path[39m
+                        [33md[39m=[32m"M5 12h14"[39m
+                      [36m/>[39m
+                      [36m<path[39m
+ ...
+[90m [2m❯[22m Object.getElementError ../../node_modules/@testing-library/dom/dist/config.js:[2m37:19[22m[39m
+[90m [2m❯[22m ../../node_modules/@testing-library/dom/dist/query-helpers.js:[2m76:38[22m[39m
+[90m [2m❯[22m ../../node_modules/@testing-library/dom/dist/query-helpers.js:[2m52:17[22m[39m
+[90m [2m❯[22m ../../node_modules/@testing-library/dom/dist/query-helpers.js:[2m95:19[22m[39m
+[36m [2m❯[22m src/components/SwimlaneEditor.test.tsx:[2m20:23[22m[39m
+    [90m 18| [39m
+    [90m 19| [39m        [90m// Check for the JIRA step title[39m
+    [90m 20| [39m        [34mexpect[39m(screen[33m.[39m[34mgetByText[39m([32m'Provision Hardware'[39m))[33m.[39m[34mtoBeDefined[39m()[33m;[39m
+    [90m   | [39m                      [31m^[39m
+    [90m 21| [39m
+    [90m 22| [39m        [90m// Check for the badge text "jira"[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/6]⎯[22m[39m
+
+[31m[1m[7m FAIL [27m[22m[39m src/components/TimelineViewer.test.tsx[2m > [22mTimelineViewer[2m > [22mrenders process title and steps
+[31m[1mTestingLibraryElementError[22m[39m: Unable to find an element with the text: Second Step. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"flex flex-col h-full bg-slate-900 text-slate-100 overflow-hidden"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex items-center justify-between px-6 py-4 border-b border-slate-700 bg-slate-800"[39m
+      [36m>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"flex items-center gap-2 text-slate-400 hover:text-white transition-colors"[39m
+        [36m>[39m
+          [0m← Back[0m
+        [36m</button>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"text-center"[39m
+        [36m>[39m
+          [36m<h1[39m
+            [33mclass[39m=[32m"text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400"[39m
+          [36m>[39m
+            [0mTest Process[0m
+          [36m</h1>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"text-xs text-slate-500 uppercase tracking-widest mt-1"[39m
+          [36m>[39m
+            [0mTimeline View[0m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex gap-3"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded text-sm font-medium transition-colors"[39m
+          [36m>[39m
+            [0mEdit Process[0m
+          [36m</button>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex-1 overflow-y-auto p-6 md:p-12 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"max-w-3xl mx-auto relative"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"absolute left-8 top-4 bottom-0 w-0.5 bg-slate-700"[39m
+          [36m/>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"relative pl-24 pb-12 group animate-in slide-in-from-bottom-4 duration-500"[39m
+            [33mstyle[39m=[32m"animation-delay: 0ms;"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"
+            step-card-component relative bg-slate-800/50 border border-slate-700 rounded-lg p-5
+            hover:border-slate-600 hover:bg-slate-800 transition-all shadow-lg backdrop-blur-sm
+            
+        "[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"absolute -top-3 -left-3 w-8 h-8 bg-slate-800 border-2 border-blue-500 rounded-full flex items-center justify-center font-bold text-blue-400 shadow-md z-10 text-sm"[39m
+              [36m>[39m
+                [0m1[0m
+              [36m</div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center justify-between mb-3 border-b border-slate-700/50 pb-3 pl-4"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-400"[39m
+                [36m>[39m
+                  [36m<svg[39m
+                    [33maria-hidden[39m=[32m"true"[39m
+                    [33mclass[39m=[32m"lucide lucide-user text-blue-400"[39m
+                    [33mfill[39m=[32m"none"[39m
+                    [33mheight[39m=[32m"14"[39m
+                    [33mstroke[39m=[32m"currentColor"[39m
+                    [33mstroke-linecap[39m=[32m"round"[39m
+                    [33mstroke-linejoin[39m=[32m"round"[39m
+                    [33mstroke-width[39m=[32m"2"[39m
+                    [33mviewBox[39m=[32m"0 0 24 24"[39m
+                    [33mwidth[39m=[32m"14"[39m
+                    [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                  [36m>[39m
+                    [36m<path[39m
+                      [33md[39m=[32m"M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"[39m
+                    [36m/>[39m
+                    [36m<circle[39m
+                      [33mcx[39m=[32m"12"[39m
+                      [33mcy[39m=[32m"7"[39m
+                      [33mr[39m=[32m"4"[39m
+                    [36m/>[39m
+                  [36m</svg>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"text-blue-300"[39m
+                  [36m>[39m
+                    [0mCommand Duty Officer[0m
+                  [36m</span>[39m
+                [36m</div>[39m
+              [36m</div>[39m
+              [36m<h3[39m
+                [33mclass[39m=[32m"text-lg font-semibold text-slate-100 mb-2"[39m
+              [36m>[39m
+                [0mFirst Step[0m
+              [36m</h3>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"text-slate-400 text-sm leading-relaxed mb-4"[39m
+              [36m>[39m
+                [0mDo the first thing[0m
+              [36m</p>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"relative pl-24 pb-12 group animate-in slide-in-from-bottom-4 duration-500"[39m
+            [33mstyle[39m=[32m"animation-delay: 100ms;"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"
+            step-card-component relative bg-slate-800/50 border border-slate-700 rounded-lg p-5
+            hover:border-slate-600 hover:bg-slate-800 transition-all shadow-lg backdrop-blur-sm
+            
+        "[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"absolute -top-3 -left-3 w-8 h-8 bg-slate-800 border-2 border-blue-500 rounded-full flex items-center justify-center font-bold text-blue-400 shadow-md z-10 text-sm"[39m
+              [36m>[39m
+                [0m2[0m
+              [36m</div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center justify-between mb-3 border-b border-slate-700/50 pb-3 pl-4"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-400"[39m
+                [36m>[39m
+                  [36m<svg[39m
+                    [33maria-hidden[39m=[32m"true"[39m
+                    [33mclass[39m=[32m"lucide lucide-user text-blue-400"[39m
+                    [33mfill[39m=[32m"none"[39m
+                    [33mheight[39m=[32m"14"[39m
+                    [33mstroke[39m=[32m"currentColor"[39m
+                    [33mstroke-linecap[39m=[32m"round"[39m
+                    [33mstroke-linejoin[39m=[32m"round"[39m
+                    [33mstroke-width[39m=[32m"2"[39m
+                    [33mviewBox[39m=[32m"0 0 24 24"[39m
+                    [33mwidth[39m=[32m"14"[39m
+                    [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                  [36m>[39m
+                    [36m<path[39m
+                      [33md[39m=[32m"M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"[39m
+                    [36m/>[39m
+                    [36m<circle[39m
+                      [33mcx[39m=[32m"12"[39m
+                      [33mcy[39m=[32m"7"[39m
+                      [33mr[39m=[32m"4"[39m
+                    [36m/>[39m
+                  [36m</svg>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"text-blue-300"[39m
+                  [36m>[39m
+                    [0mpos-2[0m
+                  [36m</span>[39m
+                [36m</div>[39m
+              [36m</div>[39m
+              [36m<h3[39m
+                [33mclass[39m=[32m"text-lg font-semibold text-slate-100 mb-2"[39m
+              [36m>[39m
+                [0mStep 2[0m
+              [36m</h3>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"text-slate-400 text-sm leading-relaxed mb-4"[39m
+              [36m>[39m
+                [0mStep 2 description[0m
+              [36m</p>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"absolute left-4 -bottom-1 w-9 h-9 bg-slate-800 border-2 border-slate-600 rounded-full flex items-center justify-center z-10"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-circle-check text-green-500"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<circle[39m
+                [33mcx[39m=[32m"12"[39m
+                [33mcy[39m=[32m"12"[39m
+                [33mr[39m=[32m"10"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m9 12 2 2 4-4"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+[90m [2m❯[22m Object.getElementError ../../node_modules/@testing-library/dom/dist/config.js:[2m37:19[22m[39m
+[90m [2m❯[22m ../../node_modules/@testing-library/dom/dist/query-helpers.js:[2m76:38[22m[39m
+[90m [2m❯[22m ../../node_modules/@testing-library/dom/dist/query-helpers.js:[2m52:17[22m[39m
+[90m [2m❯[22m ../../node_modules/@testing-library/dom/dist/query-helpers.js:[2m95:19[22m[39m
+[36m [2m❯[22m src/components/TimelineViewer.test.tsx:[2m52:23[22m[39m
+    [90m 50| [39m        [34mexpect[39m(screen[33m.[39m[34mgetByText[39m([32m'Test Process'[39m))[33m.[39m[34mtoBeInTheDocument[39m()[33m;[39m
+    [90m 51| [39m        [34mexpect[39m(screen[33m.[39m[34mgetByText[39m([32m'First Step'[39m))[33m.[39m[34mtoBeInTheDocument[39m()[33m;[39m
+    [90m 52| [39m        [34mexpect[39m(screen[33m.[39m[34mgetByText[39m([32m'Second Step'[39m))[33m.[39m[34mtoBeInTheDocument[39m()[33m;[39m
+    [90m   | [39m                      [31m^[39m
+    [90m 53| [39m        [90m// Check for step numbers[39m
+    [90m 54| [39m        [34mexpect[39m(screen[33m.[39m[34mgetByText[39m([32m'1'[39m))[33m.[39m[34mtoBeInTheDocument[39m()[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/6]⎯[22m[39m
+
+[2m Test Files [22m [1m[31m3 failed[39m[22m[2m | [22m[1m[32m9 passed[39m[22m[90m (12)[39m
+[2m      Tests [22m [1m[31m6 failed[39m[22m[2m | [22m[1m[32m31 passed[39m[22m[90m (37)[39m
+[2m   Start at [22m 10:31:28
+[2m   Duration [22m 2.37s[2m (transform 1.07s, setup 329ms, collect 6.37s, tests 602ms, environment 8.89s, prepare 5.65s)[22m
+
+
+[1m[7m[31m FAIL [39m[27m[22m[31m Tests failed. Watching for file changes...[39m
+       [2mpress [22m[1mh[22m[2m to show help[22m[2m, [22m[2mpress [22m[1mq[22m[2m to quit[22m
+[3Jc
+[7m[1m[34m RERUN [39m[22m[27m[2m src/setupTests.ts[22m
+
+ [32m✓[39m src/utils/ProcessValidator.test.ts [2m ([22m[2m4 tests[22m[2m)[22m[90m 6[2mms[22m[39m
+ [32m✓[39m src/simple.test.ts [2m ([22m[2m1 test[22m[2m)[22m[90m 5[2mms[22m[39m
+ [32m✓[39m src/utils/health-calculator.test.ts [2m ([22m[2m4 tests[22m[2m)[22m[90m 5[2mms[22m[39m
+ [32m✓[39m src/components/health/ProcessHealthDashboard.test.tsx [2m ([22m[2m2 tests[22m[2m)[22m[90m 79[2mms[22m[39m
+ [32m✓[39m src/components/alerts/DriftAlert.test.tsx [2m ([22m[2m3 tests[22m[2m)[22m[90m 66[2mms[22m[39m
+ [32m✓[39m src/hooks/useDriftDetection.test.ts [2m ([22m[2m3 tests[22m[2m)[22m[90m 32[2mms[22m[39m
+ [32m✓[39m src/components/editor/OwnerPicker.test.tsx [2m ([22m[2m3 tests[22m[2m)[22m[90m 113[2mms[22m[39m
+ [32m✓[39m src/components/editor/ObligationLinker.test.tsx [2m ([22m[2m3 tests[22m[2m)[22m[90m 106[2mms[22m[39m
+ [32m✓[39m src/components/SwimlaneViewer.test.tsx [2m ([22m[2m4 tests[22m[2m)[22m[90m 114[2mms[22m[39m
+ [33m❯[39m src/components/ProcessSearch.test.tsx [2m ([22m[2m4 tests[22m [2m|[22m [31m1 failed[39m[2m)[22m[90m 113[2mms[22m[39m
+[31m   [33m❯[31m src/components/ProcessSearch.test.tsx[2m > [22mProcessSearch[2m > [22mshows DRIFT badge for drifting process[39m
+[31m     → Unable to find an element with the text: DRIFT. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[31m
+  [36m<div>[31m
+    [36m<div[31m
+      [33mclass[31m=[32m"process-search p-4"[31m
+    [36m>[31m
+      [36m<h1[31m
+        [33mclass[31m=[32m"text-xl font-bold mb-4 text-slate-100"[31m
+      [36m>[31m
+        [0mHow Do I...[0m
+      [36m</h1>[31m
+      [36m<input[31m
+        [33mclass[31m=[32m"search-input w-full p-2 rounded bg-slate-900 border border-slate-700 text-slate-100 mb-6 focus:outline-none focus:border-blue-500"[31m
+        [33mplaceholder[31m=[32m"Search for a process..."[31m
+        [33mtype[31m=[32m"text"[31m
+        [33mvalue[31m=[32m""[31m
+      [36m/>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"results-list"[31m
+      [36m>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"process-card flex justify-between items-center p-3 mb-2 bg-slate-800 rounded hover:bg-slate-700 cursor-pointer border border-slate-700"[31m
+        [36m>[31m
+          [36m<div>[31m
+            [36m<h3[31m
+              [33mclass[31m=[32m"flex items-center gap-2 font-bold text-slate-200"[31m
+            [36m>[31m
+              [0mTest Process[0m
+            [36m</h3>[31m
+            [36m<p[31m
+              [33mclass[31m=[32m"text-sm text-slate-400"[31m
+            [36m>[31m
+              [0mDescription[0m
+            [36m</p>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"text-right"[31m
+          [36m>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"status-badge block mb-1 text-xs px-2 py-1 rounded bg-green-900 text-green-300"[31m
+            [36m>[31m
+              [0mactive[0m
+            [36m</span>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"step-count text-xs text-slate-500"[31m
+            [36m>[31m
+              [0m0[0m
+              [0m Steps[0m
+            [36m</span>[31m
+          [36m</div>[31m
+        [36m</div>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"process-card flex justify-between items-center p-3 mb-2 bg-slate-800 rounded hover:bg-slate-700 cursor-pointer border border-slate-700"[31m
+        [36m>[31m
+          [36m<div>[31m
+            [36m<h3[31m
+              [33mclass[31m=[32m"flex items-center gap-2 font-bold text-slate-200"[31m
+            [36m>[31m
+              [0mNew Operational Workflow[0m
+            [36m</h3>[31m
+            [36m<p[31m
+              [33mclass[31m=[32m"text-sm text-slate-400"[31m
+            [36m>[31m
+              [0mDraft process[0m
+            [36m</p>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"text-right"[31m
+          [36m>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"status-badge block mb-1 text-xs px-2 py-1 rounded bg-slate-700 text-slate-400"[31m
+            [36m>[31m
+              [0mdraft[0m
+            [36m</span>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"step-count text-xs text-slate-500"[31m
+            [36m>[31m
+              [0m0[0m
+              [0m Steps[0m
+            [36m</span>[31m
+          [36m</div>[31m
+        [36m</div>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"process-card flex justify-between items-center p-3 mb-2 bg-slate-800 rounded hover:bg-slate-700 cursor-pointer border border-slate-700"[31m
+        [36m>[31m
+          [36m<div>[31m
+            [36m<h3[31m
+              [33mclass[31m=[32m"flex items-center gap-2 font-bold text-slate-200"[31m
+            [36m>[31m
+              [0mOnboarding Checklist[0m
+            [36m</h3>[31m
+            [36m<p[31m
+              [33mclass[31m=[32m"text-sm text-slate-400"[31m
+            [36m>[31m
+              [0mHR Onboarding[0m
+            [36m</p>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"text-right"[31m
+          [36m>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"status-badge block mb-1 text-xs px-2 py-1 rounded bg-green-900 text-green-300"[31m
+            [36m>[31m
+              [0mactive[0m
+            [36m</span>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"step-count text-xs text-slate-500"[31m
+            [36m>[31m
+              [0m0[0m
+              [0m Steps[0m
+            [36m</span>[31m
+          [36m</div>[31m
+        [36m</div>[31m
+      [36m</div>[31m
+    [36m</div>[31m
+  [36m</div>[31m
+[36m</body>[31m[39m
+ [33m❯[39m src/components/TimelineViewer.test.tsx [2m ([22m[2m3 tests[22m [2m|[22m [31m1 failed[39m[2m)[22m[90m 90[2mms[22m[39m
+[31m   [33m❯[31m src/components/TimelineViewer.test.tsx[2m > [22mTimelineViewer[2m > [22mrenders process title and steps[39m
+[31m     → Unable to find an element with the text: Second Step. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[31m
+  [36m<div>[31m
+    [36m<div[31m
+      [33mclass[31m=[32m"flex flex-col h-full bg-slate-900 text-slate-100 overflow-hidden"[31m
+    [36m>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"flex items-center justify-between px-6 py-4 border-b border-slate-700 bg-slate-800"[31m
+      [36m>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"flex items-center gap-2 text-slate-400 hover:text-white transition-colors"[31m
+        [36m>[31m
+          [0m← Back[0m
+        [36m</button>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"text-center"[31m
+        [36m>[31m
+          [36m<h1[31m
+            [33mclass[31m=[32m"text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400"[31m
+          [36m>[31m
+            [0mTest Process[0m
+          [36m</h1>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"text-xs text-slate-500 uppercase tracking-widest mt-1"[31m
+          [36m>[31m
+            [0mTimeline View[0m
+          [36m</div>[31m
+        [36m</div>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"flex gap-3"[31m
+        [36m>[31m
+          [36m<button[31m
+            [33mclass[31m=[32m"px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded text-sm font-medium transition-colors"[31m
+          [36m>[31m
+            [0mEdit Process[0m
+          [36m</button>[31m
+        [36m</div>[31m
+      [36m</div>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"flex-1 overflow-y-auto p-6 md:p-12 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent"[31m
+      [36m>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"max-w-3xl mx-auto relative"[31m
+        [36m>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"absolute left-8 top-4 bottom-0 w-0.5 bg-slate-700"[31m
+          [36m/>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"relative pl-24 pb-12 group animate-in slide-in-from-bottom-4 duration-500"[31m
+            [33mstyle[31m=[32m"animation-delay: 0ms;"[31m
+          [36m>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"
+            step-card-component relative bg-slate-800/50 border border-slate-700 rounded-lg p-5
+            hover:border-slate-600 hover:bg-slate-800 transition-all shadow-lg backdrop-blur-sm
+            
+        "[31m
+            [36m>[31m
+              [36m<div[31m
+                [33mclass[31m=[32m"absolute -top-3 -left-3 w-8 h-8 bg-slate-800 border-2 border-blue-500 rounded-full flex items-center justify-center font-bold text-blue-400 shadow-md z-10 text-sm"[31m
+              [36m>[31m
+                [0m1[0m
+              [36m</div>[31m
+              [36m<div[31m
+                [33mclass[31m=[32m"flex items-center justify-between mb-3 border-b border-slate-700/50 pb-3 pl-4"[31m
+              [36m>[31m
+                [36m<div[31m
+                  [33mclass[31m=[32m"flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-400"[31m
+                [36m>[31m
+                  [36m<svg[31m
+                    [33maria-hidden[31m=[32m"true"[31m
+                    [33mclass[31m=[32m"lucide lucide-user text-blue-400"[31m
+                    [33mfill[31m=[32m"none"[31m
+                    [33mheight[31m=[32m"14"[31m
+                    [33mstroke[31m=[32m"currentColor"[31m
+                    [33mstroke-linecap[31m=[32m"round"[31m
+                    [33mstroke-linejoin[31m=[32m"round"[31m
+                    [33mstroke-width[31m=[32m"2"[31m
+                    [33mviewBox[31m=[32m"0 0 24 24"[31m
+                    [33mwidth[31m=[32m"14"[31m
+                    [33mxmlns[31m=[32m"http://www.w3.org/2000/svg"[31m
+                  [36m>[31m
+                    [36m<path[31m
+                      [33md[31m=[32m"M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"[31m
+                    [36m/>[31m
+                    [36m<circle[31m
+                      [33mcx[31m=[32m"12"[31m
+                      [33mcy[31m=[32m"7"[31m
+                      [33mr[31m=[32m"4"[31m
+                    [36m/>[31m
+                  [36m</svg>[31m
+                  [36m<span[31m
+                    [33mclass[31m=[32m"text-blue-300"[31m
+                  [36m>[31m
+                    [0mCommand Duty Officer[0m
+                  [36m</span>[31m
+                [36m</div>[31m
+              [36m</div>[31m
+              [36m<h3[31m
+                [33mclass[31m=[32m"text-lg font-semibold text-slate-100 mb-2"[31m
+              [36m>[31m
+                [0mFirst Step[0m
+              [36m</h3>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-slate-400 text-sm leading-relaxed mb-4"[31m
+              [36m>[31m
+                [0mDo the first thing[0m
+              [36m</p>[31m
+            [36m</div>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"relative pl-24 pb-12 group animate-in slide-in-from-bottom-4 duration-500"[31m
+            [33mstyle[31m=[32m"animation-delay: 100ms;"[31m
+          [36m>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"
+            step-card-component relative bg-slate-800/50 border border-slate-700 rounded-lg p-5
+            hover:border-slate-600 hover:bg-slate-800 transition-all shadow-lg backdrop-blur-sm
+            
+        "[31m
+            [36m>[31m
+              [36m<div[31m
+                [33mclass[31m=[32m"absolute -top-3 -left-3 w-8 h-8 bg-slate-800 border-2 border-blue-500 rounded-full flex items-center justify-center font-bold text-blue-400 shadow-md z-10 text-sm"[31m
+              [36m>[31m
+                [0m2[0m
+              [36m</div>[31m
+              [36m<div[31m
+                [33mclass[31m=[32m"flex items-center justify-between mb-3 border-b border-slate-700/50 pb-3 pl-4"[31m
+              [36m>[31m
+                [36m<div[31m
+                  [33mclass[31m=[32m"flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-400"[31m
+                [36m>[31m
+                  [36m<svg[31m
+                    [33maria-hidden[31m=[32m"true"[31m
+                    [33mclass[31m=[32m"lucide lucide-user text-blue-400"[31m
+                    [33mfill[31m=[32m"none"[31m
+                    [33mheight[31m=[32m"14"[31m
+                    [33mstroke[31m=[32m"currentColor"[31m
+                    [33mstroke-linecap[31m=[32m"round"[31m
+                    [33mstroke-linejoin[31m=[32m"round"[31m
+                    [33mstroke-width[31m=[32m"2"[31m
+                    [33mviewBox[31m=[32m"0 0 24 24"[31m
+                    [33mwidth[31m=[32m"14"[31m
+                    [33mxmlns[31m=[32m"http://www.w3.org/2000/svg"[31m
+                  [36m>[31m
+                    [36m<path[31m
+                      [33md[31m=[32m"M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"[31m
+                    [36m/>[31m
+                    [36m<circle[31m
+                      [33mcx[31m=[32m"12"[31m
+                      [33mcy[31m=[32m"7"[31m
+                      [33mr[31m=[32m"4"[31m
+                    [36m/>[31m
+                  [36m</svg>[31m
+                  [36m<span[31m
+                    [33mclass[31m=[32m"text-blue-300"[31m
+                  [36m>[31m
+                    [0mpos-2[0m
+                  [36m</span>[31m
+                [36m</div>[31m
+              [36m</div>[31m
+              [36m<h3[31m
+                [33mclass[31m=[32m"text-lg font-semibold text-slate-100 mb-2"[31m
+              [36m>[31m
+                [0mStep 2[0m
+              [36m</h3>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-slate-400 text-sm leading-relaxed mb-4"[31m
+              [36m>[31m
+                [0mStep 2 description[0m
+              [36m</p>[31m
+            [36m</div>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"absolute left-4 -bottom-1 w-9 h-9 bg-slate-800 border-2 border-slate-600 rounded-full flex items-center justify-center z-10"[31m
+          [36m>[31m
+            [36m<svg[31m
+              [33maria-hidden[31m=[32m"true"[31m
+              [33mclass[31m=[32m"lucide lucide-circle-check text-green-500"[31m
+              [33mfill[31m=[32m"none"[31m
+              [33mheight[31m=[32m"24"[31m
+              [33mstroke[31m=[32m"currentColor"[31m
+              [33mstroke-linecap[31m=[32m"round"[31m
+              [33mstroke-linejoin[31m=[32m"round"[31m
+              [33mstroke-width[31m=[32m"2"[31m
+              [33mviewBox[31m=[32m"0 0 24 24"[31m
+              [33mwidth[31m=[32m"24"[31m
+              [33mxmlns[31m=[32m"http://www.w3.org/2000/svg"[31m
+            [36m>[31m
+              [36m<circle[31m
+                [33mcx[31m=[32m"12"[31m
+                [33mcy[31m=[32m"12"[31m
+                [33mr[31m=[32m"10"[31m
+              [36m/>[31m
+              [36m<path[31m
+                [33md[31m=[32m"m9 12 2 2 4-4"[31m
+              [36m/>[31m
+            [36m</svg>[31m
+          [36m</div>[31m
+        [36m</div>[31m
+      [36m</div>[31m
+    [36m</div>[31m
+  [36m</div>[31m
+[36m</body>[31m[39m
+ [33m❯[39m src/components/SwimlaneEditor.test.tsx [2m ([22m[2m3 tests[22m [2m|[22m [31m1 failed[39m[2m)[22m[90m 191[2mms[22m[39m
+[31m   [33m❯[31m src/components/SwimlaneEditor.test.tsx[2m > [22mSwimlaneEditor[2m > [22mrenders semantic proxy steps with badge[39m
+[31m     → Unable to find an element with the text: Provision Hardware. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[31m
+  [36m<div>[31m
+    [36m<div[31m
+      [33mclass[31m=[32m"swimlane-editor flex flex-col h-full bg-slate-900 text-slate-100 p-4"[31m
+    [36m>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"toolbar flex justify-between items-center mb-6"[31m
+      [36m>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"flex items-center gap-4"[31m
+        [36m>[31m
+          [36m<div>[31m
+            [36m<h1[31m
+              [33mclass[31m=[32m"text-xl font-bold"[31m
+            [36m>[31m
+              [0mProcess Designer[0m
+            [36m</h1>[31m
+            [36m<p[31m
+              [33mclass[31m=[32m"text-xs text-slate-500"[31m
+            [36m>[31m
+              [0mEdit and validate your workflow.[0m
+            [36m</p>[31m
+          [36m</div>[31m
+        [36m</div>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"actions flex gap-2"[31m
+        [36m>[31m
+          [36m<button[31m
+            [33mclass[31m=[32m"px-3 py-1 bg-slate-800 border border-slate-700 rounded text-sm hover:bg-slate-700"[31m
+          [36m>[31m
+            [0m+ Add Step[0m
+          [36m</button>[31m
+          [36m<button[31m
+            [33mclass[31m=[32m"px-3 py-1 rounded text-sm font-medium bg-green-600 hover:bg-green-500"[31m
+          [36m>[31m
+            [0mValidate & Save[0m
+          [36m</button>[31m
+        [36m</div>[31m
+      [36m</div>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"mb-4"[31m
+      [36m>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"bg-amber-900/20 border-b border-amber-900/50 p-3 animate-in slide-in-from-top-2"[31m
+        [36m>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"flex items-start gap-3"[31m
+          [36m>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"p-2 bg-amber-900/30 rounded-lg shrink-0"[31m
+            [36m>[31m
+              [36m<svg[31m
+                [33maria-hidden[31m=[32m"true"[31m
+                [33mclass[31m=[32m"lucide lucide-triangle-alert text-amber-500"[31m
+                [33mfill[31m=[32m"none"[31m
+                [33mheight[31m=[32m"20"[31m
+                [33mstroke[31m=[32m"currentColor"[31m
+                [33mstroke-linecap[31m=[32m"round"[31m
+                [33mstroke-linejoin[31m=[32m"round"[31m
+                [33mstroke-width[31m=[32m"2"[31m
+                [33mviewBox[31m=[32m"0 0 24 24"[31m
+                [33mwidth[31m=[32m"20"[31m
+                [33mxmlns[31m=[32m"http://www.w3.org/2000/svg"[31m
+              [36m>[31m
+                [36m<path[31m
+                  [33md[31m=[32m"m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"[31m
+                [36m/>[31m
+                [36m<path[31m
+                  [33md[31m=[32m"M12 9v4"[31m
+                [36m/>[31m
+                [36m<path[31m
+                  [33md[31m=[32m"M12 17h.01"[31m
+                [36m/>[31m
+              [36m</svg>[31m
+            [36m</div>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"flex-1"[31m
+            [36m>[31m
+              [36m<h3[31m
+                [33mclass[31m=[32m"text-sm font-bold text-amber-200 mb-1"[31m
+              [36m>[31m
+                [0mGovernance Drift Detected[0m
+              [36m</h3>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-xs text-amber-400/80 mb-3"[31m
+              [36m>[31m
+                [0mThis process has drifted from current organizational policy.[0m
+              [36m</p>[31m
+              [36m<div[31m
+                [33mclass[31m=[32m"space-y-2"[31m
+              [36m>[31m
+                [36m<div[31m
+                  [33mclass[31m=[32m"flex items-center justify-between bg-amber-950/40 rounded p-2 border border-amber-900/30"[31m
+                [36m>[31m
+                  [36m<div[31m
+                    [33mclass[31m=[32m"flex items-center gap-2 overflow-hidden"[31m
+                  [36m>[31m
+                    [36m<svg[31m
+                      [33maria-hidden[31m=[32m"true"[31m
+                      [33mclass[31m=[32m"lucide lucide-info text-blue-400 shrink-0"[31m
+                      [33mfill[31m=[32m"none"[31m
+                      [33mheight[31m=[32m"14"[31m
+                      [33mstroke[31m=[32m"currentColor"[31m
+                      [33mstroke-linecap[31m=[32m"round"[31m
+                      [33mstroke-linejoin[31m=[32m"round"[31m
+                      [33mstroke-width[31m=[32m"2"[31m
+                      [33mviewBox[31m=[32m"0 0 24 24"[31m
+                      [33mwidth[31m=[32m"14"[31m
+                      [33mxmlns[31m=[32m"http://www.w3.org/2000/svg"[31m
+                    [36m>[31m
+                      [36m<circle[31m
+                        [33mcx[31m=[32m"12"[31m
+                        [33mcy[31m=[32m"12"[31m
+                        [33mr[31m=[32m"10"[31m
+                      [36m/>[31m
+                      [36m<path[31m
+                        [33md[31m=[32m"M12 16v-4"[31m
+                      [36m/>[31m
+                      [36m<path[31m
+                        [33md[31m=[32m"M12 8h.01"[31m
+                      [36m/>[31m
+                    [36m</svg>[31m
+                    [36m<span[31m
+                      [33mclass[31m=[32m"text-xs text-slate-300 truncate"[31m
+                    [36m>[31m
+                      [0mHigh priority obligation obl-1 ("The Operations Officer must review all mission plans within 24 hours of submission.") assigned to pos-2 is not linked.[0m
+                    [36m</span>[31m
+                  [36m</div>[31m
+                  [36m<button[31m
+                    [33mclass[31m=[32m"text-[10px] font-bold text-amber-500 hover:text-amber-300 flex items-center gap-1 ml-2 whitespace-nowrap"[31m
+                  [36m>[31m
+                    [0mFIX [0m
+                    [36m<svg[31m
+                      [33maria-hidden[31m=[32m"true"[31m
+                      [33mclass[31m=[32m"lucide lucide-arrow-right"[31m
+                      [33mfill[31m=[32m"none"[31m
+                      [33mheight[31m=[32m"10"[31m
+                      [33mstroke[31m=[32m"currentColor"[31m
+                      [33mstroke-linecap[31m=[32m"round"[31m
+                      [33mstroke-linejoin[31m=[32m"round"[31m
+                      [33mstroke-width[31m=[32m"2"[31m
+                      [33mviewBox[31m=[32m"0 0 24 24"[31m
+                      [33mwidth[31m=[32m"10"[31m
+                      [33mxmlns[31m=[32m"http://www.w3.org/2000/svg"[31m
+                    [36m>[31m
+                      [36m<path[31m
+                        [33md[31m=[32m"M5 12h14"[31m
+                      [36m/>[31m
+                      [36m<path[31m
+ ...[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[1m[7m Failed Tests 3 [27m[22m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[31m[1m[7m FAIL [27m[22m[39m src/components/ProcessSearch.test.tsx[2m > [22mProcessSearch[2m > [22mshows DRIFT badge for drifting process
+[31m[1mTestingLibraryElementError[22m: Unable to find an element with the text: DRIFT. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[31m
+  [36m<div>[31m
+    [36m<div[31m
+      [33mclass[31m=[32m"process-search p-4"[31m
+    [36m>[31m
+      [36m<h1[31m
+        [33mclass[31m=[32m"text-xl font-bold mb-4 text-slate-100"[31m
+      [36m>[31m
+        [0mHow Do I...[0m
+      [36m</h1>[31m
+      [36m<input[31m
+        [33mclass[31m=[32m"search-input w-full p-2 rounded bg-slate-900 border border-slate-700 text-slate-100 mb-6 focus:outline-none focus:border-blue-500"[31m
+        [33mplaceholder[31m=[32m"Search for a process..."[31m
+        [33mtype[31m=[32m"text"[31m
+        [33mvalue[31m=[32m""[31m
+      [36m/>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"results-list"[31m
+      [36m>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"process-card flex justify-between items-center p-3 mb-2 bg-slate-800 rounded hover:bg-slate-700 cursor-pointer border border-slate-700"[31m
+        [36m>[31m
+          [36m<div>[31m
+            [36m<h3[31m
+              [33mclass[31m=[32m"flex items-center gap-2 font-bold text-slate-200"[31m
+            [36m>[31m
+              [0mTest Process[0m
+            [36m</h3>[31m
+            [36m<p[31m
+              [33mclass[31m=[32m"text-sm text-slate-400"[31m
+            [36m>[31m
+              [0mDescription[0m
+            [36m</p>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"text-right"[31m
+          [36m>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"status-badge block mb-1 text-xs px-2 py-1 rounded bg-green-900 text-green-300"[31m
+            [36m>[31m
+              [0mactive[0m
+            [36m</span>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"step-count text-xs text-slate-500"[31m
+            [36m>[31m
+              [0m0[0m
+              [0m Steps[0m
+            [36m</span>[31m
+          [36m</div>[31m
+        [36m</div>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"process-card flex justify-between items-center p-3 mb-2 bg-slate-800 rounded hover:bg-slate-700 cursor-pointer border border-slate-700"[31m
+        [36m>[31m
+          [36m<div>[31m
+            [36m<h3[31m
+              [33mclass[31m=[32m"flex items-center gap-2 font-bold text-slate-200"[31m
+            [36m>[31m
+              [0mNew Operational Workflow[0m
+            [36m</h3>[31m
+            [36m<p[31m
+              [33mclass[31m=[32m"text-sm text-slate-400"[31m
+            [36m>[31m
+              [0mDraft process[0m
+            [36m</p>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"text-right"[31m
+          [36m>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"status-badge block mb-1 text-xs px-2 py-1 rounded bg-slate-700 text-slate-400"[31m
+            [36m>[31m
+              [0mdraft[0m
+            [36m</span>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"step-count text-xs text-slate-500"[31m
+            [36m>[31m
+              [0m0[0m
+              [0m Steps[0m
+            [36m</span>[31m
+          [36m</div>[31m
+        [36m</div>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"process-card flex justify-between items-center p-3 mb-2 bg-slate-800 rounded hover:bg-slate-700 cursor-pointer border border-slate-700"[31m
+        [36m>[31m
+          [36m<div>[31m
+            [36m<h3[31m
+              [33mclass[31m=[32m"flex items-center gap-2 font-bold text-slate-200"[31m
+            [36m>[31m
+              [0mOnboarding Checklist[0m
+            [36m</h3>[31m
+            [36m<p[31m
+              [33mclass[31m=[32m"text-sm text-slate-400"[31m
+            [36m>[31m
+              [0mHR Onboarding[0m
+            [36m</p>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"text-right"[31m
+          [36m>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"status-badge block mb-1 text-xs px-2 py-1 rounded bg-green-900 text-green-300"[31m
+            [36m>[31m
+              [0mactive[0m
+            [36m</span>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"step-count text-xs text-slate-500"[31m
+            [36m>[31m
+              [0m0[0m
+              [0m Steps[0m
+            [36m</span>[31m
+          [36m</div>[31m
+        [36m</div>[31m
+      [36m</div>[31m
+    [36m</div>[31m
+  [36m</div>[31m
+[36m</body>[31m[39m
+[90m [2m❯[22m Object.getElementError ../../node_modules/@testing-library/dom/dist/config.js:[2m37:19[22m[39m
+[90m [2m❯[22m ../../node_modules/@testing-library/dom/dist/query-helpers.js:[2m76:38[22m[39m
+[90m [2m❯[22m ../../node_modules/@testing-library/dom/dist/query-helpers.js:[2m109:15[22m[39m
+[36m [2m❯[22m src/components/ProcessSearch.test.tsx:[2m28:36[22m[39m
+    [90m 26| [39m
+    [90m 27| [39m        [90m// proc-1 is mocked to have drift[39m
+    [90m 28| [39m        [35mconst[39m driftBadges [33m=[39m screen[33m.[39m[34mgetAllByText[39m([32m'DRIFT'[39m)[33m;[39m
+    [90m   | [39m                                   [31m^[39m
+    [90m 29| [39m        [34mexpect[39m(driftBadges[33m.[39mlength)[33m.[39m[34mtoBeGreaterThan[39m([34m0[39m)[33m;[39m
+    [90m 30| [39m    })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯[22m[39m
+
+[31m[1m[7m FAIL [27m[22m[39m src/components/TimelineViewer.test.tsx[2m > [22mTimelineViewer[2m > [22mrenders process title and steps
+[31m[1mTestingLibraryElementError[22m[39m: Unable to find an element with the text: Second Step. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"flex flex-col h-full bg-slate-900 text-slate-100 overflow-hidden"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex items-center justify-between px-6 py-4 border-b border-slate-700 bg-slate-800"[39m
+      [36m>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"flex items-center gap-2 text-slate-400 hover:text-white transition-colors"[39m
+        [36m>[39m
+          [0m← Back[0m
+        [36m</button>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"text-center"[39m
+        [36m>[39m
+          [36m<h1[39m
+            [33mclass[39m=[32m"text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400"[39m
+          [36m>[39m
+            [0mTest Process[0m
+          [36m</h1>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"text-xs text-slate-500 uppercase tracking-widest mt-1"[39m
+          [36m>[39m
+            [0mTimeline View[0m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex gap-3"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded text-sm font-medium transition-colors"[39m
+          [36m>[39m
+            [0mEdit Process[0m
+          [36m</button>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex-1 overflow-y-auto p-6 md:p-12 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"max-w-3xl mx-auto relative"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"absolute left-8 top-4 bottom-0 w-0.5 bg-slate-700"[39m
+          [36m/>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"relative pl-24 pb-12 group animate-in slide-in-from-bottom-4 duration-500"[39m
+            [33mstyle[39m=[32m"animation-delay: 0ms;"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"
+            step-card-component relative bg-slate-800/50 border border-slate-700 rounded-lg p-5
+            hover:border-slate-600 hover:bg-slate-800 transition-all shadow-lg backdrop-blur-sm
+            
+        "[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"absolute -top-3 -left-3 w-8 h-8 bg-slate-800 border-2 border-blue-500 rounded-full flex items-center justify-center font-bold text-blue-400 shadow-md z-10 text-sm"[39m
+              [36m>[39m
+                [0m1[0m
+              [36m</div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center justify-between mb-3 border-b border-slate-700/50 pb-3 pl-4"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-400"[39m
+                [36m>[39m
+                  [36m<svg[39m
+                    [33maria-hidden[39m=[32m"true"[39m
+                    [33mclass[39m=[32m"lucide lucide-user text-blue-400"[39m
+                    [33mfill[39m=[32m"none"[39m
+                    [33mheight[39m=[32m"14"[39m
+                    [33mstroke[39m=[32m"currentColor"[39m
+                    [33mstroke-linecap[39m=[32m"round"[39m
+                    [33mstroke-linejoin[39m=[32m"round"[39m
+                    [33mstroke-width[39m=[32m"2"[39m
+                    [33mviewBox[39m=[32m"0 0 24 24"[39m
+                    [33mwidth[39m=[32m"14"[39m
+                    [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                  [36m>[39m
+                    [36m<path[39m
+                      [33md[39m=[32m"M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"[39m
+                    [36m/>[39m
+                    [36m<circle[39m
+                      [33mcx[39m=[32m"12"[39m
+                      [33mcy[39m=[32m"7"[39m
+                      [33mr[39m=[32m"4"[39m
+                    [36m/>[39m
+                  [36m</svg>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"text-blue-300"[39m
+                  [36m>[39m
+                    [0mCommand Duty Officer[0m
+                  [36m</span>[39m
+                [36m</div>[39m
+              [36m</div>[39m
+              [36m<h3[39m
+                [33mclass[39m=[32m"text-lg font-semibold text-slate-100 mb-2"[39m
+              [36m>[39m
+                [0mFirst Step[0m
+              [36m</h3>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"text-slate-400 text-sm leading-relaxed mb-4"[39m
+              [36m>[39m
+                [0mDo the first thing[0m
+              [36m</p>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"relative pl-24 pb-12 group animate-in slide-in-from-bottom-4 duration-500"[39m
+            [33mstyle[39m=[32m"animation-delay: 100ms;"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"
+            step-card-component relative bg-slate-800/50 border border-slate-700 rounded-lg p-5
+            hover:border-slate-600 hover:bg-slate-800 transition-all shadow-lg backdrop-blur-sm
+            
+        "[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"absolute -top-3 -left-3 w-8 h-8 bg-slate-800 border-2 border-blue-500 rounded-full flex items-center justify-center font-bold text-blue-400 shadow-md z-10 text-sm"[39m
+              [36m>[39m
+                [0m2[0m
+              [36m</div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center justify-between mb-3 border-b border-slate-700/50 pb-3 pl-4"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-400"[39m
+                [36m>[39m
+                  [36m<svg[39m
+                    [33maria-hidden[39m=[32m"true"[39m
+                    [33mclass[39m=[32m"lucide lucide-user text-blue-400"[39m
+                    [33mfill[39m=[32m"none"[39m
+                    [33mheight[39m=[32m"14"[39m
+                    [33mstroke[39m=[32m"currentColor"[39m
+                    [33mstroke-linecap[39m=[32m"round"[39m
+                    [33mstroke-linejoin[39m=[32m"round"[39m
+                    [33mstroke-width[39m=[32m"2"[39m
+                    [33mviewBox[39m=[32m"0 0 24 24"[39m
+                    [33mwidth[39m=[32m"14"[39m
+                    [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                  [36m>[39m
+                    [36m<path[39m
+                      [33md[39m=[32m"M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"[39m
+                    [36m/>[39m
+                    [36m<circle[39m
+                      [33mcx[39m=[32m"12"[39m
+                      [33mcy[39m=[32m"7"[39m
+                      [33mr[39m=[32m"4"[39m
+                    [36m/>[39m
+                  [36m</svg>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"text-blue-300"[39m
+                  [36m>[39m
+                    [0mpos-2[0m
+                  [36m</span>[39m
+                [36m</div>[39m
+              [36m</div>[39m
+              [36m<h3[39m
+                [33mclass[39m=[32m"text-lg font-semibold text-slate-100 mb-2"[39m
+              [36m>[39m
+                [0mStep 2[0m
+              [36m</h3>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"text-slate-400 text-sm leading-relaxed mb-4"[39m
+              [36m>[39m
+                [0mStep 2 description[0m
+              [36m</p>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"absolute left-4 -bottom-1 w-9 h-9 bg-slate-800 border-2 border-slate-600 rounded-full flex items-center justify-center z-10"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-circle-check text-green-500"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<circle[39m
+                [33mcx[39m=[32m"12"[39m
+                [33mcy[39m=[32m"12"[39m
+                [33mr[39m=[32m"10"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m9 12 2 2 4-4"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+[90m [2m❯[22m Object.getElementError ../../node_modules/@testing-library/dom/dist/config.js:[2m37:19[22m[39m
+[90m [2m❯[22m ../../node_modules/@testing-library/dom/dist/query-helpers.js:[2m76:38[22m[39m
+[90m [2m❯[22m ../../node_modules/@testing-library/dom/dist/query-helpers.js:[2m52:17[22m[39m
+[90m [2m❯[22m ../../node_modules/@testing-library/dom/dist/query-helpers.js:[2m95:19[22m[39m
+[36m [2m❯[22m src/components/TimelineViewer.test.tsx:[2m52:23[22m[39m
+    [90m 50| [39m        [34mexpect[39m(screen[33m.[39m[34mgetByText[39m([32m'Test Process'[39m))[33m.[39m[34mtoBeInTheDocument[39m()[33m;[39m
+    [90m 51| [39m        [34mexpect[39m(screen[33m.[39m[34mgetByText[39m([32m'First Step'[39m))[33m.[39m[34mtoBeInTheDocument[39m()[33m;[39m
+    [90m 52| [39m        [34mexpect[39m(screen[33m.[39m[34mgetByText[39m([32m'Second Step'[39m))[33m.[39m[34mtoBeInTheDocument[39m()[33m;[39m
+    [90m   | [39m                      [31m^[39m
+    [90m 53| [39m        [90m// Check for step numbers[39m
+    [90m 54| [39m        [34mexpect[39m(screen[33m.[39m[34mgetByText[39m([32m'1'[39m))[33m.[39m[34mtoBeInTheDocument[39m()[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯[22m[39m
+
+[31m[1m[7m FAIL [27m[22m[39m src/components/SwimlaneEditor.test.tsx[2m > [22mSwimlaneEditor[2m > [22mrenders semantic proxy steps with badge
+[31m[1mTestingLibraryElementError[22m[39m: Unable to find an element with the text: Provision Hardware. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"swimlane-editor flex flex-col h-full bg-slate-900 text-slate-100 p-4"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"toolbar flex justify-between items-center mb-6"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center gap-4"[39m
+        [36m>[39m
+          [36m<div>[39m
+            [36m<h1[39m
+              [33mclass[39m=[32m"text-xl font-bold"[39m
+            [36m>[39m
+              [0mProcess Designer[0m
+            [36m</h1>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"text-xs text-slate-500"[39m
+            [36m>[39m
+              [0mEdit and validate your workflow.[0m
+            [36m</p>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"actions flex gap-2"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"px-3 py-1 bg-slate-800 border border-slate-700 rounded text-sm hover:bg-slate-700"[39m
+          [36m>[39m
+            [0m+ Add Step[0m
+          [36m</button>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"px-3 py-1 rounded text-sm font-medium bg-green-600 hover:bg-green-500"[39m
+          [36m>[39m
+            [0mValidate & Save[0m
+          [36m</button>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"mb-4"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"bg-amber-900/20 border-b border-amber-900/50 p-3 animate-in slide-in-from-top-2"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-start gap-3"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"p-2 bg-amber-900/30 rounded-lg shrink-0"[39m
+            [36m>[39m
+              [36m<svg[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mclass[39m=[32m"lucide lucide-triangle-alert text-amber-500"[39m
+                [33mfill[39m=[32m"none"[39m
+                [33mheight[39m=[32m"20"[39m
+                [33mstroke[39m=[32m"currentColor"[39m
+                [33mstroke-linecap[39m=[32m"round"[39m
+                [33mstroke-linejoin[39m=[32m"round"[39m
+                [33mstroke-width[39m=[32m"2"[39m
+                [33mviewBox[39m=[32m"0 0 24 24"[39m
+                [33mwidth[39m=[32m"20"[39m
+                [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+              [36m>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"[39m
+                [36m/>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M12 9v4"[39m
+                [36m/>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M12 17h.01"[39m
+                [36m/>[39m
+              [36m</svg>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex-1"[39m
+            [36m>[39m
+              [36m<h3[39m
+                [33mclass[39m=[32m"text-sm font-bold text-amber-200 mb-1"[39m
+              [36m>[39m
+                [0mGovernance Drift Detected[0m
+              [36m</h3>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"text-xs text-amber-400/80 mb-3"[39m
+              [36m>[39m
+                [0mThis process has drifted from current organizational policy.[0m
+              [36m</p>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"space-y-2"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex items-center justify-between bg-amber-950/40 rounded p-2 border border-amber-900/30"[39m
+                [36m>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"flex items-center gap-2 overflow-hidden"[39m
+                  [36m>[39m
+                    [36m<svg[39m
+                      [33maria-hidden[39m=[32m"true"[39m
+                      [33mclass[39m=[32m"lucide lucide-info text-blue-400 shrink-0"[39m
+                      [33mfill[39m=[32m"none"[39m
+                      [33mheight[39m=[32m"14"[39m
+                      [33mstroke[39m=[32m"currentColor"[39m
+                      [33mstroke-linecap[39m=[32m"round"[39m
+                      [33mstroke-linejoin[39m=[32m"round"[39m
+                      [33mstroke-width[39m=[32m"2"[39m
+                      [33mviewBox[39m=[32m"0 0 24 24"[39m
+                      [33mwidth[39m=[32m"14"[39m
+                      [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                    [36m>[39m
+                      [36m<circle[39m
+                        [33mcx[39m=[32m"12"[39m
+                        [33mcy[39m=[32m"12"[39m
+                        [33mr[39m=[32m"10"[39m
+                      [36m/>[39m
+                      [36m<path[39m
+                        [33md[39m=[32m"M12 16v-4"[39m
+                      [36m/>[39m
+                      [36m<path[39m
+                        [33md[39m=[32m"M12 8h.01"[39m
+                      [36m/>[39m
+                    [36m</svg>[39m
+                    [36m<span[39m
+                      [33mclass[39m=[32m"text-xs text-slate-300 truncate"[39m
+                    [36m>[39m
+                      [0mHigh priority obligation obl-1 ("The Operations Officer must review all mission plans within 24 hours of submission.") assigned to pos-2 is not linked.[0m
+                    [36m</span>[39m
+                  [36m</div>[39m
+                  [36m<button[39m
+                    [33mclass[39m=[32m"text-[10px] font-bold text-amber-500 hover:text-amber-300 flex items-center gap-1 ml-2 whitespace-nowrap"[39m
+                  [36m>[39m
+                    [0mFIX [0m
+                    [36m<svg[39m
+                      [33maria-hidden[39m=[32m"true"[39m
+                      [33mclass[39m=[32m"lucide lucide-arrow-right"[39m
+                      [33mfill[39m=[32m"none"[39m
+                      [33mheight[39m=[32m"10"[39m
+                      [33mstroke[39m=[32m"currentColor"[39m
+                      [33mstroke-linecap[39m=[32m"round"[39m
+                      [33mstroke-linejoin[39m=[32m"round"[39m
+                      [33mstroke-width[39m=[32m"2"[39m
+                      [33mviewBox[39m=[32m"0 0 24 24"[39m
+                      [33mwidth[39m=[32m"10"[39m
+                      [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                    [36m>[39m
+                      [36m<path[39m
+                        [33md[39m=[32m"M5 12h14"[39m
+                      [36m/>[39m
+                      [36m<path[39m
+ ...
+[90m [2m❯[22m Object.getElementError ../../node_modules/@testing-library/dom/dist/config.js:[2m37:19[22m[39m
+[90m [2m❯[22m ../../node_modules/@testing-library/dom/dist/query-helpers.js:[2m76:38[22m[39m
+[90m [2m❯[22m ../../node_modules/@testing-library/dom/dist/query-helpers.js:[2m52:17[22m[39m
+[90m [2m❯[22m ../../node_modules/@testing-library/dom/dist/query-helpers.js:[2m95:19[22m[39m
+[36m [2m❯[22m src/components/SwimlaneEditor.test.tsx:[2m20:23[22m[39m
+    [90m 18| [39m            id[33m:[39m [32m'proxy-proc'[39m[33m,[39m
+    [90m 19| [39m            type[33m:[39m [32m'process'[39m[33m,[39m
+    [90m 20| [39m            status[33m:[39m [32m'active'[39m[33m,[39m
+    [90m   | [39m                      [31m^[39m
+    [90m 21| [39m            properties[33m:[39m {
+    [90m 22| [39m                name[33m:[39m [32m'Proxy Process'[39m[33m,[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯[22m[39m
+
+[2m Test Files [22m [1m[31m3 failed[39m[22m[2m | [22m[1m[32m9 passed[39m[22m[90m (12)[39m
+[2m      Tests [22m [1m[31m3 failed[39m[22m[2m | [22m[1m[32m34 passed[39m[22m[90m (37)[39m
+[2m   Start at [22m 10:33:10
+[2m   Duration [22m 6.00s
+
+
+[1m[7m[31m FAIL [39m[27m[22m[31m Tests failed. Watching for file changes...[39m
+       [2mpress [22m[1mh[22m[2m to show help[22m[2m, [22m[2mpress [22m[1mq[22m[2m to quit[22m
+[3Jc
+[7m[1m[34m RERUN [39m[22m[27m[2m src/components/SwimlaneEditor.test.tsx[22m [34mx2[39m
+
+ [32m✓[39m src/components/SwimlaneEditor.test.tsx [2m ([22m[2m3 tests[22m[2m)[22m[90m 159[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m3 passed[39m[22m[90m (3)[39m
+[2m   Start at [22m 10:33:13
+[2m   Duration [22m 592ms
+
+
+[1m[7m[32m PASS [39m[27m[22m[32m Waiting for file changes...[39m
+       [2mpress [22m[1mh[22m[2m to show help[22m[2m, [22m[2mpress [22m[1mq[22m[2m to quit[22m
+       [34mrerun x2[39m
+[2K[1A[2K[G       [90mrerun x2[39m
+[2K[1A[2K[G       [2m[90mrerun x2[39m[22m
+[2K[1A[2K[G[3Jc
+[7m[1m[34m RERUN [39m[22m[27m[2m src/setupTests.ts[22m
+
+ [32m✓[39m src/utils/ProcessValidator.test.ts [2m ([22m[2m4 tests[22m[2m)[22m[90m 21[2mms[22m[39m
+ [32m✓[39m src/components/health/ProcessHealthDashboard.test.tsx [2m ([22m[2m2 tests[22m[2m)[22m[90m 87[2mms[22m[39m
+ [32m✓[39m src/simple.test.ts [2m ([22m[2m1 test[22m[2m)[22m[90m 5[2mms[22m[39m
+ [32m✓[39m src/utils/health-calculator.test.ts [2m ([22m[2m4 tests[22m[2m)[22m[90m 14[2mms[22m[39m
+ [32m✓[39m src/hooks/useDriftDetection.test.ts [2m ([22m[2m3 tests[22m[2m)[22m[90m 34[2mms[22m[39m
+ [32m✓[39m src/components/alerts/DriftAlert.test.tsx [2m ([22m[2m3 tests[22m[2m)[22m[90m 66[2mms[22m[39m
+ [32m✓[39m src/components/editor/OwnerPicker.test.tsx [2m ([22m[2m3 tests[22m[2m)[22m[90m 117[2mms[22m[39m
+ [32m✓[39m src/components/editor/ObligationLinker.test.tsx [2m ([22m[2m3 tests[22m[2m)[22m[90m 99[2mms[22m[39m
+ [33m❯[39m src/components/TimelineViewer.test.tsx [2m ([22m[2m3 tests[22m [2m|[22m [31m1 failed[39m[2m)[22m[90m 95[2mms[22m[39m
+[31m   [33m❯[31m src/components/TimelineViewer.test.tsx[2m > [22mTimelineViewer[2m > [22mrenders process title and steps[39m
+[31m     → Unable to find an element with the text: Second Step. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[31m
+  [36m<div>[31m
+    [36m<div[31m
+      [33mclass[31m=[32m"flex flex-col h-full bg-slate-900 text-slate-100 overflow-hidden"[31m
+    [36m>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"flex items-center justify-between px-6 py-4 border-b border-slate-700 bg-slate-800"[31m
+      [36m>[31m
+        [36m<button[31m
+          [33mclass[31m=[32m"flex items-center gap-2 text-slate-400 hover:text-white transition-colors"[31m
+        [36m>[31m
+          [0m← Back[0m
+        [36m</button>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"text-center"[31m
+        [36m>[31m
+          [36m<h1[31m
+            [33mclass[31m=[32m"text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400"[31m
+          [36m>[31m
+            [0mTest Process[0m
+          [36m</h1>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"text-xs text-slate-500 uppercase tracking-widest mt-1"[31m
+          [36m>[31m
+            [0mTimeline View[0m
+          [36m</div>[31m
+        [36m</div>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"flex gap-3"[31m
+        [36m>[31m
+          [36m<button[31m
+            [33mclass[31m=[32m"px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded text-sm font-medium transition-colors"[31m
+          [36m>[31m
+            [0mEdit Process[0m
+          [36m</button>[31m
+        [36m</div>[31m
+      [36m</div>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"flex-1 overflow-y-auto p-6 md:p-12 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent"[31m
+      [36m>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"max-w-3xl mx-auto relative"[31m
+        [36m>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"absolute left-8 top-4 bottom-0 w-0.5 bg-slate-700"[31m
+          [36m/>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"relative pl-24 pb-12 group animate-in slide-in-from-bottom-4 duration-500"[31m
+            [33mstyle[31m=[32m"animation-delay: 0ms;"[31m
+          [36m>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"
+            step-card-component relative bg-slate-800/50 border border-slate-700 rounded-lg p-5
+            hover:border-slate-600 hover:bg-slate-800 transition-all shadow-lg backdrop-blur-sm
+            
+        "[31m
+            [36m>[31m
+              [36m<div[31m
+                [33mclass[31m=[32m"absolute -top-3 -left-3 w-8 h-8 bg-slate-800 border-2 border-blue-500 rounded-full flex items-center justify-center font-bold text-blue-400 shadow-md z-10 text-sm"[31m
+              [36m>[31m
+                [0m1[0m
+              [36m</div>[31m
+              [36m<div[31m
+                [33mclass[31m=[32m"flex items-center justify-between mb-3 border-b border-slate-700/50 pb-3 pl-4"[31m
+              [36m>[31m
+                [36m<div[31m
+                  [33mclass[31m=[32m"flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-400"[31m
+                [36m>[31m
+                  [36m<svg[31m
+                    [33maria-hidden[31m=[32m"true"[31m
+                    [33mclass[31m=[32m"lucide lucide-user text-blue-400"[31m
+                    [33mfill[31m=[32m"none"[31m
+                    [33mheight[31m=[32m"14"[31m
+                    [33mstroke[31m=[32m"currentColor"[31m
+                    [33mstroke-linecap[31m=[32m"round"[31m
+                    [33mstroke-linejoin[31m=[32m"round"[31m
+                    [33mstroke-width[31m=[32m"2"[31m
+                    [33mviewBox[31m=[32m"0 0 24 24"[31m
+                    [33mwidth[31m=[32m"14"[31m
+                    [33mxmlns[31m=[32m"http://www.w3.org/2000/svg"[31m
+                  [36m>[31m
+                    [36m<path[31m
+                      [33md[31m=[32m"M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"[31m
+                    [36m/>[31m
+                    [36m<circle[31m
+                      [33mcx[31m=[32m"12"[31m
+                      [33mcy[31m=[32m"7"[31m
+                      [33mr[31m=[32m"4"[31m
+                    [36m/>[31m
+                  [36m</svg>[31m
+                  [36m<span[31m
+                    [33mclass[31m=[32m"text-blue-300"[31m
+                  [36m>[31m
+                    [0mCommand Duty Officer[0m
+                  [36m</span>[31m
+                [36m</div>[31m
+              [36m</div>[31m
+              [36m<h3[31m
+                [33mclass[31m=[32m"text-lg font-semibold text-slate-100 mb-2"[31m
+              [36m>[31m
+                [0mFirst Step[0m
+              [36m</h3>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-slate-400 text-sm leading-relaxed mb-4"[31m
+              [36m>[31m
+                [0mDo the first thing[0m
+              [36m</p>[31m
+            [36m</div>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"relative pl-24 pb-12 group animate-in slide-in-from-bottom-4 duration-500"[31m
+            [33mstyle[31m=[32m"animation-delay: 100ms;"[31m
+          [36m>[31m
+            [36m<div[31m
+              [33mclass[31m=[32m"
+            step-card-component relative bg-slate-800/50 border border-slate-700 rounded-lg p-5
+            hover:border-slate-600 hover:bg-slate-800 transition-all shadow-lg backdrop-blur-sm
+            
+        "[31m
+            [36m>[31m
+              [36m<div[31m
+                [33mclass[31m=[32m"absolute -top-3 -left-3 w-8 h-8 bg-slate-800 border-2 border-blue-500 rounded-full flex items-center justify-center font-bold text-blue-400 shadow-md z-10 text-sm"[31m
+              [36m>[31m
+                [0m2[0m
+              [36m</div>[31m
+              [36m<div[31m
+                [33mclass[31m=[32m"flex items-center justify-between mb-3 border-b border-slate-700/50 pb-3 pl-4"[31m
+              [36m>[31m
+                [36m<div[31m
+                  [33mclass[31m=[32m"flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-400"[31m
+                [36m>[31m
+                  [36m<svg[31m
+                    [33maria-hidden[31m=[32m"true"[31m
+                    [33mclass[31m=[32m"lucide lucide-user text-blue-400"[31m
+                    [33mfill[31m=[32m"none"[31m
+                    [33mheight[31m=[32m"14"[31m
+                    [33mstroke[31m=[32m"currentColor"[31m
+                    [33mstroke-linecap[31m=[32m"round"[31m
+                    [33mstroke-linejoin[31m=[32m"round"[31m
+                    [33mstroke-width[31m=[32m"2"[31m
+                    [33mviewBox[31m=[32m"0 0 24 24"[31m
+                    [33mwidth[31m=[32m"14"[31m
+                    [33mxmlns[31m=[32m"http://www.w3.org/2000/svg"[31m
+                  [36m>[31m
+                    [36m<path[31m
+                      [33md[31m=[32m"M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"[31m
+                    [36m/>[31m
+                    [36m<circle[31m
+                      [33mcx[31m=[32m"12"[31m
+                      [33mcy[31m=[32m"7"[31m
+                      [33mr[31m=[32m"4"[31m
+                    [36m/>[31m
+                  [36m</svg>[31m
+                  [36m<span[31m
+                    [33mclass[31m=[32m"text-blue-300"[31m
+                  [36m>[31m
+                    [0mOperations Officer[0m
+                  [36m</span>[31m
+                [36m</div>[31m
+              [36m</div>[31m
+              [36m<h3[31m
+                [33mclass[31m=[32m"text-lg font-semibold text-slate-100 mb-2"[31m
+              [36m>[31m
+                [0mStep 2[0m
+              [36m</h3>[31m
+              [36m<p[31m
+                [33mclass[31m=[32m"text-slate-400 text-sm leading-relaxed mb-4"[31m
+              [36m>[31m
+                [0mStep 2 description[0m
+              [36m</p>[31m
+            [36m</div>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"absolute left-4 -bottom-1 w-9 h-9 bg-slate-800 border-2 border-slate-600 rounded-full flex items-center justify-center z-10"[31m
+          [36m>[31m
+            [36m<svg[31m
+              [33maria-hidden[31m=[32m"true"[31m
+              [33mclass[31m=[32m"lucide lucide-circle-check text-green-500"[31m
+              [33mfill[31m=[32m"none"[31m
+              [33mheight[31m=[32m"24"[31m
+              [33mstroke[31m=[32m"currentColor"[31m
+              [33mstroke-linecap[31m=[32m"round"[31m
+              [33mstroke-linejoin[31m=[32m"round"[31m
+              [33mstroke-width[31m=[32m"2"[31m
+              [33mviewBox[31m=[32m"0 0 24 24"[31m
+              [33mwidth[31m=[32m"24"[31m
+              [33mxmlns[31m=[32m"http://www.w3.org/2000/svg"[31m
+            [36m>[31m
+              [36m<circle[31m
+                [33mcx[31m=[32m"12"[31m
+                [33mcy[31m=[32m"12"[31m
+                [33mr[31m=[32m"10"[31m
+              [36m/>[31m
+              [36m<path[31m
+                [33md[31m=[32m"m9 12 2 2 4-4"[31m
+              [36m/>[31m
+            [36m</svg>[31m
+          [36m</div>[31m
+        [36m</div>[31m
+      [36m</div>[31m
+    [36m</div>[31m
+  [36m</div>[31m
+[36m</body>[31m[39m
+ [32m✓[39m src/components/SwimlaneViewer.test.tsx [2m ([22m[2m4 tests[22m[2m)[22m[90m 107[2mms[22m[39m
+ [33m❯[39m src/components/ProcessSearch.test.tsx [2m ([22m[2m4 tests[22m [2m|[22m [31m1 failed[39m[2m)[22m[90m 103[2mms[22m[39m
+[31m   [33m❯[31m src/components/ProcessSearch.test.tsx[2m > [22mProcessSearch[2m > [22mshows DRIFT badge for drifting process[39m
+[31m     → Unable to find an element with the text: DRIFT. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[31m
+  [36m<div>[31m
+    [36m<div[31m
+      [33mclass[31m=[32m"process-search p-4"[31m
+    [36m>[31m
+      [36m<h1[31m
+        [33mclass[31m=[32m"text-xl font-bold mb-4 text-slate-100"[31m
+      [36m>[31m
+        [0mHow Do I...[0m
+      [36m</h1>[31m
+      [36m<input[31m
+        [33mclass[31m=[32m"search-input w-full p-2 rounded bg-slate-900 border border-slate-700 text-slate-100 mb-6 focus:outline-none focus:border-blue-500"[31m
+        [33mplaceholder[31m=[32m"Search for a process..."[31m
+        [33mtype[31m=[32m"text"[31m
+        [33mvalue[31m=[32m""[31m
+      [36m/>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"results-list"[31m
+      [36m>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"process-card flex justify-between items-center p-3 mb-2 bg-slate-800 rounded hover:bg-slate-700 cursor-pointer border border-slate-700"[31m
+        [36m>[31m
+          [36m<div>[31m
+            [36m<h3[31m
+              [33mclass[31m=[32m"flex items-center gap-2 font-bold text-slate-200"[31m
+            [36m>[31m
+              [0mTest Process[0m
+            [36m</h3>[31m
+            [36m<p[31m
+              [33mclass[31m=[32m"text-sm text-slate-400"[31m
+            [36m>[31m
+              [0mDescription[0m
+            [36m</p>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"text-right"[31m
+          [36m>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"status-badge block mb-1 text-xs px-2 py-1 rounded bg-green-900 text-green-300"[31m
+            [36m>[31m
+              [0mactive[0m
+            [36m</span>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"step-count text-xs text-slate-500"[31m
+            [36m>[31m
+              [0m2[0m
+              [0m Steps[0m
+            [36m</span>[31m
+          [36m</div>[31m
+        [36m</div>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"process-card flex justify-between items-center p-3 mb-2 bg-slate-800 rounded hover:bg-slate-700 cursor-pointer border border-slate-700"[31m
+        [36m>[31m
+          [36m<div>[31m
+            [36m<h3[31m
+              [33mclass[31m=[32m"flex items-center gap-2 font-bold text-slate-200"[31m
+            [36m>[31m
+              [0mNew Operational Workflow[0m
+            [36m</h3>[31m
+            [36m<p[31m
+              [33mclass[31m=[32m"text-sm text-slate-400"[31m
+            [36m>[31m
+              [0mDraft process[0m
+            [36m</p>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"text-right"[31m
+          [36m>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"status-badge block mb-1 text-xs px-2 py-1 rounded bg-slate-700 text-slate-400"[31m
+            [36m>[31m
+              [0mdraft[0m
+            [36m</span>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"step-count text-xs text-slate-500"[31m
+            [36m>[31m
+              [0m0[0m
+              [0m Steps[0m
+            [36m</span>[31m
+          [36m</div>[31m
+        [36m</div>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"process-card flex justify-between items-center p-3 mb-2 bg-slate-800 rounded hover:bg-slate-700 cursor-pointer border border-slate-700"[31m
+        [36m>[31m
+          [36m<div>[31m
+            [36m<h3[31m
+              [33mclass[31m=[32m"flex items-center gap-2 font-bold text-slate-200"[31m
+            [36m>[31m
+              [0mOnboarding Checklist[0m
+            [36m</h3>[31m
+            [36m<p[31m
+              [33mclass[31m=[32m"text-sm text-slate-400"[31m
+            [36m>[31m
+              [0mHR Onboarding[0m
+            [36m</p>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"text-right"[31m
+          [36m>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"status-badge block mb-1 text-xs px-2 py-1 rounded bg-green-900 text-green-300"[31m
+            [36m>[31m
+              [0mactive[0m
+            [36m</span>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"step-count text-xs text-slate-500"[31m
+            [36m>[31m
+              [0m0[0m
+              [0m Steps[0m
+            [36m</span>[31m
+          [36m</div>[31m
+        [36m</div>[31m
+      [36m</div>[31m
+    [36m</div>[31m
+  [36m</div>[31m
+[36m</body>[31m[39m
+ [32m✓[39m src/components/SwimlaneEditor.test.tsx [2m ([22m[2m3 tests[22m[2m)[22m[90m 226[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[1m[7m Failed Tests 2 [27m[22m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[31m[1m[7m FAIL [27m[22m[39m src/components/ProcessSearch.test.tsx[2m > [22mProcessSearch[2m > [22mshows DRIFT badge for drifting process
+[31m[1mTestingLibraryElementError[22m: Unable to find an element with the text: DRIFT. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[31m
+  [36m<div>[31m
+    [36m<div[31m
+      [33mclass[31m=[32m"process-search p-4"[31m
+    [36m>[31m
+      [36m<h1[31m
+        [33mclass[31m=[32m"text-xl font-bold mb-4 text-slate-100"[31m
+      [36m>[31m
+        [0mHow Do I...[0m
+      [36m</h1>[31m
+      [36m<input[31m
+        [33mclass[31m=[32m"search-input w-full p-2 rounded bg-slate-900 border border-slate-700 text-slate-100 mb-6 focus:outline-none focus:border-blue-500"[31m
+        [33mplaceholder[31m=[32m"Search for a process..."[31m
+        [33mtype[31m=[32m"text"[31m
+        [33mvalue[31m=[32m""[31m
+      [36m/>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"results-list"[31m
+      [36m>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"process-card flex justify-between items-center p-3 mb-2 bg-slate-800 rounded hover:bg-slate-700 cursor-pointer border border-slate-700"[31m
+        [36m>[31m
+          [36m<div>[31m
+            [36m<h3[31m
+              [33mclass[31m=[32m"flex items-center gap-2 font-bold text-slate-200"[31m
+            [36m>[31m
+              [0mTest Process[0m
+            [36m</h3>[31m
+            [36m<p[31m
+              [33mclass[31m=[32m"text-sm text-slate-400"[31m
+            [36m>[31m
+              [0mDescription[0m
+            [36m</p>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"text-right"[31m
+          [36m>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"status-badge block mb-1 text-xs px-2 py-1 rounded bg-green-900 text-green-300"[31m
+            [36m>[31m
+              [0mactive[0m
+            [36m</span>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"step-count text-xs text-slate-500"[31m
+            [36m>[31m
+              [0m2[0m
+              [0m Steps[0m
+            [36m</span>[31m
+          [36m</div>[31m
+        [36m</div>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"process-card flex justify-between items-center p-3 mb-2 bg-slate-800 rounded hover:bg-slate-700 cursor-pointer border border-slate-700"[31m
+        [36m>[31m
+          [36m<div>[31m
+            [36m<h3[31m
+              [33mclass[31m=[32m"flex items-center gap-2 font-bold text-slate-200"[31m
+            [36m>[31m
+              [0mNew Operational Workflow[0m
+            [36m</h3>[31m
+            [36m<p[31m
+              [33mclass[31m=[32m"text-sm text-slate-400"[31m
+            [36m>[31m
+              [0mDraft process[0m
+            [36m</p>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"text-right"[31m
+          [36m>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"status-badge block mb-1 text-xs px-2 py-1 rounded bg-slate-700 text-slate-400"[31m
+            [36m>[31m
+              [0mdraft[0m
+            [36m</span>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"step-count text-xs text-slate-500"[31m
+            [36m>[31m
+              [0m0[0m
+              [0m Steps[0m
+            [36m</span>[31m
+          [36m</div>[31m
+        [36m</div>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"process-card flex justify-between items-center p-3 mb-2 bg-slate-800 rounded hover:bg-slate-700 cursor-pointer border border-slate-700"[31m
+        [36m>[31m
+          [36m<div>[31m
+            [36m<h3[31m
+              [33mclass[31m=[32m"flex items-center gap-2 font-bold text-slate-200"[31m
+            [36m>[31m
+              [0mOnboarding Checklist[0m
+            [36m</h3>[31m
+            [36m<p[31m
+              [33mclass[31m=[32m"text-sm text-slate-400"[31m
+            [36m>[31m
+              [0mHR Onboarding[0m
+            [36m</p>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"text-right"[31m
+          [36m>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"status-badge block mb-1 text-xs px-2 py-1 rounded bg-green-900 text-green-300"[31m
+            [36m>[31m
+              [0mactive[0m
+            [36m</span>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"step-count text-xs text-slate-500"[31m
+            [36m>[31m
+              [0m0[0m
+              [0m Steps[0m
+            [36m</span>[31m
+          [36m</div>[31m
+        [36m</div>[31m
+      [36m</div>[31m
+    [36m</div>[31m
+  [36m</div>[31m
+[36m</body>[31m[39m
+[90m [2m❯[22m Object.getElementError ../../node_modules/@testing-library/dom/dist/config.js:[2m37:19[22m[39m
+[90m [2m❯[22m ../../node_modules/@testing-library/dom/dist/query-helpers.js:[2m76:38[22m[39m
+[90m [2m❯[22m ../../node_modules/@testing-library/dom/dist/query-helpers.js:[2m109:15[22m[39m
+[36m [2m❯[22m src/components/ProcessSearch.test.tsx:[2m28:36[22m[39m
+    [90m 26| [39m
+    [90m 27| [39m        [90m// proc-1 is mocked to have drift[39m
+    [90m 28| [39m        [35mconst[39m driftBadges [33m=[39m screen[33m.[39m[34mgetAllByText[39m([32m'DRIFT'[39m)[33m;[39m
+    [90m   | [39m                                   [31m^[39m
+    [90m 29| [39m        [34mexpect[39m(driftBadges[33m.[39mlength)[33m.[39m[34mtoBeGreaterThan[39m([34m0[39m)[33m;[39m
+    [90m 30| [39m    })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯[22m[39m
+
+[31m[1m[7m FAIL [27m[22m[39m src/components/TimelineViewer.test.tsx[2m > [22mTimelineViewer[2m > [22mrenders process title and steps
+[31m[1mTestingLibraryElementError[22m[39m: Unable to find an element with the text: Second Step. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"flex flex-col h-full bg-slate-900 text-slate-100 overflow-hidden"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex items-center justify-between px-6 py-4 border-b border-slate-700 bg-slate-800"[39m
+      [36m>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"flex items-center gap-2 text-slate-400 hover:text-white transition-colors"[39m
+        [36m>[39m
+          [0m← Back[0m
+        [36m</button>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"text-center"[39m
+        [36m>[39m
+          [36m<h1[39m
+            [33mclass[39m=[32m"text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400"[39m
+          [36m>[39m
+            [0mTest Process[0m
+          [36m</h1>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"text-xs text-slate-500 uppercase tracking-widest mt-1"[39m
+          [36m>[39m
+            [0mTimeline View[0m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex gap-3"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded text-sm font-medium transition-colors"[39m
+          [36m>[39m
+            [0mEdit Process[0m
+          [36m</button>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex-1 overflow-y-auto p-6 md:p-12 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"max-w-3xl mx-auto relative"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"absolute left-8 top-4 bottom-0 w-0.5 bg-slate-700"[39m
+          [36m/>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"relative pl-24 pb-12 group animate-in slide-in-from-bottom-4 duration-500"[39m
+            [33mstyle[39m=[32m"animation-delay: 0ms;"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"
+            step-card-component relative bg-slate-800/50 border border-slate-700 rounded-lg p-5
+            hover:border-slate-600 hover:bg-slate-800 transition-all shadow-lg backdrop-blur-sm
+            
+        "[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"absolute -top-3 -left-3 w-8 h-8 bg-slate-800 border-2 border-blue-500 rounded-full flex items-center justify-center font-bold text-blue-400 shadow-md z-10 text-sm"[39m
+              [36m>[39m
+                [0m1[0m
+              [36m</div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center justify-between mb-3 border-b border-slate-700/50 pb-3 pl-4"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-400"[39m
+                [36m>[39m
+                  [36m<svg[39m
+                    [33maria-hidden[39m=[32m"true"[39m
+                    [33mclass[39m=[32m"lucide lucide-user text-blue-400"[39m
+                    [33mfill[39m=[32m"none"[39m
+                    [33mheight[39m=[32m"14"[39m
+                    [33mstroke[39m=[32m"currentColor"[39m
+                    [33mstroke-linecap[39m=[32m"round"[39m
+                    [33mstroke-linejoin[39m=[32m"round"[39m
+                    [33mstroke-width[39m=[32m"2"[39m
+                    [33mviewBox[39m=[32m"0 0 24 24"[39m
+                    [33mwidth[39m=[32m"14"[39m
+                    [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                  [36m>[39m
+                    [36m<path[39m
+                      [33md[39m=[32m"M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"[39m
+                    [36m/>[39m
+                    [36m<circle[39m
+                      [33mcx[39m=[32m"12"[39m
+                      [33mcy[39m=[32m"7"[39m
+                      [33mr[39m=[32m"4"[39m
+                    [36m/>[39m
+                  [36m</svg>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"text-blue-300"[39m
+                  [36m>[39m
+                    [0mCommand Duty Officer[0m
+                  [36m</span>[39m
+                [36m</div>[39m
+              [36m</div>[39m
+              [36m<h3[39m
+                [33mclass[39m=[32m"text-lg font-semibold text-slate-100 mb-2"[39m
+              [36m>[39m
+                [0mFirst Step[0m
+              [36m</h3>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"text-slate-400 text-sm leading-relaxed mb-4"[39m
+              [36m>[39m
+                [0mDo the first thing[0m
+              [36m</p>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"relative pl-24 pb-12 group animate-in slide-in-from-bottom-4 duration-500"[39m
+            [33mstyle[39m=[32m"animation-delay: 100ms;"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"
+            step-card-component relative bg-slate-800/50 border border-slate-700 rounded-lg p-5
+            hover:border-slate-600 hover:bg-slate-800 transition-all shadow-lg backdrop-blur-sm
+            
+        "[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"absolute -top-3 -left-3 w-8 h-8 bg-slate-800 border-2 border-blue-500 rounded-full flex items-center justify-center font-bold text-blue-400 shadow-md z-10 text-sm"[39m
+              [36m>[39m
+                [0m2[0m
+              [36m</div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center justify-between mb-3 border-b border-slate-700/50 pb-3 pl-4"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-400"[39m
+                [36m>[39m
+                  [36m<svg[39m
+                    [33maria-hidden[39m=[32m"true"[39m
+                    [33mclass[39m=[32m"lucide lucide-user text-blue-400"[39m
+                    [33mfill[39m=[32m"none"[39m
+                    [33mheight[39m=[32m"14"[39m
+                    [33mstroke[39m=[32m"currentColor"[39m
+                    [33mstroke-linecap[39m=[32m"round"[39m
+                    [33mstroke-linejoin[39m=[32m"round"[39m
+                    [33mstroke-width[39m=[32m"2"[39m
+                    [33mviewBox[39m=[32m"0 0 24 24"[39m
+                    [33mwidth[39m=[32m"14"[39m
+                    [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                  [36m>[39m
+                    [36m<path[39m
+                      [33md[39m=[32m"M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"[39m
+                    [36m/>[39m
+                    [36m<circle[39m
+                      [33mcx[39m=[32m"12"[39m
+                      [33mcy[39m=[32m"7"[39m
+                      [33mr[39m=[32m"4"[39m
+                    [36m/>[39m
+                  [36m</svg>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"text-blue-300"[39m
+                  [36m>[39m
+                    [0mOperations Officer[0m
+                  [36m</span>[39m
+                [36m</div>[39m
+              [36m</div>[39m
+              [36m<h3[39m
+                [33mclass[39m=[32m"text-lg font-semibold text-slate-100 mb-2"[39m
+              [36m>[39m
+                [0mStep 2[0m
+              [36m</h3>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"text-slate-400 text-sm leading-relaxed mb-4"[39m
+              [36m>[39m
+                [0mStep 2 description[0m
+              [36m</p>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"absolute left-4 -bottom-1 w-9 h-9 bg-slate-800 border-2 border-slate-600 rounded-full flex items-center justify-center z-10"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-circle-check text-green-500"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<circle[39m
+                [33mcx[39m=[32m"12"[39m
+                [33mcy[39m=[32m"12"[39m
+                [33mr[39m=[32m"10"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m9 12 2 2 4-4"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+[90m [2m❯[22m Object.getElementError ../../node_modules/@testing-library/dom/dist/config.js:[2m37:19[22m[39m
+[90m [2m❯[22m ../../node_modules/@testing-library/dom/dist/query-helpers.js:[2m76:38[22m[39m
+[90m [2m❯[22m ../../node_modules/@testing-library/dom/dist/query-helpers.js:[2m52:17[22m[39m
+[90m [2m❯[22m ../../node_modules/@testing-library/dom/dist/query-helpers.js:[2m95:19[22m[39m
+[36m [2m❯[22m src/components/TimelineViewer.test.tsx:[2m52:23[22m[39m
+    [90m 50| [39m        [34mexpect[39m(screen[33m.[39m[34mgetByText[39m([32m'Test Process'[39m))[33m.[39m[34mtoBeInTheDocument[39m()[33m;[39m
+    [90m 51| [39m        [34mexpect[39m(screen[33m.[39m[34mgetByText[39m([32m'First Step'[39m))[33m.[39m[34mtoBeInTheDocument[39m()[33m;[39m
+    [90m 52| [39m        [34mexpect[39m(screen[33m.[39m[34mgetByText[39m([32m'Second Step'[39m))[33m.[39m[34mtoBeInTheDocument[39m()[33m;[39m
+    [90m   | [39m                      [31m^[39m
+    [90m 53| [39m        [90m// Check for step numbers[39m
+    [90m 54| [39m        [34mexpect[39m(screen[33m.[39m[34mgetByText[39m([32m'1'[39m))[33m.[39m[34mtoBeInTheDocument[39m()[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯[22m[39m
+
+[2m Test Files [22m [1m[31m2 failed[39m[22m[2m | [22m[1m[32m10 passed[39m[22m[90m (12)[39m
+[2m      Tests [22m [1m[31m2 failed[39m[22m[2m | [22m[1m[32m35 passed[39m[22m[90m (37)[39m
+[2m   Start at [22m 10:34:59
+[2m   Duration [22m 8.31s
+
+
+[1m[7m[31m FAIL [39m[27m[22m[31m Tests failed. Watching for file changes...[39m
+       [2mpress [22m[1mh[22m[2m to show help[22m[2m, [22m[2mpress [22m[1mq[22m[2m to quit[22m
+[3Jc
+[7m[1m[34m RERUN [39m[22m[27m[2m src/components/TimelineViewer.test.tsx[22m [34mx3[39m
+
+ [32m✓[39m src/components/TimelineViewer.test.tsx [2m ([22m[2m3 tests[22m[2m)[22m[90m 41[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m3 passed[39m[22m[90m (3)[39m
+[2m   Start at [22m 10:36:38
+[2m   Duration [22m 339ms
+
+
+[1m[7m[32m PASS [39m[27m[22m[32m Waiting for file changes...[39m
+       [2mpress [22m[1mh[22m[2m to show help[22m[2m, [22m[2mpress [22m[1mq[22m[2m to quit[22m
+       [34mrerun x3[39m
+[2K[1A[2K[G       [90mrerun x3[39m
+[2K[1A[2K[G       [2m[90mrerun x3[39m[22m
+[2K[1A[2K[G[3Jc
+[7m[1m[34m RERUN [39m[22m[27m[2m src/components/ProcessSearch.test.tsx[22m [34mx3[39m
+
+ [33m❯[39m src/components/ProcessSearch.test.tsx [2m ([22m[2m4 tests[22m [2m|[22m [31m1 failed[39m[2m)[22m[90m 52[2mms[22m[39m
+[31m   [33m❯[31m src/components/ProcessSearch.test.tsx[2m > [22mProcessSearch[2m > [22mshows DRIFT badge for drifting process[39m
+[31m     → Unable to find an element with the text: /DRIFT/. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[31m
+  [36m<div>[31m
+    [36m<div[31m
+      [33mclass[31m=[32m"process-search p-4"[31m
+    [36m>[31m
+      [36m<h1[31m
+        [33mclass[31m=[32m"text-xl font-bold mb-4 text-slate-100"[31m
+      [36m>[31m
+        [0mHow Do I...[0m
+      [36m</h1>[31m
+      [36m<input[31m
+        [33mclass[31m=[32m"search-input w-full p-2 rounded bg-slate-900 border border-slate-700 text-slate-100 mb-6 focus:outline-none focus:border-blue-500"[31m
+        [33mplaceholder[31m=[32m"Search for a process..."[31m
+        [33mtype[31m=[32m"text"[31m
+        [33mvalue[31m=[32m""[31m
+      [36m/>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"results-list"[31m
+      [36m>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"process-card flex justify-between items-center p-3 mb-2 bg-slate-800 rounded hover:bg-slate-700 cursor-pointer border border-slate-700"[31m
+        [36m>[31m
+          [36m<div>[31m
+            [36m<h3[31m
+              [33mclass[31m=[32m"flex items-center gap-2 font-bold text-slate-200"[31m
+            [36m>[31m
+              [0mTest Process[0m
+            [36m</h3>[31m
+            [36m<p[31m
+              [33mclass[31m=[32m"text-sm text-slate-400"[31m
+            [36m>[31m
+              [0mDescription[0m
+            [36m</p>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"text-right"[31m
+          [36m>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"status-badge block mb-1 text-xs px-2 py-1 rounded bg-green-900 text-green-300"[31m
+            [36m>[31m
+              [0mactive[0m
+            [36m</span>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"step-count text-xs text-slate-500"[31m
+            [36m>[31m
+              [0m2[0m
+              [0m Steps[0m
+            [36m</span>[31m
+          [36m</div>[31m
+        [36m</div>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"process-card flex justify-between items-center p-3 mb-2 bg-slate-800 rounded hover:bg-slate-700 cursor-pointer border border-slate-700"[31m
+        [36m>[31m
+          [36m<div>[31m
+            [36m<h3[31m
+              [33mclass[31m=[32m"flex items-center gap-2 font-bold text-slate-200"[31m
+            [36m>[31m
+              [0mNew Operational Workflow[0m
+            [36m</h3>[31m
+            [36m<p[31m
+              [33mclass[31m=[32m"text-sm text-slate-400"[31m
+            [36m>[31m
+              [0mDraft process[0m
+            [36m</p>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"text-right"[31m
+          [36m>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"status-badge block mb-1 text-xs px-2 py-1 rounded bg-slate-700 text-slate-400"[31m
+            [36m>[31m
+              [0mdraft[0m
+            [36m</span>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"step-count text-xs text-slate-500"[31m
+            [36m>[31m
+              [0m0[0m
+              [0m Steps[0m
+            [36m</span>[31m
+          [36m</div>[31m
+        [36m</div>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"process-card flex justify-between items-center p-3 mb-2 bg-slate-800 rounded hover:bg-slate-700 cursor-pointer border border-slate-700"[31m
+        [36m>[31m
+          [36m<div>[31m
+            [36m<h3[31m
+              [33mclass[31m=[32m"flex items-center gap-2 font-bold text-slate-200"[31m
+            [36m>[31m
+              [0mOnboarding Checklist[0m
+            [36m</h3>[31m
+            [36m<p[31m
+              [33mclass[31m=[32m"text-sm text-slate-400"[31m
+            [36m>[31m
+              [0mHR Onboarding[0m
+            [36m</p>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"text-right"[31m
+          [36m>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"status-badge block mb-1 text-xs px-2 py-1 rounded bg-green-900 text-green-300"[31m
+            [36m>[31m
+              [0mactive[0m
+            [36m</span>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"step-count text-xs text-slate-500"[31m
+            [36m>[31m
+              [0m0[0m
+              [0m Steps[0m
+            [36m</span>[31m
+          [36m</div>[31m
+        [36m</div>[31m
+      [36m</div>[31m
+    [36m</div>[31m
+  [36m</div>[31m
+[36m</body>[31m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[1m[7m Failed Tests 1 [27m[22m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[31m[1m[7m FAIL [27m[22m[39m src/components/ProcessSearch.test.tsx[2m > [22mProcessSearch[2m > [22mshows DRIFT badge for drifting process
+[31m[1mTestingLibraryElementError[22m: Unable to find an element with the text: /DRIFT/. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[31m
+  [36m<div>[31m
+    [36m<div[31m
+      [33mclass[31m=[32m"process-search p-4"[31m
+    [36m>[31m
+      [36m<h1[31m
+        [33mclass[31m=[32m"text-xl font-bold mb-4 text-slate-100"[31m
+      [36m>[31m
+        [0mHow Do I...[0m
+      [36m</h1>[31m
+      [36m<input[31m
+        [33mclass[31m=[32m"search-input w-full p-2 rounded bg-slate-900 border border-slate-700 text-slate-100 mb-6 focus:outline-none focus:border-blue-500"[31m
+        [33mplaceholder[31m=[32m"Search for a process..."[31m
+        [33mtype[31m=[32m"text"[31m
+        [33mvalue[31m=[32m""[31m
+      [36m/>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"results-list"[31m
+      [36m>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"process-card flex justify-between items-center p-3 mb-2 bg-slate-800 rounded hover:bg-slate-700 cursor-pointer border border-slate-700"[31m
+        [36m>[31m
+          [36m<div>[31m
+            [36m<h3[31m
+              [33mclass[31m=[32m"flex items-center gap-2 font-bold text-slate-200"[31m
+            [36m>[31m
+              [0mTest Process[0m
+            [36m</h3>[31m
+            [36m<p[31m
+              [33mclass[31m=[32m"text-sm text-slate-400"[31m
+            [36m>[31m
+              [0mDescription[0m
+            [36m</p>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"text-right"[31m
+          [36m>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"status-badge block mb-1 text-xs px-2 py-1 rounded bg-green-900 text-green-300"[31m
+            [36m>[31m
+              [0mactive[0m
+            [36m</span>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"step-count text-xs text-slate-500"[31m
+            [36m>[31m
+              [0m2[0m
+              [0m Steps[0m
+            [36m</span>[31m
+          [36m</div>[31m
+        [36m</div>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"process-card flex justify-between items-center p-3 mb-2 bg-slate-800 rounded hover:bg-slate-700 cursor-pointer border border-slate-700"[31m
+        [36m>[31m
+          [36m<div>[31m
+            [36m<h3[31m
+              [33mclass[31m=[32m"flex items-center gap-2 font-bold text-slate-200"[31m
+            [36m>[31m
+              [0mNew Operational Workflow[0m
+            [36m</h3>[31m
+            [36m<p[31m
+              [33mclass[31m=[32m"text-sm text-slate-400"[31m
+            [36m>[31m
+              [0mDraft process[0m
+            [36m</p>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"text-right"[31m
+          [36m>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"status-badge block mb-1 text-xs px-2 py-1 rounded bg-slate-700 text-slate-400"[31m
+            [36m>[31m
+              [0mdraft[0m
+            [36m</span>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"step-count text-xs text-slate-500"[31m
+            [36m>[31m
+              [0m0[0m
+              [0m Steps[0m
+            [36m</span>[31m
+          [36m</div>[31m
+        [36m</div>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"process-card flex justify-between items-center p-3 mb-2 bg-slate-800 rounded hover:bg-slate-700 cursor-pointer border border-slate-700"[31m
+        [36m>[31m
+          [36m<div>[31m
+            [36m<h3[31m
+              [33mclass[31m=[32m"flex items-center gap-2 font-bold text-slate-200"[31m
+            [36m>[31m
+              [0mOnboarding Checklist[0m
+            [36m</h3>[31m
+            [36m<p[31m
+              [33mclass[31m=[32m"text-sm text-slate-400"[31m
+            [36m>[31m
+              [0mHR Onboarding[0m
+            [36m</p>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"text-right"[31m
+          [36m>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"status-badge block mb-1 text-xs px-2 py-1 rounded bg-green-900 text-green-300"[31m
+            [36m>[31m
+              [0mactive[0m
+            [36m</span>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"step-count text-xs text-slate-500"[31m
+            [36m>[31m
+              [0m0[0m
+              [0m Steps[0m
+            [36m</span>[31m
+          [36m</div>[31m
+        [36m</div>[31m
+      [36m</div>[31m
+    [36m</div>[31m
+  [36m</div>[31m
+[36m</body>[31m[39m
+[90m [2m❯[22m Object.getElementError ../../node_modules/@testing-library/dom/dist/config.js:[2m37:19[22m[39m
+[90m [2m❯[22m ../../node_modules/@testing-library/dom/dist/query-helpers.js:[2m76:38[22m[39m
+[90m [2m❯[22m ../../node_modules/@testing-library/dom/dist/query-helpers.js:[2m109:15[22m[39m
+[36m [2m❯[22m src/components/ProcessSearch.test.tsx:[2m28:36[22m[39m
+    [90m 26| [39m
+    [90m 27| [39m        [90m// proc-1 is mocked to have drift[39m
+    [90m 28| [39m        [35mconst[39m driftBadges [33m=[39m screen[33m.[39m[34mgetAllByText[39m([36m/DRIFT/[39m)[33m;[39m
+    [90m   | [39m                                   [31m^[39m
+    [90m 29| [39m        [34mexpect[39m(driftBadges[33m.[39mlength)[33m.[39m[34mtoBeGreaterThan[39m([34m0[39m)[33m;[39m
+    [90m 30| [39m    })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m3 passed[39m[22m[90m (4)[39m
+[2m   Start at [22m 10:37:00
+[2m   Duration [22m 329ms
+
+
+[1m[7m[31m FAIL [39m[27m[22m[31m Tests failed. Watching for file changes...[39m
+       [2mpress [22m[1mh[22m[2m to show help[22m[2m, [22m[2mpress [22m[1mq[22m[2m to quit[22m
+       [34mrerun x3[39m
+[2K[1A[2K[G       [90mrerun x3[39m
+[2K[1A[2K[G       [2m[90mrerun x3[39m[22m
+[2K[1A[2K[G[3Jc
+[7m[1m[34m RERUN [39m[22m[27m[2m src/setupTests.ts[22m
+
+ [32m✓[39m src/simple.test.ts [2m ([22m[2m1 test[22m[2m)[22m[90m 3[2mms[22m[39m
+ [32m✓[39m src/utils/ProcessValidator.test.ts [2m ([22m[2m4 tests[22m[2m)[22m[90m 19[2mms[22m[39m
+ [32m✓[39m src/utils/health-calculator.test.ts [2m ([22m[2m4 tests[22m[2m)[22m[90m 5[2mms[22m[39m
+ [32m✓[39m src/components/health/ProcessHealthDashboard.test.tsx [2m ([22m[2m2 tests[22m[2m)[22m[90m 146[2mms[22m[39m
+ [32m✓[39m src/components/alerts/DriftAlert.test.tsx [2m ([22m[2m3 tests[22m[2m)[22m[90m 238[2mms[22m[39m
+ [32m✓[39m src/hooks/useDriftDetection.test.ts [2m ([22m[2m3 tests[22m[2m)[22m[90m 37[2mms[22m[39m
+ [33m❯[39m src/components/ProcessSearch.test.tsx [2m ([22m[2m4 tests[22m [2m|[22m [31m1 failed[39m[2m)[22m[90m 241[2mms[22m[39m
+[31m   [33m❯[31m src/components/ProcessSearch.test.tsx[2m > [22mProcessSearch[2m > [22mshows DRIFT badge for drifting process[39m
+[31m     → Unable to find an element with the text: /DRIFT/. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[31m
+  [36m<div>[31m
+    [36m<div[31m
+      [33mclass[31m=[32m"process-search p-4"[31m
+    [36m>[31m
+      [36m<h1[31m
+        [33mclass[31m=[32m"text-xl font-bold mb-4 text-slate-100"[31m
+      [36m>[31m
+        [0mHow Do I...[0m
+      [36m</h1>[31m
+      [36m<input[31m
+        [33mclass[31m=[32m"search-input w-full p-2 rounded bg-slate-900 border border-slate-700 text-slate-100 mb-6 focus:outline-none focus:border-blue-500"[31m
+        [33mplaceholder[31m=[32m"Search for a process..."[31m
+        [33mtype[31m=[32m"text"[31m
+        [33mvalue[31m=[32m""[31m
+      [36m/>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"results-list"[31m
+      [36m>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"process-card flex justify-between items-center p-3 mb-2 bg-slate-800 rounded hover:bg-slate-700 cursor-pointer border border-slate-700"[31m
+        [36m>[31m
+          [36m<div>[31m
+            [36m<h3[31m
+              [33mclass[31m=[32m"flex items-center gap-2 font-bold text-slate-200"[31m
+            [36m>[31m
+              [0mTest Process[0m
+            [36m</h3>[31m
+            [36m<p[31m
+              [33mclass[31m=[32m"text-sm text-slate-400"[31m
+            [36m>[31m
+              [0mDescription[0m
+            [36m</p>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"text-right"[31m
+          [36m>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"status-badge block mb-1 text-xs px-2 py-1 rounded bg-green-900 text-green-300"[31m
+            [36m>[31m
+              [0mactive[0m
+            [36m</span>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"step-count text-xs text-slate-500"[31m
+            [36m>[31m
+              [0m2[0m
+              [0m Steps[0m
+            [36m</span>[31m
+          [36m</div>[31m
+        [36m</div>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"process-card flex justify-between items-center p-3 mb-2 bg-slate-800 rounded hover:bg-slate-700 cursor-pointer border border-slate-700"[31m
+        [36m>[31m
+          [36m<div>[31m
+            [36m<h3[31m
+              [33mclass[31m=[32m"flex items-center gap-2 font-bold text-slate-200"[31m
+            [36m>[31m
+              [0mNew Operational Workflow[0m
+            [36m</h3>[31m
+            [36m<p[31m
+              [33mclass[31m=[32m"text-sm text-slate-400"[31m
+            [36m>[31m
+              [0mDraft process[0m
+            [36m</p>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"text-right"[31m
+          [36m>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"status-badge block mb-1 text-xs px-2 py-1 rounded bg-slate-700 text-slate-400"[31m
+            [36m>[31m
+              [0mdraft[0m
+            [36m</span>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"step-count text-xs text-slate-500"[31m
+            [36m>[31m
+              [0m0[0m
+              [0m Steps[0m
+            [36m</span>[31m
+          [36m</div>[31m
+        [36m</div>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"process-card flex justify-between items-center p-3 mb-2 bg-slate-800 rounded hover:bg-slate-700 cursor-pointer border border-slate-700"[31m
+        [36m>[31m
+          [36m<div>[31m
+            [36m<h3[31m
+              [33mclass[31m=[32m"flex items-center gap-2 font-bold text-slate-200"[31m
+            [36m>[31m
+              [0mOnboarding Checklist[0m
+            [36m</h3>[31m
+            [36m<p[31m
+              [33mclass[31m=[32m"text-sm text-slate-400"[31m
+            [36m>[31m
+              [0mHR Onboarding[0m
+            [36m</p>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"text-right"[31m
+          [36m>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"status-badge block mb-1 text-xs px-2 py-1 rounded bg-green-900 text-green-300"[31m
+            [36m>[31m
+              [0mactive[0m
+            [36m</span>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"step-count text-xs text-slate-500"[31m
+            [36m>[31m
+              [0m0[0m
+              [0m Steps[0m
+            [36m</span>[31m
+          [36m</div>[31m
+        [36m</div>[31m
+      [36m</div>[31m
+    [36m</div>[31m
+  [36m</div>[31m
+[36m</body>[31m[39m
+ [32m✓[39m src/components/TimelineViewer.test.tsx [2m ([22m[2m3 tests[22m[2m)[22m[90m 95[2mms[22m[39m
+ [32m✓[39m src/components/SwimlaneViewer.test.tsx [2m ([22m[2m4 tests[22m[2m)[22m[90m 198[2mms[22m[39m
+ [32m✓[39m src/components/editor/ObligationLinker.test.tsx [2m ([22m[2m3 tests[22m[2m)[22m[90m 151[2mms[22m[39m
+ [32m✓[39m src/components/editor/OwnerPicker.test.tsx [2m ([22m[2m3 tests[22m[2m)[22m[90m 104[2mms[22m[39m
+ [32m✓[39m src/components/SwimlaneEditor.test.tsx [2m ([22m[2m3 tests[22m[2m)[22m[90m 207[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[1m[7m Failed Tests 1 [27m[22m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[31m[1m[7m FAIL [27m[22m[39m src/components/ProcessSearch.test.tsx[2m > [22mProcessSearch[2m > [22mshows DRIFT badge for drifting process
+[31m[1mTestingLibraryElementError[22m: Unable to find an element with the text: /DRIFT/. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[31m
+  [36m<div>[31m
+    [36m<div[31m
+      [33mclass[31m=[32m"process-search p-4"[31m
+    [36m>[31m
+      [36m<h1[31m
+        [33mclass[31m=[32m"text-xl font-bold mb-4 text-slate-100"[31m
+      [36m>[31m
+        [0mHow Do I...[0m
+      [36m</h1>[31m
+      [36m<input[31m
+        [33mclass[31m=[32m"search-input w-full p-2 rounded bg-slate-900 border border-slate-700 text-slate-100 mb-6 focus:outline-none focus:border-blue-500"[31m
+        [33mplaceholder[31m=[32m"Search for a process..."[31m
+        [33mtype[31m=[32m"text"[31m
+        [33mvalue[31m=[32m""[31m
+      [36m/>[31m
+      [36m<div[31m
+        [33mclass[31m=[32m"results-list"[31m
+      [36m>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"process-card flex justify-between items-center p-3 mb-2 bg-slate-800 rounded hover:bg-slate-700 cursor-pointer border border-slate-700"[31m
+        [36m>[31m
+          [36m<div>[31m
+            [36m<h3[31m
+              [33mclass[31m=[32m"flex items-center gap-2 font-bold text-slate-200"[31m
+            [36m>[31m
+              [0mTest Process[0m
+            [36m</h3>[31m
+            [36m<p[31m
+              [33mclass[31m=[32m"text-sm text-slate-400"[31m
+            [36m>[31m
+              [0mDescription[0m
+            [36m</p>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"text-right"[31m
+          [36m>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"status-badge block mb-1 text-xs px-2 py-1 rounded bg-green-900 text-green-300"[31m
+            [36m>[31m
+              [0mactive[0m
+            [36m</span>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"step-count text-xs text-slate-500"[31m
+            [36m>[31m
+              [0m2[0m
+              [0m Steps[0m
+            [36m</span>[31m
+          [36m</div>[31m
+        [36m</div>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"process-card flex justify-between items-center p-3 mb-2 bg-slate-800 rounded hover:bg-slate-700 cursor-pointer border border-slate-700"[31m
+        [36m>[31m
+          [36m<div>[31m
+            [36m<h3[31m
+              [33mclass[31m=[32m"flex items-center gap-2 font-bold text-slate-200"[31m
+            [36m>[31m
+              [0mNew Operational Workflow[0m
+            [36m</h3>[31m
+            [36m<p[31m
+              [33mclass[31m=[32m"text-sm text-slate-400"[31m
+            [36m>[31m
+              [0mDraft process[0m
+            [36m</p>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"text-right"[31m
+          [36m>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"status-badge block mb-1 text-xs px-2 py-1 rounded bg-slate-700 text-slate-400"[31m
+            [36m>[31m
+              [0mdraft[0m
+            [36m</span>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"step-count text-xs text-slate-500"[31m
+            [36m>[31m
+              [0m0[0m
+              [0m Steps[0m
+            [36m</span>[31m
+          [36m</div>[31m
+        [36m</div>[31m
+        [36m<div[31m
+          [33mclass[31m=[32m"process-card flex justify-between items-center p-3 mb-2 bg-slate-800 rounded hover:bg-slate-700 cursor-pointer border border-slate-700"[31m
+        [36m>[31m
+          [36m<div>[31m
+            [36m<h3[31m
+              [33mclass[31m=[32m"flex items-center gap-2 font-bold text-slate-200"[31m
+            [36m>[31m
+              [0mOnboarding Checklist[0m
+            [36m</h3>[31m
+            [36m<p[31m
+              [33mclass[31m=[32m"text-sm text-slate-400"[31m
+            [36m>[31m
+              [0mHR Onboarding[0m
+            [36m</p>[31m
+          [36m</div>[31m
+          [36m<div[31m
+            [33mclass[31m=[32m"text-right"[31m
+          [36m>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"status-badge block mb-1 text-xs px-2 py-1 rounded bg-green-900 text-green-300"[31m
+            [36m>[31m
+              [0mactive[0m
+            [36m</span>[31m
+            [36m<span[31m
+              [33mclass[31m=[32m"step-count text-xs text-slate-500"[31m
+            [36m>[31m
+              [0m0[0m
+              [0m Steps[0m
+            [36m</span>[31m
+          [36m</div>[31m
+        [36m</div>[31m
+      [36m</div>[31m
+    [36m</div>[31m
+  [36m</div>[31m
+[36m</body>[31m[39m
+[90m [2m❯[22m Object.getElementError ../../node_modules/@testing-library/dom/dist/config.js:[2m37:19[22m[39m
+[90m [2m❯[22m ../../node_modules/@testing-library/dom/dist/query-helpers.js:[2m76:38[22m[39m
+[90m [2m❯[22m ../../node_modules/@testing-library/dom/dist/query-helpers.js:[2m109:15[22m[39m
+[36m [2m❯[22m src/components/ProcessSearch.test.tsx:[2m28:36[22m[39m
+    [90m 26| [39m
+    [90m 27| [39m        [90m// proc-1 is mocked to have drift[39m
+    [90m 28| [39m        [35mconst[39m driftBadges [33m=[39m screen[33m.[39m[34mgetAllByText[39m([36m/DRIFT/[39m)[33m;[39m
+    [90m   | [39m                                   [31m^[39m
+    [90m 29| [39m        [34mexpect[39m(driftBadges[33m.[39mlength)[33m.[39m[34mtoBeGreaterThan[39m([34m0[39m)[33m;[39m
+    [90m 30| [39m    })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m11 passed[39m[22m[90m (12)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m36 passed[39m[22m[90m (37)[39m
+[2m   Start at [22m 10:51:44
+[2m   Duration [22m 14.47s
+
+
+[1m[7m[31m FAIL [39m[27m[22m[31m Tests failed. Watching for file changes...[39m
+       [2mpress [22m[1mh[22m[2m to show help[22m[2m, [22m[2mpress [22m[1mq[22m[2m to quit[22m
+[3Jc
+[7m[1m[34m RERUN [39m[22m[27m[2m src/setupTests.ts[22m
+
+ [32m✓[39m src/simple.test.ts [2m ([22m[2m1 test[22m[2m)[22m[90m 4[2mms[22m[39m
+ [32m✓[39m src/components/editor/ObligationLinker.test.tsx [2m ([22m[2m3 tests[22m[2m)[22m[90m 91[2mms[22m[39m
+ [32m✓[39m src/components/SwimlaneViewer.test.tsx [2m ([22m[2m4 tests[22m[2m)[22m[90m 161[2mms[22m[39m
+ [32m✓[39m src/utils/health-calculator.test.ts [2m ([22m[2m4 tests[22m[2m)[22m[90m 18[2mms[22m[39m
+ [32m✓[39m src/utils/ProcessValidator.test.ts [2m ([22m[2m4 tests[22m[2m)[22m[90m 6[2mms[22m[39m
+ [32m✓[39m src/components/SwimlaneEditor.test.tsx [2m ([22m[2m3 tests[22m[2m)[22m[33m 359[2mms[22m[39m
+ [32m✓[39m src/components/alerts/DriftAlert.test.tsx [2m ([22m[2m3 tests[22m[2m)[22m[90m 230[2mms[22m[39m
+ [32m✓[39m src/components/ProcessSearch.test.tsx [2m ([22m[2m4 tests[22m[2m)[22m[90m 124[2mms[22m[39m
+ [32m✓[39m src/hooks/useDriftDetection.test.ts [2m ([22m[2m3 tests[22m[2m)[22m[90m 40[2mms[22m[39m
+ [32m✓[39m src/components/editor/OwnerPicker.test.tsx [2m ([22m[2m3 tests[22m[2m)[22m[90m 109[2mms[22m[39m
+ [32m✓[39m src/components/TimelineViewer.test.tsx [2m ([22m[2m3 tests[22m[2m)[22m[90m 131[2mms[22m[39m
+ [32m✓[39m src/components/health/ProcessHealthDashboard.test.tsx [2m ([22m[2m2 tests[22m[2m)[22m[90m 103[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m12 passed[39m[22m[90m (12)[39m
+[2m      Tests [22m [1m[32m37 passed[39m[22m[90m (37)[39m
+[2m   Start at [22m 10:53:16
+[2m   Duration [22m 13.82s
+
+
+[1m[7m[32m PASS [39m[27m[22m[32m Waiting for file changes...[39m
+       [2mpress [22m[1mh[22m[2m to show help[22m[2m, [22m[2mpress [22m[1mq[22m[2m to quit[22m
+[3Jc
+[7m[1m[34m RERUN [39m[22m[27m[2m ../../packages/api-client/package.json[22m
+
+ [32m✓[39m src/components/editor/OwnerPicker.test.tsx [2m ([22m[2m3 tests[22m[2m)[22m[90m 203[2mms[22m[39m
+ [32m✓[39m src/components/ProcessSearch.test.tsx [2m ([22m[2m4 tests[22m[2m)[22m[90m 168[2mms[22m[39m
+ [32m✓[39m src/utils/health-calculator.test.ts [2m ([22m[2m4 tests[22m[2m)[22m[90m 20[2mms[22m[39m
+ [32m✓[39m src/simple.test.ts [2m ([22m[2m1 test[22m[2m)[22m[90m 16[2mms[22m[39m
+ [32m✓[39m src/utils/ProcessValidator.test.ts [2m ([22m[2m4 tests[22m[2m)[22m[90m 7[2mms[22m[39m
+ [32m✓[39m src/components/alerts/DriftAlert.test.tsx [2m ([22m[2m3 tests[22m[2m)[22m[90m 167[2mms[22m[39m
+ [32m✓[39m src/components/SwimlaneEditor.test.tsx [2m ([22m[2m3 tests[22m[2m)[22m[33m 344[2mms[22m[39m
+ [32m✓[39m src/components/editor/ObligationLinker.test.tsx [2m ([22m[2m3 tests[22m[2m)[22m[90m 158[2mms[22m[39m
+ [32m✓[39m src/hooks/useDriftDetection.test.ts [2m ([22m[2m3 tests[22m[2m)[22m[90m 70[2mms[22m[39m
+ [32m✓[39m src/components/health/ProcessHealthDashboard.test.tsx [2m ([22m[2m2 tests[22m[2m)[22m[90m 155[2mms[22m[39m
+ [32m✓[39m src/components/SwimlaneViewer.test.tsx [2m ([22m[2m4 tests[22m[2m)[22m[90m 115[2mms[22m[39m
+ [32m✓[39m src/components/TimelineViewer.test.tsx [2m ([22m[2m3 tests[22m[2m)[22m[90m 88[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m12 passed[39m[22m[90m (12)[39m
+[2m      Tests [22m [1m[32m37 passed[39m[22m[90m (37)[39m
+[2m   Start at [22m 10:57:29
+[2m   Duration [22m 17.10s
+
+
+[1m[7m[32m PASS [39m[27m[22m[32m Waiting for file changes...[39m
+       [2mpress [22m[1mh[22m[2m to show help[22m[2m, [22m[2mpress [22m[1mq[22m[2m to quit[22m
+[3Jc
+[7m[1m[34m RERUN [39m[22m[27m[2m ../../packages/ui-components/package.json[22m
+
+ [32m✓[39m src/simple.test.ts [2m ([22m[2m1 test[22m[2m)[22m[90m 3[2mms[22m[39m
+ [32m✓[39m src/utils/ProcessValidator.test.ts [2m ([22m[2m4 tests[22m[2m)[22m[90m 9[2mms[22m[39m
+ [32m✓[39m src/utils/health-calculator.test.ts [2m ([22m[2m4 tests[22m[2m)[22m[90m 5[2mms[22m[39m
+ [32m✓[39m src/components/ProcessSearch.test.tsx [2m ([22m[2m4 tests[22m[2m)[22m[90m 149[2mms[22m[39m
+ [32m✓[39m src/components/health/ProcessHealthDashboard.test.tsx [2m ([22m[2m2 tests[22m[2m)[22m[90m 102[2mms[22m[39m
+ [32m✓[39m src/components/alerts/DriftAlert.test.tsx [2m ([22m[2m3 tests[22m[2m)[22m[90m 61[2mms[22m[39m
+ [32m✓[39m src/components/editor/ObligationLinker.test.tsx [2m ([22m[2m3 tests[22m[2m)[22m[90m 92[2mms[22m[39m
+ [32m✓[39m src/hooks/useDriftDetection.test.ts [2m ([22m[2m3 tests[22m[2m)[22m[90m 28[2mms[22m[39m
+ [32m✓[39m src/components/TimelineViewer.test.tsx [2m ([22m[2m3 tests[22m[2m)[22m[90m 83[2mms[22m[39m
+ [32m✓[39m src/components/SwimlaneViewer.test.tsx [2m ([22m[2m4 tests[22m[2m)[22m[90m 119[2mms[22m[39m
+ [32m✓[39m src/components/editor/OwnerPicker.test.tsx [2m ([22m[2m3 tests[22m[2m)[22m[90m 151[2mms[22m[39m
+ [32m✓[39m src/components/SwimlaneEditor.test.tsx [2m ([22m[2m3 tests[22m[2m)[22m[90m 206[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m12 passed[39m[22m[90m (12)[39m
+[2m      Tests [22m [1m[32m37 passed[39m[22m[90m (37)[39m
+[2m   Start at [22m 10:57:59
+[2m   Duration [22m 18.26s
+
+
+[1m[7m[32m PASS [39m[27m[22m[32m Waiting for file changes...[39m
+       [2mpress [22m[1mh[22m[2m to show help[22m[2m, [22m[2mpress [22m[1mq[22m[2m to quit[22m
+[3Jc
+[7m[1m[34m RERUN [39m[22m[27m[2m ../../packages/api-client/package.json[22m
+
+ [32m✓[39m src/simple.test.ts [2m ([22m[2m1 test[22m[2m)[22m[90m 4[2mms[22m[39m
+ [32m✓[39m src/components/health/ProcessHealthDashboard.test.tsx [2m ([22m[2m2 tests[22m[2m)[22m[90m 120[2mms[22m[39m
+ [32m✓[39m src/components/editor/ObligationLinker.test.tsx [2m ([22m[2m3 tests[22m[2m)[22m[90m 161[2mms[22m[39m
+ [32m✓[39m src/utils/health-calculator.test.ts [2m ([22m[2m4 tests[22m[2m)[22m[90m 6[2mms[22m[39m
+ [32m✓[39m src/utils/ProcessValidator.test.ts [2m ([22m[2m4 tests[22m[2m)[22m[90m 13[2mms[22m[39m
+ [32m✓[39m src/components/SwimlaneViewer.test.tsx [2m ([22m[2m4 tests[22m[2m)[22m[90m 177[2mms[22m[39m
+ [32m✓[39m src/hooks/useDriftDetection.test.ts [2m ([22m[2m3 tests[22m[2m)[22m[90m 25[2mms[22m[39m
+ [32m✓[39m src/components/ProcessSearch.test.tsx [2m ([22m[2m4 tests[22m[2m)[22m[90m 112[2mms[22m[39m
+ [32m✓[39m src/components/alerts/DriftAlert.test.tsx [2m ([22m[2m3 tests[22m[2m)[22m[90m 87[2mms[22m[39m
+ [32m✓[39m src/components/TimelineViewer.test.tsx [2m ([22m[2m3 tests[22m[2m)[22m[90m 97[2mms[22m[39m
+ [32m✓[39m src/components/editor/OwnerPicker.test.tsx [2m ([22m[2m3 tests[22m[2m)[22m[90m 119[2mms[22m[39m
+ [32m✓[39m src/components/SwimlaneEditor.test.tsx [2m ([22m[2m3 tests[22m[2m)[22m[90m 244[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m12 passed[39m[22m[90m (12)[39m
+[2m      Tests [22m [1m[32m37 passed[39m[22m[90m (37)[39m
+[2m   Start at [22m 11:03:59
+[2m   Duration [22m 22.29s
+
+
+[1m[7m[32m PASS [39m[27m[22m[32m Waiting for file changes...[39m
+       [2mpress [22m[1mh[22m[2m to show help[22m[2m, [22m[2mpress [22m[1mq[22m[2m to quit[22m

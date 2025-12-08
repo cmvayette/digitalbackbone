@@ -16,7 +16,8 @@ vi.mock('@tiptap/react', () => ({
         state: {
             selection: { from: 0, to: 0 },
             doc: { textBetween: () => 'Mock Selection' }
-        }
+        },
+        setEditable: vi.fn()
     }),
     EditorContent: () => <div data-testid="editor-content">Editor Content</div>,
     BubbleMenu: ({ children }: any) => <div data-testid="bubble-menu">{children}</div>
@@ -33,7 +34,8 @@ vi.mock('lucide-react', () => ({
     Bold: () => <span>Bold</span>,
     List: () => <span>List</span>,
     Heading1: () => <span>H1</span>,
-    ShieldCheck: () => <span>Shield</span>
+    ShieldCheck: () => <span>Shield</span>,
+    ChevronDown: () => <span>ChevronDown</span>
 }));
 
 describe('PolicyEditor', () => {

@@ -1,0 +1,327 @@
+
+> how-do@0.0.0 test
+> vitest --run
+
+
+[7m[1m[36m RUN [39m[22m[27m [36mv1.6.1[39m [90mC:/devProjects/semantic-baseline/digitalbackbone/apps/how-do[39m
+
+ [32m✓[39m src/simple.test.ts [2m ([22m[2m1 test[22m[2m)[22m[90m 3[2mms[22m[39m
+ [32m✓[39m src/utils/health-calculator.test.ts [2m ([22m[2m4 tests[22m[2m)[22m[90m 6[2mms[22m[39m
+ [32m✓[39m src/utils/ProcessValidator.test.ts [2m ([22m[2m4 tests[22m[2m)[22m[90m 6[2mms[22m[39m
+ [32m✓[39m src/hooks/useDriftDetection.test.ts [2m ([22m[2m3 tests[22m[2m)[22m[90m 17[2mms[22m[39m
+ [32m✓[39m src/components/health/ProcessHealthDashboard.test.tsx [2m ([22m[2m2 tests[22m[2m)[22m[90m 51[2mms[22m[39m
+ [32m✓[39m src/components/alerts/DriftAlert.test.tsx [2m ([22m[2m3 tests[22m[2m)[22m[90m 44[2mms[22m[39m
+ [32m✓[39m src/components/editor/ObligationLinker.test.tsx [2m ([22m[2m3 tests[22m[2m)[22m[90m 63[2mms[22m[39m
+ [32m✓[39m src/components/TimelineViewer.test.tsx [2m ([22m[2m3 tests[22m[2m)[22m[90m 76[2mms[22m[39m
+ [32m✓[39m src/components/ProcessSearch.test.tsx [2m ([22m[2m4 tests[22m[2m)[22m[90m 87[2mms[22m[39m
+ [32m✓[39m src/components/SwimlaneViewer.test.tsx [2m ([22m[2m4 tests[22m[2m)[22m[90m 74[2mms[22m[39m
+ [32m✓[39m src/components/editor/OwnerPicker.test.tsx [2m ([22m[2m3 tests[22m[2m)[22m[90m 63[2mms[22m[39m
+ [32m✓[39m src/components/SwimlaneEditor.test.tsx [2m ([22m[2m3 tests[22m[2m)[22m[90m 121[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m12 passed[39m[22m[90m (12)[39m
+[2m      Tests [22m [1m[32m37 passed[39m[22m[90m (37)[39m
+[2m   Start at [22m 10:56:17
+[2m   Duration [22m 2.47s[2m (transform 1.10s, setup 232ms, collect 6.07s, tests 611ms, environment 9.14s, prepare 2.23s)[22m
+
+npm error Lifecycle script `test` failed with error:
+npm error workspace objectives-okr@0.0.0
+npm error location C:\devProjects\semantic-baseline\digitalbackbone\apps\objectives-okr
+npm error Missing script: "test"
+npm error
+npm error To see a list of scripts, run:
+npm error   npm run --workspace=objectives-okr@0.0.0
+
+
+> org-chart@0.0.0 test
+> vitest --run
+
+
+[7m[1m[36m RUN [39m[22m[27m [36mv1.6.1[39m [90mC:/devProjects/semantic-baseline/digitalbackbone/apps/org-chart[39m
+
+
+[31m⎯⎯⎯⎯⎯⎯[1m[7m Unhandled Errors [27m[22m⎯⎯⎯⎯⎯⎯[39m
+[31m[1m
+Vitest caught 9 unhandled errors during the test run.
+This might cause false positive tests. Resolve unhandled errors to make sure your tests are not affected.[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯[1m[7m Unhandled Error [27m[22m⎯⎯⎯⎯⎯⎯⎯[39m
+[31m[1mError[22m: require() of ES Module C:\devProjects\semantic-baseline\digitalbackbone\node_modules\parse5\dist\index.js from C:\devProjects\semantic-baseline\digitalbackbone\node_modules\jsdom\lib\jsdom\browser\parser\html.js not supported.
+Instead change the require of index.js in C:\devProjects\semantic-baseline\digitalbackbone\node_modules\jsdom\lib\jsdom\browser\parser\html.js to a dynamic import() which is available in all CommonJS modules.[39m
+[90m [2m❯[22m Object.<anonymous> ../../node_modules/jsdom/lib/jsdom/browser/parser/html.js:[2m3:16[22m[39m
+
+
+[31m⎯⎯⎯⎯⎯⎯[1m[7m Unhandled Error [27m[22m⎯⎯⎯⎯⎯⎯⎯[39m
+[31m[1mError[22m: require() of ES Module C:\devProjects\semantic-baseline\digitalbackbone\node_modules\parse5\dist\index.js from C:\devProjects\semantic-baseline\digitalbackbone\node_modules\jsdom\lib\jsdom\browser\parser\html.js not supported.
+Instead change the require of index.js in C:\devProjects\semantic-baseline\digitalbackbone\node_modules\jsdom\lib\jsdom\browser\parser\html.js to a dynamic import() which is available in all CommonJS modules.[39m
+[90m [2m❯[22m Object.<anonymous> ../../node_modules/jsdom/lib/jsdom/browser/parser/html.js:[2m3:16[22m[39m
+
+
+[31m⎯⎯⎯⎯⎯⎯[1m[7m Unhandled Error [27m[22m⎯⎯⎯⎯⎯⎯⎯[39m
+[31m[1mError[22m: require() of ES Module C:\devProjects\semantic-baseline\digitalbackbone\node_modules\parse5\dist\index.js from C:\devProjects\semantic-baseline\digitalbackbone\node_modules\jsdom\lib\jsdom\browser\parser\html.js not supported.
+Instead change the require of index.js in C:\devProjects\semantic-baseline\digitalbackbone\node_modules\jsdom\lib\jsdom\browser\parser\html.js to a dynamic import() which is available in all CommonJS modules.[39m
+[90m [2m❯[22m Object.<anonymous> ../../node_modules/jsdom/lib/jsdom/browser/parser/html.js:[2m3:16[22m[39m
+
+
+[31m⎯⎯⎯⎯⎯⎯[1m[7m Unhandled Error [27m[22m⎯⎯⎯⎯⎯⎯⎯[39m
+[31m[1mError[22m: require() of ES Module C:\devProjects\semantic-baseline\digitalbackbone\node_modules\parse5\dist\index.js from C:\devProjects\semantic-baseline\digitalbackbone\node_modules\jsdom\lib\jsdom\browser\parser\html.js not supported.
+Instead change the require of index.js in C:\devProjects\semantic-baseline\digitalbackbone\node_modules\jsdom\lib\jsdom\browser\parser\html.js to a dynamic import() which is available in all CommonJS modules.[39m
+[90m [2m❯[22m Object.<anonymous> ../../node_modules/jsdom/lib/jsdom/browser/parser/html.js:[2m3:16[22m[39m
+
+
+[31m⎯⎯⎯⎯⎯⎯[1m[7m Unhandled Error [27m[22m⎯⎯⎯⎯⎯⎯⎯[39m
+[31m[1mError[22m: require() of ES Module C:\devProjects\semantic-baseline\digitalbackbone\node_modules\parse5\dist\index.js from C:\devProjects\semantic-baseline\digitalbackbone\node_modules\jsdom\lib\jsdom\browser\parser\html.js not supported.
+Instead change the require of index.js in C:\devProjects\semantic-baseline\digitalbackbone\node_modules\jsdom\lib\jsdom\browser\parser\html.js to a dynamic import() which is available in all CommonJS modules.[39m
+[90m [2m❯[22m Object.<anonymous> ../../node_modules/jsdom/lib/jsdom/browser/parser/html.js:[2m3:16[22m[39m
+
+
+[31m⎯⎯⎯⎯⎯⎯[1m[7m Unhandled Error [27m[22m⎯⎯⎯⎯⎯⎯⎯[39m
+[31m[1mError[22m: require() of ES Module C:\devProjects\semantic-baseline\digitalbackbone\node_modules\parse5\dist\index.js from C:\devProjects\semantic-baseline\digitalbackbone\node_modules\jsdom\lib\jsdom\browser\parser\html.js not supported.
+Instead change the require of index.js in C:\devProjects\semantic-baseline\digitalbackbone\node_modules\jsdom\lib\jsdom\browser\parser\html.js to a dynamic import() which is available in all CommonJS modules.[39m
+[90m [2m❯[22m Object.<anonymous> ../../node_modules/jsdom/lib/jsdom/browser/parser/html.js:[2m3:16[22m[39m
+
+
+[31m⎯⎯⎯⎯⎯⎯[1m[7m Unhandled Error [27m[22m⎯⎯⎯⎯⎯⎯⎯[39m
+[31m[1mError[22m: require() of ES Module C:\devProjects\semantic-baseline\digitalbackbone\node_modules\parse5\dist\index.js from C:\devProjects\semantic-baseline\digitalbackbone\node_modules\jsdom\lib\jsdom\browser\parser\html.js not supported.
+Instead change the require of index.js in C:\devProjects\semantic-baseline\digitalbackbone\node_modules\jsdom\lib\jsdom\browser\parser\html.js to a dynamic import() which is available in all CommonJS modules.[39m
+[90m [2m❯[22m Object.<anonymous> ../../node_modules/jsdom/lib/jsdom/browser/parser/html.js:[2m3:16[22m[39m
+
+
+[31m⎯⎯⎯⎯⎯⎯[1m[7m Unhandled Error [27m[22m⎯⎯⎯⎯⎯⎯⎯[39m
+[31m[1mError[22m: require() of ES Module C:\devProjects\semantic-baseline\digitalbackbone\node_modules\parse5\dist\index.js from C:\devProjects\semantic-baseline\digitalbackbone\node_modules\jsdom\lib\jsdom\browser\parser\html.js not supported.
+Instead change the require of index.js in C:\devProjects\semantic-baseline\digitalbackbone\node_modules\jsdom\lib\jsdom\browser\parser\html.js to a dynamic import() which is available in all CommonJS modules.[39m
+[90m [2m❯[22m Object.<anonymous> ../../node_modules/jsdom/lib/jsdom/browser/parser/html.js:[2m3:16[22m[39m
+
+
+[31m⎯⎯⎯⎯⎯⎯[1m[7m Unhandled Error [27m[22m⎯⎯⎯⎯⎯⎯⎯[39m
+[31m[1mError[22m: require() of ES Module C:\devProjects\semantic-baseline\digitalbackbone\node_modules\parse5\dist\index.js from C:\devProjects\semantic-baseline\digitalbackbone\node_modules\jsdom\lib\jsdom\browser\parser\html.js not supported.
+Instead change the require of index.js in C:\devProjects\semantic-baseline\digitalbackbone\node_modules\jsdom\lib\jsdom\browser\parser\html.js to a dynamic import() which is available in all CommonJS modules.[39m
+[90m [2m❯[22m Object.<anonymous> ../../node_modules/jsdom/lib/jsdom/browser/parser/html.js:[2m3:16[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[39m
+
+[2m Test Files [22m [2mno tests[22m
+[2m      Tests [22m [2mno tests[22m
+[2m     Errors [22m [1m[31m9 errors[39m[22m
+[2m   Start at [22m 10:56:21
+[2m   Duration [22m 1.04s[2m (transform 14ms, setup 0ms, collect 0ms, tests 0ms, environment 0ms, prepare 0ms)[22m
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path C:\devProjects\semantic-baseline\digitalbackbone\apps\org-chart
+npm error workspace org-chart@0.0.0
+npm error location C:\devProjects\semantic-baseline\digitalbackbone\apps\org-chart
+npm error command failed
+npm error command C:\WINDOWS\system32\cmd.exe /d /s /c vitest --run
+
+
+> policy-governance@0.0.0 test
+> vitest --run
+
+
+[7m[1m[36m RUN [39m[22m[27m [36mv1.6.1[39m [90mC:/devProjects/semantic-baseline/digitalbackbone/apps/policy-governance[39m
+
+ [32m✓[39m src/store/policyStore.test.ts [2m ([22m[2m3 tests[22m[2m)[22m[90m 4[2mms[22m[39m
+ [32m✓[39m src/components/dashboard/ComplianceDashboard.test.tsx [2m ([22m[2m3 tests[22m[2m)[22m[90m 45[2mms[22m[39m
+ [33m❯[39m src/components/editor/PolicyEditor.test.tsx [2m ([22m[2m4 tests[22m [2m|[22m [31m4 failed[39m[2m)[22m[90m 41[2mms[22m[39m
+[31m   [33m❯[31m src/components/editor/PolicyEditor.test.tsx[2m > [22mPolicyEditor[2m > [22mrenders policy title[39m
+[31m     → Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: object.
+
+Check the render method of `ClauseHighlighter`.[39m
+[31m   [33m❯[31m src/components/editor/PolicyEditor.test.tsx[2m > [22mPolicyEditor[2m > [22mrenders editor content[39m
+[31m     → Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: object.
+
+Check the render method of `ClauseHighlighter`.[39m
+[31m   [33m❯[31m src/components/editor/PolicyEditor.test.tsx[2m > [22mPolicyEditor[2m > [22mswitches tabs[39m
+[31m     → Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: object.
+
+Check the render method of `ClauseHighlighter`.[39m
+[31m   [33m❯[31m src/components/editor/PolicyEditor.test.tsx[2m > [22mPolicyEditor[2m > [22mopens and closes obligation composer[39m
+[31m     → Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: object.
+
+Check the render method of `ClauseHighlighter`.[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[1m[7m Failed Tests 4 [27m[22m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[31m[1m[7m FAIL [27m[22m[39m src/components/editor/PolicyEditor.test.tsx[2m > [22mPolicyEditor[2m > [22mrenders policy title
+[31m[1m[7m FAIL [27m[22m[39m src/components/editor/PolicyEditor.test.tsx[2m > [22mPolicyEditor[2m > [22mrenders editor content
+[31m[1m[7m FAIL [27m[22m[39m src/components/editor/PolicyEditor.test.tsx[2m > [22mPolicyEditor[2m > [22mswitches tabs
+[31m[1m[7m FAIL [27m[22m[39m src/components/editor/PolicyEditor.test.tsx[2m > [22mPolicyEditor[2m > [22mopens and closes obligation composer
+[31m[1mError[22m: Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: object.
+
+Check the render method of `ClauseHighlighter`.[39m
+[90m [2m❯[22m createFiberFromTypeAndProps ../../node_modules/react-dom/cjs/react-dom-client.development.js:[2m5021:28[22m[39m
+[90m [2m❯[22m createFiberFromElement ../../node_modules/react-dom/cjs/react-dom-client.development.js:[2m5035:14[22m[39m
+[90m [2m❯[22m reconcileChildFibersImpl ../../node_modules/react-dom/cjs/react-dom-client.development.js:[2m6920:31[22m[39m
+[90m [2m❯[22m ../../node_modules/react-dom/cjs/react-dom-client.development.js:[2m7098:33[22m[39m
+[90m [2m❯[22m reconcileChildren ../../node_modules/react-dom/cjs/react-dom-client.development.js:[2m9701:13[22m[39m
+[90m [2m❯[22m updateFunctionComponent ../../node_modules/react-dom/cjs/react-dom-client.development.js:[2m10182:7[22m[39m
+[90m [2m❯[22m beginWork ../../node_modules/react-dom/cjs/react-dom-client.development.js:[2m11778:18[22m[39m
+[90m [2m❯[22m runWithFiberInDEV ../../node_modules/react-dom/cjs/react-dom-client.development.js:[2m874:13[22m[39m
+[90m [2m❯[22m performUnitOfWork ../../node_modules/react-dom/cjs/react-dom-client.development.js:[2m17641:22[22m[39m
+[90m [2m❯[22m workLoopSync ../../node_modules/react-dom/cjs/react-dom-client.development.js:[2m17469:41[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯[22m[39m
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m2 passed[39m[22m[90m (3)[39m
+[2m      Tests [22m [1m[31m4 failed[39m[22m[2m | [22m[1m[32m6 passed[39m[22m[90m (10)[39m
+[2m   Start at [22m 10:56:22
+[2m   Duration [22m 1.54s[2m (transform 234ms, setup 389ms, collect 898ms, tests 90ms, environment 1.29s, prepare 396ms)[22m
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path C:\devProjects\semantic-baseline\digitalbackbone\apps\policy-governance
+npm error workspace policy-governance@0.0.0
+npm error location C:\devProjects\semantic-baseline\digitalbackbone\apps\policy-governance
+npm error command failed
+npm error command C:\WINDOWS\system32\cmd.exe /d /s /c vitest --run
+
+
+> semantic-operating-model@0.1.0 test
+> vitest --run --run
+
+file:///C:/devProjects/semantic-baseline/digitalbackbone/node_modules/vitest/dist/vendor/cac.cdAtVkJZ.js:1262
+      throw new Error(
+            ^
+
+Error: Expected a single value for option "--run", received [true, true]
+    at transform (file:///C:/devProjects/semantic-baseline/digitalbackbone/node_modules/vitest/dist/vendor/cac.cdAtVkJZ.js:1262:13)
+    at setDotProp (file:///C:/devProjects/semantic-baseline/digitalbackbone/node_modules/vitest/dist/vendor/cac.cdAtVkJZ.js:206:22)
+    at CAC.mri (file:///C:/devProjects/semantic-baseline/digitalbackbone/node_modules/vitest/dist/vendor/cac.cdAtVkJZ.js:590:9)
+    at CAC.parse (file:///C:/devProjects/semantic-baseline/digitalbackbone/node_modules/vitest/dist/vendor/cac.cdAtVkJZ.js:507:27)
+    at file:///C:/devProjects/semantic-baseline/digitalbackbone/node_modules/vitest/dist/cli.js:9:13
+    at ModuleJob.run (node:internal/modules/esm/module_job:234:25)
+    at async ModuleLoader.import (node:internal/modules/esm/loader:473:24)
+    at async main (file:///C:/devProjects/semantic-baseline/digitalbackbone/node_modules/vitest/dist/cli-wrapper.js:45:5)
+
+Node.js v20.18.1
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path C:\devProjects\semantic-baseline\digitalbackbone\apps\som-tier0
+npm error workspace semantic-operating-model@0.1.0
+npm error location C:\devProjects\semantic-baseline\digitalbackbone\apps\som-tier0
+npm error command failed
+npm error command C:\WINDOWS\system32\cmd.exe /d /s /c vitest --run --run
+
+npm error Lifecycle script `test` failed with error:
+npm error workspace task-management@0.0.0
+npm error location C:\devProjects\semantic-baseline\digitalbackbone\apps\task-management
+npm error Missing script: "test"
+npm error
+npm error To see a list of scripts, run:
+npm error   npm run --workspace=task-management@0.0.0
+
+npm error Lifecycle script `test` failed with error:
+npm error workspace @som/api-client@0.1.0
+npm error location C:\devProjects\semantic-baseline\digitalbackbone\packages\api-client
+npm error Missing script: "test"
+npm error
+npm error To see a list of scripts, run:
+npm error   npm run --workspace=@som/api-client@0.1.0
+
+
+> @som/semantic-linter@0.1.0 test
+> vitest --run
+
+
+[7m[1m[36m RUN [39m[22m[27m [36mv1.6.1[39m [90mC:/devProjects/semantic-baseline/digitalbackbone/packages/semantic-linter[39m
+
+[2minclude: [22m[33m**/*.{test,spec}.?(c|m)[jt]s?(x)[39m
+[2mexclude:  [22m[33m**/node_modules/**[2m, [22m**/dist/**[2m, [22m**/cypress/**[2m, [22m**/.{idea,git,cache,output,temp}/**[2m, [22m**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build,eslint,prettier}.config.*[39m
+[2mwatch exclude:  [22m[33m**/node_modules/**[2m, [22m**/dist/**[39m
+[31m
+No test files found, exiting with code 1[39m
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path C:\devProjects\semantic-baseline\digitalbackbone\packages\semantic-linter
+npm error workspace @som/semantic-linter@0.1.0
+npm error location C:\devProjects\semantic-baseline\digitalbackbone\packages\semantic-linter
+npm error command failed
+npm error command C:\WINDOWS\system32\cmd.exe /d /s /c vitest --run
+
+
+> @som/shared-types@0.1.0 test
+> vitest run --run
+
+
+[7m[1m[36m RUN [39m[22m[27m [36mv1.6.1[39m [90mC:/devProjects/semantic-baseline/digitalbackbone/packages/som-shared-types[39m
+
+ [33m❯[39m src/holon.test.ts [2m ([22m[2m5 tests[22m [2m|[22m [31m1 failed[39m[2m)[22m[90m 18[2mms[22m[39m
+[31m   [33m❯[31m src/holon.test.ts[2m > [22mCore Type Definitions[2m > [22mshould have all required holon types defined[39m
+[31m     → expected [ 'Person', 'Position', …(18) ] to deeply equal [ 'Person', 'Position', …(16) ][39m
+[90mstdout[2m | src/holon.test.ts[2m > [22m[2mCore Type Definitions[2m > [22m[2mshould have all required holon types defined[22m[39m
+DEBUG: HolonType enum values: [
+  [32m'Person'[39m,            [32m'Position'[39m,
+  [32m'Organization'[39m,      [32m'System'[39m,
+  [32m'Asset'[39m,             [32m'Mission'[39m,
+  [32m'Capability'[39m,        [32m'Qualification'[39m,
+  [32m'Location'[39m,          [32m'Document'[39m,
+  [32m'Objective'[39m,         [32m'LOE'[39m,
+  [32m'Initiative'[39m,        [32m'Task'[39m,
+  [32m'MeasureDefinition'[39m, [32m'LensDefinition'[39m,
+  [32m'Constraint'[39m,        [32m'Process'[39m,
+  [32m'Agent'[39m,             [32m'KeyResult'[39m
+]
+DEBUG: HolonType.Agent: Agent
+
+
+[31m⎯⎯⎯⎯⎯⎯⎯[1m[7m Failed Tests 1 [27m[22m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[31m[1m[7m FAIL [27m[22m[39m src/holon.test.ts[2m > [22mCore Type Definitions[2m > [22mshould have all required holon types defined
+[31m[1mAssertionError[22m: expected [ 'Person', 'Position', …(18) ] to deeply equal [ 'Person', 'Position', …(16) ][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  Array [[22m
+[2m    "Person",[22m
+[2m    "Position",[22m
+[2m    "Organization",[22m
+[2m    "System",[22m
+[2m    "Asset",[22m
+[2m    "Mission",[22m
+[2m    "Capability",[22m
+[2m    "Qualification",[22m
+[2m    "Location",[22m
+[2m    "Document",[22m
+[2m    "Objective",[22m
+[2m    "LOE",[22m
+[2m    "Initiative",[22m
+[2m    "Task",[22m
+[2m    "MeasureDefinition",[22m
+[2m    "LensDefinition",[22m
+[2m    "Constraint",[22m
+[2m    "Process",[22m
+[31m+   "Agent",[39m
+[31m+   "KeyResult",[39m
+[2m  ][22m
+
+[36m [2m❯[22m src/holon.test.ts:[2m37:25[22m[39m
+    [90m 35| [39m    console[33m.[39m[34mlog[39m([32m'DEBUG: HolonType enum values:'[39m[33m,[39m actualTypes)[33m;[39m
+    [90m 36| [39m    console[33m.[39m[34mlog[39m([32m'DEBUG: HolonType.Agent:'[39m[33m,[39m [33mHolonType[39m[33m.[39m[33mAgent[39m)[33m;[39m
+    [90m 37| [39m    [34mexpect[39m(actualTypes)[33m.[39m[34mtoEqual[39m(expectedTypes)[33m;[39m
+    [90m   | [39m                        [31m^[39m
+    [90m 38| [39m  })[33m;[39m
+    [90m 39| [39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m4 passed[39m[22m[90m (5)[39m
+[2m   Start at [22m 10:56:25
+[2m   Duration [22m 655ms[2m (transform 54ms, setup 0ms, collect 251ms, tests 18ms, environment 0ms, prepare 116ms)[22m
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path C:\devProjects\semantic-baseline\digitalbackbone\packages\som-shared-types
+npm error workspace @som/shared-types@0.1.0
+npm error location C:\devProjects\semantic-baseline\digitalbackbone\packages\som-shared-types
+npm error command failed
+npm error command C:\WINDOWS\system32\cmd.exe /d /s /c vitest run --run
+
+npm error Lifecycle script `test` failed with error:
+npm error workspace @som/ui-components@0.1.0
+npm error location C:\devProjects\semantic-baseline\digitalbackbone\packages\ui-components
+npm error Missing script: "test"
+npm error
+npm error To see a list of scripts, run:
+npm error   npm run --workspace=@som/ui-components@0.1.0

@@ -1,0 +1,34 @@
+name: Publish Shared Types Package
+
+on:
+  release:
+    types: [created] # Trigger only when a new GitHub Release is published
+
+jobs:
+  publish_package:
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write # Grant permission to publish to GitHub Packages
+      contents: read
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          # This connects npm to the GitHub Package registry
+          registry-url: 'https://npm.pkg.github.com'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Build Package
+        # Only build the package we intend to publish
+        run: npm run build --workspace=packages/som-shared-types
+
+      - name: Publish to GitHub Packages
+        run: npm publish --workspace=packages/som-shared-types
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}

@@ -1,0 +1,38 @@
+name: CI Build, Test, and Lint
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build_and_test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 1. Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: 2. Setup Node.js (v20)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # Use a specific version, e.g., Node 20 LTS
+
+      - name: 3. Install Dependencies
+        # This assumes your project uses npm workspaces in the monorepo root
+        run: npm install
+
+      - name: 4. Run Build
+        # Compiles TypeScript and runs any other necessary build steps
+        run: npm run build
+
+      - name: 5. Run Unit and Property-Based Tests
+        # Runs the dual testing approach described in your README
+        run: npm run test
+      
+      - name: 6. Run Semantic Linter
+        # Enforces the governance rules as defined in your package.json
+        run: npm run lint:semantic
