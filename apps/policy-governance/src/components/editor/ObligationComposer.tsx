@@ -75,7 +75,7 @@ export const ObligationComposer: React.FC<ObligationComposerProps> = ({ initialS
                     {isPickerOpen && (
                         <OwnerPicker
                             value={selectedActorId}
-                            onChange={(id) => setSelectedActorId(id)}
+                            onChange={(id: string) => setSelectedActorId(id)}
                             onClose={() => setIsPickerOpen(false)}
                             className="absolute top-full left-0 mt-1 w-full"
                         />

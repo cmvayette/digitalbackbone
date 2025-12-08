@@ -1,7 +1,7 @@
-import type { OrganizationalStructureDTO } from '../types/api';
+import type { OrgStructure } from '@som/api-client';
 import type { GraphData, GraphNode, GraphEdge } from '../types/graph';
 
-export function transformStructureToGraph(data: OrganizationalStructureDTO): GraphData {
+export function transformStructureToGraph(data: OrgStructure): GraphData {
     const nodes: GraphNode[] = [];
     const edges: GraphEdge[] = [];
     const processedIds = new Set<string>();
@@ -25,7 +25,7 @@ export function transformStructureToGraph(data: OrganizationalStructureDTO): Gra
     // Starting position (simple layout placeholder, dagre will run later)
     let yOffset = 0;
 
-    function processStructure(structure: OrganizationalStructureDTO, parentOrgId?: string) {
+    function processStructure(structure: OrgStructure, parentOrgId?: string) {
         const org = structure.organization;
 
         // 1. Add Organization Node
@@ -87,13 +87,14 @@ export function transformStructureToGraph(data: OrganizationalStructureDTO): Gra
             // Let's stick to the spec: Position Card shows the person.
             // We will inject the person data INTO the position node data.
             if (person) {
-                // Transform data already done above? 
-                // Actually, let's add person data to the node data for rendering
-                // We do NOT add a separate 'person' node unless strictly required.
+                // Update node with person data
                 const nodeIndex = nodes.findIndex(n => n.id === pos.id);
-                if (nodeIndex >= 0 && person && nodes[nodeIndex].data.properties) {
-                    nodes[nodeIndex].data.subtitle = person.properties.name; // Override subtitle or add extra prop
-                    nodes[nodeIndex].data.properties['rank'] = person.properties.designatorRating;
+                if (nodeIndex >= 0 && nodes[nodeIndex].data) {
+                    nodes[nodeIndex].data.subtitle = person.properties.name;
+                    if (nodes[nodeIndex].data.properties) {
+                        nodes[nodeIndex].data.properties['rank'] = person.properties.designatorRating;
+                    }
+                    nodes[nodeIndex].data.isVacant = false;
                 }
             }
         });

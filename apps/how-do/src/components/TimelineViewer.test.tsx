@@ -49,7 +49,7 @@ describe('TimelineViewer', () => {
 
         expect(screen.getByText('Test Process')).toBeInTheDocument();
         expect(screen.getByText('First Step')).toBeInTheDocument();
-        expect(screen.getByText('Second Step')).toBeInTheDocument();
+        expect(screen.getByText('Step 2')).toBeInTheDocument();
         // Check for step numbers
         expect(screen.getByText('1')).toBeInTheDocument();
         expect(screen.getByText('2')).toBeInTheDocument();

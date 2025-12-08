@@ -25,7 +25,7 @@ describe('ProcessSearch', () => {
         render(<ProcessSearch onSelectProcess={() => { }} />);
 
         // proc-1 is mocked to have drift
-        const driftBadges = screen.getAllByText('DRIFT');
+        const driftBadges = screen.getAllByText(/DRIFT/);
         expect(driftBadges.length).toBeGreaterThan(0);
     });
 

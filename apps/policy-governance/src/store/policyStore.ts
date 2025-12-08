@@ -40,9 +40,25 @@ export const usePolicyStore = create<PolicyState>((set) => ({
     policies: mockPolicies,
     currentPolicy: null,
 
-    loadPolicies: () => {
-        // In real app, fetch from API
-        set({ policies: mockPolicies });
+    loadPolicies: async () => {
+        try {
+            const { createSOMClient } = await import('@som/api-client');
+            const client = createSOMClient();
+            const response = await client.getPolicies();
+            if (response.success && response.data) {
+                // Map Holons to PolicyDocuments
+                // valid types are guaranteed by API contract usually, but we cast for now
+                const mappedPolicies = response.data.map((h: any) => ({
+                    id: h.id,
+                    ...h.properties,
+                    // Ensure required fields differ from holon props if needed
+                })) as PolicyDocument[];
+                set({ policies: mappedPolicies });
+            }
+        } catch (error) {
+            console.error("Failed to load policies", error);
+            set({ policies: mockPolicies }); // Fallback
+        }
     },
 
     selectPolicy: (id) => set((state) => ({

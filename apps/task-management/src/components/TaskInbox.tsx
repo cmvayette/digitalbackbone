@@ -1,4 +1,3 @@
-```javascript
 import React, { useState } from 'react';
 import { useTaskStore } from '../store/taskStore';
 import { CheckCircle, Circle, Clock, AlertCircle } from 'lucide-react';
@@ -42,16 +41,15 @@ export const TaskInbox: React.FC = () => {
 
                 <div className="space-y-3">
                     {sortedTasks.map(task => (
-                        <div 
-                            key={task.id} 
+                        <div
+                            key={task.id}
                             onClick={() => setSelectedTaskId(task.id)}
-                            className={`flex items - center gap - 4 p - 4 rounded - lg border transition - all cursor - pointer ${
-    task.state === 'done' ? 'bg-slate-900/30 border-slate-800 opacity-60' :
-        selectedTaskId === task.id ? 'bg-slate-900 border-indigo-500 shadow-md ring-1 ring-indigo-500/50' :
-            'bg-slate-900 border-slate-700 shadow-sm hover:border-slate-500'
-} `}
+                            className={`flex items-center gap-4 p-4 rounded-lg border transition-all cursor-pointer ${task.state === 'done' ? 'bg-slate-900/30 border-slate-800 opacity-60' :
+                                    selectedTaskId === task.id ? 'bg-slate-900 border-indigo-500 shadow-md ring-1 ring-indigo-500/50' :
+                                        'bg-slate-900 border-slate-700 shadow-sm hover:border-slate-500'
+                                }`}
                         >
-                            <button 
+                            <button
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     updateTaskStatus(task.id, task.state === 'done' ? 'todo' : 'done');
@@ -60,16 +58,15 @@ export const TaskInbox: React.FC = () => {
                             >
                                 <StatusIcon status={task.state} />
                             </button>
-                            
+
                             <div className="flex-1 min-w-0">
-                                <h3 className={`font - medium text - base truncate ${ task.state === 'done' ? 'line-through text-slate-500' : 'text-slate-100' } `}>
+                                <h3 className={`font-medium text-base truncate ${task.state === 'done' ? 'line-through text-slate-500' : 'text-slate-100'}`}>
                                     {task.title}
                                 </h3>
                                 <div className="flex items-center gap-3 text-xs text-slate-500 mt-1">
-                                    <span className={`uppercase font - bold tracking - wider ${
-    task.priority === 'critical' ? 'text-red-400' :
-        task.priority === 'high' ? 'text-amber-400' : 'text-slate-500'
-} `}>
+                                    <span className={`uppercase font-bold tracking-wider ${task.priority === 'critical' ? 'text-red-400' :
+                                            task.priority === 'high' ? 'text-amber-400' : 'text-slate-500'
+                                        }`}>
                                         {task.priority}
                                     </span>
                                     <span>•</span>
@@ -84,9 +81,9 @@ export const TaskInbox: React.FC = () => {
                             </div>
 
                             <div className="text-right shrink-0">
-                               <span className="text-xs bg-slate-800 px-2 py-1 rounded text-slate-400">
+                                <span className="text-xs bg-slate-800 px-2 py-1 rounded text-slate-400">
                                     {task.ownerType === 'Position' ? 'Pos' : 'Pers'}
-                               </span>
+                                </span>
                             </div>
                         </div>
                     ))}
@@ -100,12 +97,11 @@ export const TaskInbox: React.FC = () => {
             </div>
 
             {selectedTaskId && (
-                <TaskDetailPanel 
-                    taskId={selectedTaskId} 
-                    onClose={() => setSelectedTaskId(null)} 
+                <TaskDetailPanel
+                    taskId={selectedTaskId}
+                    onClose={() => setSelectedTaskId(null)}
                 />
             )}
         </div>
     );
 };
-```

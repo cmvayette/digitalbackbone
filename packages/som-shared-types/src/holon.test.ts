@@ -28,7 +28,8 @@ describe('Core Type Definitions', () => {
       'LensDefinition',
       'Constraint',
       'Process',
-      // 'Agent'
+      'Agent',
+      'KeyResult'
     ];
 
     const actualTypes = Object.values(HolonType);

@@ -1,4 +1,3 @@
-```javascript
 import React from 'react';
 import { TaskInbox } from './components/TaskInbox';
 import { ProjectList } from './components/ProjectList';
@@ -18,7 +17,7 @@ function App() {
 
         <button
           onClick={() => setView('hub')}
-          className={`p - 3 rounded - xl transition - all ${ view === 'hub' ? 'bg-slate-800 text-indigo-400 shadow-inner' : 'text-slate-400 hover:text-white hover:bg-slate-800' } `}
+          className={`p-3 rounded-xl transition-all ${view === 'hub' ? 'bg-slate-800 text-indigo-400 shadow-inner' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}
           title="My Hub"
         >
           <User size={20} />
@@ -26,7 +25,7 @@ function App() {
 
         <button
           onClick={() => setView('inbox')}
-          className={`p - 3 rounded - xl transition - all ${ view === 'inbox' ? 'bg-slate-800 text-indigo-400 shadow-inner' : 'text-slate-400 hover:text-white hover:bg-slate-800' } `}
+          className={`p-3 rounded-xl transition-all ${view === 'inbox' ? 'bg-slate-800 text-indigo-400 shadow-inner' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}
           title="Position Inbox"
         >
           <CheckSquare size={20} />
@@ -34,7 +33,7 @@ function App() {
 
         <button
           onClick={() => setView('projects')}
-          className={`p - 3 rounded - xl transition - all ${ view === 'projects' ? 'bg-slate-800 text-indigo-400 shadow-inner' : 'text-slate-400 hover:text-white hover:bg-slate-800' } `}
+          className={`p-3 rounded-xl transition-all ${view === 'projects' ? 'bg-slate-800 text-indigo-400 shadow-inner' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}
           title="Projects"
         >
           <Folder size={20} />

@@ -1,0 +1,14 @@
+
+> policy-governance@0.0.0 build
+> tsc -b && vite build
+
+src/components/editor/ObligationComposer.tsx(4,29): error TS2307: Cannot find module '@som/ui-components' or its corresponding type declarations.
+src/components/editor/ObligationComposer.tsx(78,40): error TS7006: Parameter 'id' implicitly has an 'any' type.
+src/main.tsx(4,17): error TS5097: An import path can only end with a '.tsx' extension when 'allowImportingTsExtensions' is enabled.
+npm error Lifecycle script `build` failed with error:
+npm error code 2
+npm error path C:\devProjects\semantic-baseline\digitalbackbone\apps\policy-governance
+npm error workspace policy-governance@0.0.0
+npm error location C:\devProjects\semantic-baseline\digitalbackbone\apps\policy-governance
+npm error command failed
+npm error command C:\WINDOWS\system32\cmd.exe /d /s /c tsc -b && vite build

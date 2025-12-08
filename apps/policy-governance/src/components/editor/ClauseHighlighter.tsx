@@ -1,6 +1,5 @@
 import React from 'react';
-import { Editor } from '@tiptap/react';
-import { BubbleMenu } from '@tiptap/extension-bubble-menu';
+import { Editor, BubbleMenu } from '@tiptap/react';
 import { ShieldCheck } from 'lucide-react';
 
 interface ClauseHighlighterProps {

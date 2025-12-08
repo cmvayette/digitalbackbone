@@ -1,5 +1,6 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { HolonType, type Process } from '@som/shared-types';
+import { createSOMClient } from './client';
 
 // Initial Mock Data
 const INITIAL_PROCESSES: Process[] = [
@@ -57,14 +58,47 @@ const notifyListeners = () => {
 export function useExternalProcessData() {
     // This is a "fake" real-time subscription for the demo
     const [processes, setProcesses] = useState<Process[]>(SHARED_PROCESS_STORE);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
-    // Sync with external store changes
-    // (Note: In a real app setup, useQuery would handle this)
+    // Fetch from API on mount
+    useEffect(() => {
+        const fetchProcesses = async () => {
+            try {
+                // Determine API URL (client default or env)
+                // We use the factory which handles defaults
+                const client = createSOMClient();
+                const response = await client.getProcesses();
+
+                if (response.success && response.data) {
+                    // Update store with fetched data
+                    const fetchedProcesses = response.data as Process[];
+                    // Merge with local changes if any? For now, just append or replace.
+                    // To handle mix of mock and real, we might append real to mock?
+                    // But "Refactor" implies moving to real.
+                    // We'll replace SHARED_PROCESS_STORE with fetched data if valid
+                    if (fetchedProcesses.length > 0) {
+                        SHARED_PROCESS_STORE = fetchedProcesses;
+                        setProcesses(fetchedProcesses);
+                    }
+                }
+            } catch (err) {
+                console.warn("Failed to fetch processes from API, using mock data", err);
+                // Keep mock data
+            }
+        };
+
+        fetchProcesses();
+    }, []);
 
     const addProcess = useCallback((process: Process) => {
         SHARED_PROCESS_STORE = [...SHARED_PROCESS_STORE, process];
         setProcesses(SHARED_PROCESS_STORE);
-        notifyListeners(); // If we had multi-component sync needs
+        notifyListeners();
+
+        // TODO: Persist to API via Event Submission
+        // const client = createSOMClient();
+        // client.submitEvent({ type: 'PROCESS_CREATED', ... });
     }, []);
 
     const getProcessById = useCallback((id: string) => {
