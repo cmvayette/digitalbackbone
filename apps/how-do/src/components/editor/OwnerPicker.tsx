@@ -1,13 +1,11 @@
-import React from 'react';
-import { User, Bot, Briefcase } from 'lucide-react';
-import mockPolicy from '../../mocks/mock-policy.json';
-import mockOrg from '../../mocks/org-structure.json';
+import React, { useState } from 'react';
+import { User, Briefcase, Building } from 'lucide-react';
+import { useExternalOrgData } from '../../hooks/useExternalOrgData';
 
-// In a real app, this would come from a shared type or API
 interface OwnerOption {
     id: string;
     name: string;
-    type: 'Position' | 'Agent';
+    type: 'Organization' | 'Position' | 'Agent';
     subtitle?: string;
 }
 
@@ -18,36 +16,29 @@ interface OwnerPickerProps {
 }
 
 export const OwnerPicker: React.FC<OwnerPickerProps> = ({ value, onChange, onClose }) => {
-    // Transform mock data into standardized options
-    // Assuming org-structure.json has a flat list or we flatten it. 
-    // Based on typical structure seen in other files, let's extract positions.
-    // Adapting to whatever format org-structure.json actually has.
+    const { getCandidates } = useExternalOrgData();
+    const [searchTerm, setSearchTerm] = useState('');
 
-    // Flatten positions from the org structure
-    // org-structure.json has "positions" array
-    const positions: OwnerOption[] = (mockOrg as any).positions?.map((p: any) => ({
-        id: p.id,
-        name: p.title,
-        type: 'Position',
-        subtitle: 'Human Position' // Could look up org name if needed
-    })) || [];
-
-    const [searchTerm, setSearchTerm] = React.useState('');
-
-    const agents: OwnerOption[] = mockPolicy.agents.map(a => ({
-        id: a.id,
-        name: a.name,
-        type: 'Agent',
-        subtitle: a.capabilities.join(', ')
+    // Load Candidates from Org Store Hook
+    const candidates: OwnerOption[] = getCandidates().map(c => ({
+        ...c,
+        type: c.type === 'Organization' ? 'Organization' : 'Position' // Narrow types if needed
     }));
 
-    const allOptions = [...positions, ...agents];
+    // Add Agents (still mocked for now, as they aren't in Org Chart yet)
+    const agents: OwnerOption[] = [
+        { id: 'agent-1', name: 'Policy Bot', type: 'Agent', subtitle: 'Governance Check' },
+        { id: 'agent-2', name: 'Ops Scheduler_AI', type: 'Agent', subtitle: 'Calendar Mgmt' }
+    ];
+
+    const allOptions = [...candidates, ...agents];
 
     const filteredOptions = allOptions.filter(opt =>
         opt.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         opt.subtitle?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
+    const filteredOrgs = filteredOptions.filter(o => o.type === 'Organization');
     const filteredPositions = filteredOptions.filter(o => o.type === 'Position');
     const filteredAgents = filteredOptions.filter(o => o.type === 'Agent');
 
@@ -56,7 +47,7 @@ export const OwnerPicker: React.FC<OwnerPickerProps> = ({ value, onChange, onClo
             <div className="p-2 border-b border-slate-700 bg-slate-900/50">
                 <input
                     type="text"
-                    placeholder="Search owners..."
+                    placeholder="Search owners (Units, Positions)..."
                     className="w-full bg-slate-900 border border-slate-700 text-slate-200 text-xs rounded px-2 py-1 focus:border-blue-500 focus:outline-none"
                     autoFocus
                     value={searchTerm}
@@ -66,9 +57,30 @@ export const OwnerPicker: React.FC<OwnerPickerProps> = ({ value, onChange, onClo
 
             <div className="max-h-60 overflow-y-auto p-1">
 
+                {filteredOrgs.length > 0 && (
+                    <>
+                        <div className="text-[10px] uppercase font-bold text-slate-500 px-2 py-1">Organizations</div>
+                        {filteredOrgs.map(org => (
+                            <button
+                                key={org.id}
+                                onClick={() => { onChange(org.id); onClose(); }}
+                                className={`w-full flex items-center gap-2 p-2 rounded text-left transition-colors ${value === org.id ? 'bg-green-600/20 text-green-300' : 'text-slate-300 hover:bg-slate-700'}`}
+                            >
+                                <div className="w-6 h-6 rounded bg-green-500/10 flex items-center justify-center shrink-0">
+                                    <Building size={12} className="text-green-400" />
+                                </div>
+                                <div>
+                                    <div className="text-xs font-medium">{org.name}</div>
+                                    <div className="text-[10px] text-slate-500">{org.subtitle}</div>
+                                </div>
+                            </button>
+                        ))}
+                    </>
+                )}
+
                 {filteredPositions.length > 0 && (
                     <>
-                        <div className="text-[10px] uppercase font-bold text-slate-500 px-2 py-1">Positions</div>
+                        <div className="text-[10px] uppercase font-bold text-slate-500 px-2 py-1 mt-2">Positions</div>
                         {filteredPositions.map(pos => (
                             <button
                                 key={pos.id}
@@ -86,6 +98,7 @@ export const OwnerPicker: React.FC<OwnerPickerProps> = ({ value, onChange, onClo
                         ))}
                     </>
                 )}
+
                 {filteredAgents.length > 0 && (
                     <>
                         <div className="text-[10px] uppercase font-bold text-slate-500 px-2 py-1 mt-2">Agents</div>
@@ -96,7 +109,7 @@ export const OwnerPicker: React.FC<OwnerPickerProps> = ({ value, onChange, onClo
                                 className={`w-full flex items-center gap-2 p-2 rounded text-left transition-colors ${value === agent.id ? 'bg-purple-600/20 text-purple-300' : 'text-slate-300 hover:bg-slate-700'}`}
                             >
                                 <div className="w-6 h-6 rounded bg-purple-500/10 flex items-center justify-center shrink-0">
-                                    <Bot size={12} className="text-purple-400" />
+                                    <User size={12} className="text-purple-400" />
                                 </div>
                                 <div>
                                     <div className="text-xs font-medium">{agent.name}</div>
@@ -107,8 +120,6 @@ export const OwnerPicker: React.FC<OwnerPickerProps> = ({ value, onChange, onClo
                     </>
                 )}
             </div >
-
-            {/* Backdrop click handler specific - relying on parent for outside click for now but self-close button helpful */}
         </div >
     );
 };
