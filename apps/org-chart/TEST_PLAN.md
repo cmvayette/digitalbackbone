@@ -42,5 +42,20 @@
 - [ ] **Navigation**:
     - Action: Click a search result.
     - Check: Graph centers on the target node.
-    - Check: Sidebar opens for the target node.
+
+## 5. Visual Enhancements (Phase 3)
+**Goal**: Verify health indicators and tooltips.
+
+- [ ] **Organization Health**:
+    - Setup: Mock organization with >20% vacancies.
+    - Check: Red health dot appears on Organization Node.
+
+- [ ] **Vacancy Badge**:
+    - Setup: Mock position as vacant (unfilled).
+    - Check: "VACANT" badge or specific styling is visible on Position Node.
+
+- [ ] **Hover Tooltip**:
+    - Action: Hover over Organization Node.
+    - Check: Tooltip appears showing roster summary (e.g., "45/50 Seats").
+
 

@@ -3,7 +3,11 @@ import type { NodeProps } from '@xyflow/react';
 import type { GraphNode } from '../../types/graph';
 import clsx from 'clsx';
 
+import { useTooltip, HolonTooltip } from '../tooltip/HolonTooltip';
+
 export function OrganizationNode({ data }: NodeProps<GraphNode>) {
+    const { tooltipState, showTooltip, hideTooltip } = useTooltip();
+
     // Use data.properties to populate fields if available, fallbacks otherwise
     const orgName = data.label || 'Unknown Organization';
     const uic = data.properties?.uic || data.subtitle || 'N/A';
@@ -15,16 +19,30 @@ export function OrganizationNode({ data }: NodeProps<GraphNode>) {
     const totalSeats = data.properties?.stats?.totalSeats ?? 0;
     const vacancies = data.properties?.stats?.vacancies ?? 0;
 
+    const onMouseEnter = (e: React.MouseEvent) => {
+        showTooltip(e, (
+            <div>
+                <div className="font-bold text-text-primary mb-1">{orgName}</div>
+                <div className="text-xs text-text-secondary">Click to view services and roster details.</div>
+            </div>
+        ));
+    };
+
     return (
-        <div className={clsx(
-            "w-[350px] bg-bg-panel border rounded shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 flex flex-col overflow-hidden group",
-            isTigerTeam ? "border-accent-purple border-dashed border-2" : "border-border-color"
-        )}>
+        <div
+            className={clsx(
+                "w-[350px] bg-bg-panel border rounded shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 flex flex-col overflow-hidden group",
+                isTigerTeam ? "border-accent-purple border-dashed border-2" : "border-border-color"
+            )}
+            onMouseEnter={onMouseEnter}
+            onMouseLeave={hideTooltip}
+        >
+            <HolonTooltip {...tooltipState} />
             {/* Input Handle (Top) */}
             <Handle type="target" position={Position.Top} className="!bg-border-color !w-3 !h-3" />
 
             {/* Header */}
-            <div className="flex justify-between items-start p-3 pb-2">
+            <div className="flex justify-between items-start p-3 pb-2 relative">
                 <div>
                     <span className={clsx(
                         "text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded font-semibold",
@@ -36,6 +54,16 @@ export function OrganizationNode({ data }: NodeProps<GraphNode>) {
                         {orgName}
                     </h3>
                 </div>
+                {/* Health Dot */}
+                {vacancies > 0 && (
+                    <div
+                        className={clsx(
+                            "w-3 h-3 rounded-full absolute top-3 right-3 shadow-sm",
+                            (vacancies / (totalSeats || 1)) > 0.15 ? "bg-red-500" : (vacancies / (totalSeats || 1)) > 0.05 ? "bg-yellow-500" : "bg-green-500" // Simple logic for demo
+                        )}
+                        title={`${vacancies} Vacancies`}
+                    />
+                )}
             </div>
 
             {/* Context Links */}
