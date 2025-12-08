@@ -21,9 +21,8 @@ describe('SwimlaneEditor', () => {
         // Check for the badge text "jira"
         const badge = screen.getByText('jira');
         expect(badge).toBeDefined();
-        expect(badge.className).toContain('proxy-badge');
 
-        expect(screen.getByText(/REF: JIRA-123/)).toBeDefined();
+        expect(screen.getByText(/ID: JIRA-123/)).toBeDefined();
     });
 
     it('allows assigning a step to an agent', async () => {

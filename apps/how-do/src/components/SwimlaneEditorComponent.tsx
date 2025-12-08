@@ -3,6 +3,10 @@ import './SwimlaneEditor.css';
 import mockData from '../mocks/mock-policy.json';
 import { HolonType } from '@som/shared-types';
 import type { Process } from '@som/shared-types';
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
+import { arrayMove, SortableContext, sortableKeyboardCoordinates, horizontalListSortingStrategy } from '@dnd-kit/sortable';
+import { SortableStep } from './editor/SortableStep';
+import { StepCard } from './viewer/StepCard';
 
 const { policies, agents } = mockData;
 
@@ -36,6 +40,13 @@ export const SwimlaneEditor: React.FC<SwimlaneEditorProps> = ({ initialProcess, 
     });
 
     const [editingStepId, setEditingStepId] = useState<string | null>(null);
+
+    const sensors = useSensors(
+        useSensor(PointerSensor),
+        useSensor(KeyboardSensor, {
+            coordinateGetter: sortableKeyboardCoordinates,
+        })
+    );
 
     // Helper to find relevant obligations for a position
     const getObligationsForPosition = (posId: string) => {
@@ -71,6 +82,25 @@ export const SwimlaneEditor: React.FC<SwimlaneEditorProps> = ({ initialProcess, 
         setEditingStepId(null);
     };
 
+    const handleDragEnd = (event: DragEndEvent) => {
+        const { active, over } = event;
+
+        if (active.id !== over?.id) {
+            setProcess((prev) => {
+                const oldIndex = prev.properties.steps.findIndex((step) => step.id === active.id);
+                const newIndex = prev.properties.steps.findIndex((step) => step.id === over?.id);
+
+                return {
+                    ...prev,
+                    properties: {
+                        ...prev.properties,
+                        steps: arrayMove(prev.properties.steps, oldIndex, newIndex)
+                    }
+                };
+            });
+        }
+    };
+
     return (
         <div className="swimlane-editor">
             <div className="toolbar">
@@ -82,95 +112,86 @@ export const SwimlaneEditor: React.FC<SwimlaneEditorProps> = ({ initialProcess, 
                 </div>
             </div>
 
-            <div className="canvas">
-                {process.properties.steps.map((step, index) => {
-                    const obligations = getObligationsForPosition(step.owner);
-                    const isAgent = agents?.some(a => a.id === step.owner);
-                    const ownerName = isAgent
-                        ? agents.find(a => a.id === step.owner)?.name
-                        : step.owner;
+            <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
+            >
+                <div className="canvas flex gap-4 overflow-x-auto pb-4">
+                    <SortableContext
+                        items={process.properties.steps.map(s => s.id)}
+                        strategy={horizontalListSortingStrategy}
+                    >
+                        {process.properties.steps.map((step, index) => {
+                            const obligations = getObligationsForPosition(step.owner);
+                            const isAgent = agents?.some(a => a.id === step.owner);
+                            const ownerName = isAgent
+                                ? agents.find(a => a.id === step.owner)?.name
+                                : step.owner;
 
-                    return (
-                        <div key={step.id} className="swimlane-column">
-                            <div className="swimlane-header">
-                                <div className={`role-badge ${isAgent ? 'agent-badge' : ''}`}>
-                                    {ownerName}
-                                    {isAgent && " 🤖"}
-                                </div>
-                            </div>
+                            return (
+                                <SortableStep key={step.id} id={step.id}>
+                                    <div className="swimlane-column min-w-[300px]">
+                                        <div className="swimlane-header flex justify-between items-center mb-2">
+                                            <div className={`role-badge ${isAgent ? 'agent-badge' : ''}`}>
+                                                {ownerName}
+                                                {isAgent && " 🤖"}
+                                            </div>
 
-                            <div className="step-card">
-                                <div className="step-number">{index + 1}</div>
+                                            {/* Inline Owner Edit Control (kept from original editor) */}
+                                            <div className="step-controls relative">
+                                                {editingStepId === step.id ? (
+                                                    <select
+                                                        autoFocus
+                                                        value={step.owner}
+                                                        onChange={(e) => updateStepOwner(step.id, e.target.value)}
+                                                        onBlur={() => setEditingStepId(null)}
+                                                        className="text-xs p-1 border rounded"
+                                                    >
+                                                        <optgroup label="Positions">
+                                                            <option value="pos-1">pos-1</option>
+                                                            <option value="pos-2">pos-2</option>
+                                                            <option value="pos-3">pos-3</option>
+                                                        </optgroup>
+                                                        <optgroup label="Agents">
+                                                            {agents?.map(agent => (
+                                                                <option key={agent.id} value={agent.id}>
+                                                                    {agent.name}
+                                                                </option>
+                                                            ))}
+                                                        </optgroup>
+                                                    </select>
+                                                ) : (
+                                                    <button
+                                                        className="text-xs text-slate-400 hover:text-blue-500"
+                                                        onClick={() => setEditingStepId(step.id)}
+                                                        aria-label="Edit Owner"
+                                                    >
+                                                        ✎ Change Owner
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
 
-                                <div className="step-controls">
-                                    {editingStepId === step.id ? (
-                                        <select
-                                            autoFocus
-                                            value={step.owner}
-                                            onChange={(e) => updateStepOwner(step.id, e.target.value)}
-                                            onBlur={() => setEditingStepId(null)}
-                                        >
-                                            <optgroup label="Positions">
-                                                <option value="pos-1">pos-1</option>
-                                                <option value="pos-2">pos-2</option>
-                                                <option value="pos-3">pos-3</option>
-                                            </optgroup>
-                                            <optgroup label="Agents">
-                                                {agents?.map(agent => (
-                                                    <option key={agent.id} value={agent.id}>
-                                                        {agent.name}
-                                                    </option>
-                                                ))}
-                                            </optgroup>
-                                        </select>
-                                    ) : (
-                                        <button
-                                            className="edit-owner-btn"
-                                            onClick={() => setEditingStepId(step.id)}
-                                            aria-label="Edit Owner"
-                                        >
-                                            ✎
-                                        </button>
-                                    )}
-                                </div>
+                                        <StepCard
+                                            step={step}
+                                            index={index}
+                                            ownerName={ownerName}
+                                            isAgent={isAgent}
+                                            obligations={obligations as any}
+                                            viewMode="swimlane"
+                                        />
 
-                                <h3>
-                                    {step.source === 'external' && (
-                                        <span className="proxy-badge" title={`Source: ${step.externalSource}`}>
-                                            {step.externalSource || 'EXT'}
-                                        </span>
-                                    )}
-                                    {step.title}
-                                </h3>
-                                {(step.source === 'external' && step.externalId) && (
-                                    <div className="external-ref" style={{ fontSize: '0.8em', color: '#666', marginBottom: '4px' }}>
-                                        REF: {step.externalId}
+                                        {index < process.properties.steps.length - 1 && (
+                                            <div className="connector-arrow text-center text-slate-400 mt-2">→</div>
+                                        )}
                                     </div>
-                                )}
-                                <p>{step.description}</p>
-                            </div>
-
-                            {obligations.length > 0 && (
-                                <div className="obligation-hint">
-                                    <h4>Suggested Obligations:</h4>
-                                    <ul>
-                                        {obligations.map(obl => (
-                                            <li key={obl.id}>
-                                                <span className={`criticality-${obl.criticality}`} />
-                                                {obl.statement.substring(0, 50)}...
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
-                            )}
-
-                            {index < process.properties.steps.length - 1 && (
-                                <div className="connector-arrow">→</div>
-                            )}
-                        </div>
-                    );
-                })}
-            </div>
+                                </SortableStep>
+                            );
+                        })}
+                    </SortableContext>
+                </div>
+            </DndContext>
         </div>
     );
 };
