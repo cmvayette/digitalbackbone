@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import './SwimlaneEditor.css';
 import { StepCard } from './viewer/StepCard';
 import mockData from '../mocks/mock-policy.json';
-import { HolonType } from '@som/shared-types';
-import type { Process } from '@som/shared-types';
+import type { Process } from '../types/process';
 
 const { agents, policies } = mockData;
 

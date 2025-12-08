@@ -1,5 +1,6 @@
 import { HolonType } from '@som/shared-types';
-import type { Process } from '@som/shared-types';
+import React from 'react';
+import type { Process } from '../types/process';
 import mockData from '../mocks/mock-policy.json';
 import { CheckCircle2, ChevronDown, Clock, FileText, ShieldAlert, User } from 'lucide-react';
 import { StepCard } from './viewer/StepCard';

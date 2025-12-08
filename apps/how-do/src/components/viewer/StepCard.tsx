@@ -1,6 +1,7 @@
 import React from 'react';
 import { Paperclip, ShieldAlert, GitBranch, CheckCircle2, User, FileText } from 'lucide-react';
 import { HolonType } from '@som/shared-types';
+import type { ProcessStep } from '../../types/process';
 
 interface StepCardProps {
     step: {

@@ -9,7 +9,7 @@ This document provides detailed implementation plans for each Tier-1 frontend ap
 | App | Current Status | Completion % | Priority |
 |-----|---------------|--------------|----------|
 | **Org Chart** | Completed - MVP Delivered | 100% | High |
-| **How-Do** | Scaffolded - basic swimlane editor with mock data | ~15% | High |
+| **How-Do** | MVP Process Editor, Governance & Health | ~80% | High |
 | **Policy Governance** | Minimal scaffold - textarea-only editor | ~10% | Medium |
 | **Task Management** | Scaffolded - mock task generation only | ~15% | High |
 | **Objectives/OKR** | Scaffolded - mock dashboard with seed data | ~15% | Medium |
@@ -178,12 +178,12 @@ This document provides detailed implementation plans for each Tier-1 frontend ap
 
 **Not Yet Implemented:**
 - ❌ Linear Timeline Layout
-- ❌ Step card enhancements (attachments, SLA, decision logic)
-- ❌ Drag-and-drop step reordering
-- ❌ Owner selection from Org Chart
-- ❌ Governance integration (obligation badges, drift alerts)
+- ✅ Step card enhancements (attachments, SLA, decision logic)
+- ✅ Drag-and-drop step reordering
+- ✅ Owner selection from Org Chart
+- ✅ Governance integration (obligation badges, drift alerts)
 - ❌ Execution Mode (V2)
-- ❌ Process health indicators
+- ✅ Process health indicators
 - ❌ Version history & diff
 - ❌ "Show Only My Steps" filter
 - ❌ "Explain It to Me Like I'm New" mode
