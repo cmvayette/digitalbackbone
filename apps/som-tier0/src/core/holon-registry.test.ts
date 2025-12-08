@@ -5,10 +5,10 @@
  * using fast-check for property-based testing.
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, beforeEach } from 'vitest';
 import * as fc from 'fast-check';
 import { InMemoryHolonRepository as HolonRegistry } from './holon-registry';
-import { Holon, HolonType, HolonID } from '@som/shared-types';
+import { HolonType } from '@som/shared-types';
 
 describe('Holon Registry - Property-Based Tests', () => {
   let registry: HolonRegistry;

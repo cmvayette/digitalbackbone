@@ -3,7 +3,7 @@
  */
 
 import { UserContext, Role } from '../access-control';
-import { APIRequest, APIResponse, APIError } from './api-types';
+import { APIResponse } from './api-types';
 import { IAuthProvider, AuthenticationResult } from './auth/auth-types';
 
 /**
@@ -81,7 +81,7 @@ export class AuthorizationMiddleware {
   /**
    * Check if user can query holons
    */
-  canQueryHolons(user: UserContext): AuthorizationResult {
+  canQueryHolons(_user: UserContext): AuthorizationResult {
     // All authenticated users can query (access control filters results)
     return { authorized: true };
   }
@@ -207,7 +207,7 @@ export class RequestValidationMiddleware {
         };
       }
       return { valid: true };
-    } catch (error) {
+    } catch {
       return {
         valid: false,
         error: 'Invalid timestamp format',

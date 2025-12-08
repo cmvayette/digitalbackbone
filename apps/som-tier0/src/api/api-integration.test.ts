@@ -41,7 +41,7 @@ import { OrganizationManager } from '../organization-management';
 import { HolonType } from '@som/shared-types';
 import { RelationshipType } from '@som/shared-types';
 import { EventType } from '@som/shared-types';
-import { DocumentType } from '@som/shared-types';
+
 
 describe('API Server Integration Tests', () => {
   let apiServer: APIServer;
@@ -474,7 +474,8 @@ describe('API Server Integration Tests', () => {
         actor: personId,
       });
       expect(relResult.validation.valid).toBe(true);
-      const relId = relResult.relationship!.id;
+      expect(relResult.validation.valid).toBe(true);
+      // const relId = relResult.relationship!.id;
 
       // Update graph store
       await graphStore.rebuildIndices();
@@ -599,7 +600,8 @@ describe('API Server Integration Tests', () => {
         sourceDocuments: [],
       });
       expect(result_personId.success).toBe(true);
-      const personId = result_personId.personID!;
+      expect(result_personId.success).toBe(true);
+      // const personId = result_personId.personID!;
       await graphStore.rebuildIndices();
 
       const response = await apiServer.handleRequest(

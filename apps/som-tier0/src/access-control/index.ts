@@ -3,8 +3,8 @@
  * Implements role-based and classification-based access control
  */
 
-import { Holon, HolonID, HolonType, Document } from '@som/shared-types';
-import { Relationship, RelationshipID } from '@som/shared-types';
+import { Holon, HolonType } from '@som/shared-types';
+import { Relationship } from '@som/shared-types';
 import { Event } from '@som/shared-types';
 import { DocumentRegistry } from '../document-registry';
 

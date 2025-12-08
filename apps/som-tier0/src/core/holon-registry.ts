@@ -44,7 +44,7 @@ export class InMemoryHolonRepository implements IHolonRepository {
     return this.holons.get(id) || null;
   }
 
-  async find(query: Record<string, any>, options?: QueryOptions): Promise<Holon[]> {
+  async find(query: Record<string, any>, _options?: QueryOptions): Promise<Holon[]> {
     // Basic implementation of find - can be expanded
     return Array.from(this.holons.values()).filter(holon => {
       for (const key in query) {
@@ -136,7 +136,7 @@ export class InMemoryHolonRepository implements IHolonRepository {
    * @param reason - The reason for inactivation (for audit purposes)
    * @returns true if the holon was inactivated, false if not found
    */
-  async markHolonInactive(holonID: HolonID, reason?: string): Promise<boolean> {
+  async markHolonInactive(holonID: HolonID, _reason?: string): Promise<boolean> {
     const holon = this.holons.get(holonID);
     if (!holon) {
       return false;

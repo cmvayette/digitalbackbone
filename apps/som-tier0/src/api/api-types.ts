@@ -3,7 +3,7 @@
  */
 
 import { HolonType, HolonID, Timestamp } from '@som/shared-types';
-import { RelationshipType, RelationshipID } from '@som/shared-types';
+import { RelationshipType } from '@som/shared-types';
 import { EventType, EventID } from '@som/shared-types';
 import { UserContext } from '../access-control';
 

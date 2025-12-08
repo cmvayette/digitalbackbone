@@ -11,5 +11,8 @@
     "coverage": "npm run test --workspaces -- run --coverage",
     "lint": "npm run lint --workspaces",
     "lint:semantic": "npm run start -w packages/semantic-linter -- audit"
+  },
+  "dependencies": {
+    "@google/genai": "^1.31.0"
   }
 }

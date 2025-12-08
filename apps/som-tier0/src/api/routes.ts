@@ -14,8 +14,8 @@ import { RelationshipRegistry } from '../relationship-registry';
 import { ConstraintEngine } from '../constraint-engine';
 import { DocumentRegistry } from '../document-registry';
 import { HolonType, HolonID } from '@som/shared-types';
-import { RelationshipType, RelationshipID } from '@som/shared-types';
-import { EventType, Event } from '@som/shared-types';
+import { RelationshipType } from '@som/shared-types';
+import { Event } from '@som/shared-types';
 import {
   APIRequest,
   APIResponse,

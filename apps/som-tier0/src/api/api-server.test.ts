@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { APIServer } from './api-server';
+
 import { AuthenticationMiddleware, AuthorizationMiddleware, RequestValidationMiddleware, ErrorHandlerMiddleware, RateLimitMiddleware } from './middleware';
 import { ApiKeyAuthProvider } from './auth/api-key-provider';
 import { Role } from '../access-control';

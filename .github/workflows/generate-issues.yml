@@ -1,0 +1,40 @@
+# .github/workflows/generate-issues.yml
+name: 🚀 Spec to GitHub Issues Generator
+
+on:
+  workflow_dispatch:
+    inputs:
+      spec_file:
+        description: 'Path to the design specification file (e.g., docs/CALENDAR_APP_SPEC.md)'
+        required: true
+        default: 'docs/CALENDAR_APP_SPEC.md'
+
+jobs:
+  create_issues:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' 
+          
+      - name: Install dependencies
+        run: npm install
+
+      - name: Install GitHub CLI (Pre-installed on runner, but ensure it's logged in)
+        # We don't need a separate install step, just need to ensure authentication
+        run: echo "GitHub CLI is available."
+
+      - name: Run Spec Decomposition Script
+        run: node specs-to-issues.mjs
+        env:
+          # Pass the input spec file path
+          SPEC_FILE: ${{ inputs.spec_file }}
+          # Pass the LLM API key as a secret
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          # Set the GH_TOKEN to allow the script to create issues
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

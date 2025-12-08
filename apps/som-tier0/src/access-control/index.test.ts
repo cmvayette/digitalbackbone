@@ -404,7 +404,7 @@ describe('Property-Based Tests', () => {
 
   const genHolonType = fc.constantFrom(...Object.values(HolonType));
 
-  const genDocumentType = fc.constantFrom(...Object.values(DocumentType));
+
 
   const genClassificationMetadata = fc.constantFrom(
     'UNCLASSIFIED',
