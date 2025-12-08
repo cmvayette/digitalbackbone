@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import type { Obligation, OwnerRef } from '../../types/policy';
+import { useExternalOrgData } from '../../hooks/useExternalOrgData';
+import { Building, User } from 'lucide-react';
 
 interface ObligationComposerProps {
     initialStatement?: string;
@@ -9,22 +11,29 @@ interface ObligationComposerProps {
 
 export const ObligationComposer: React.FC<ObligationComposerProps> = ({ initialStatement = '', onSave, onCancel }) => {
     const [statement, setStatement] = useState(initialStatement);
-    const [actorName, setActorName] = useState(''); // Simple text for MVP, replace with OwnerPicker later
+    const [selectedActorId, setSelectedActorId] = useState('');
     const [criticality, setCriticality] = useState<Obligation['criticality']>('medium');
     const [deadline, setDeadline] = useState('');
 
-    const handleSave = () => {
-        if (!statement || !actorName) return;
+    // Access External Org Data (Simulated Integration)
+    const { getCandidates } = useExternalOrgData();
+    const candidates = getCandidates();
 
-        const mockActor: OwnerRef = {
-            id: 'mock-id',
-            name: actorName,
-            type: 'Position'
+    const handleSave = () => {
+        if (!statement || !selectedActorId) return;
+
+        const actor = candidates.find(c => c.id === selectedActorId);
+        if (!actor) return;
+
+        const ownerRef: OwnerRef = {
+            id: actor.id,
+            name: actor.name,
+            type: actor.type
         };
 
         onSave({
             statement,
-            actor: mockActor,
+            actor: ownerRef,
             criticality,
             deadline: deadline || undefined,
             status: 'draft'
@@ -41,19 +50,25 @@ export const ObligationComposer: React.FC<ObligationComposerProps> = ({ initialS
                     className="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm text-slate-200 focus:border-blue-500 outline-none"
                     placeholder="e.g. The Safety Officer must inspect gear weekly."
                     rows={2}
+                    autoFocus
                 />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
                 <div>
-                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Responsible Actor</label>
-                    <input
-                        type="text"
-                        value={actorName}
-                        onChange={(e) => setActorName(e.target.value)}
+                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Responsible Actor (Select)</label>
+                    <select
+                        value={selectedActorId}
+                        onChange={(e) => setSelectedActorId(e.target.value)}
                         className="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm text-slate-200 focus:border-blue-500 outline-none"
-                        placeholder="e.g. Safety Officer"
-                    />
+                    >
+                        <option value="">-- Choose Actor --</option>
+                        {candidates.map(c => (
+                            <option key={c.id} value={c.id}>
+                                {c.name} ({c.type})
+                            </option>
+                        ))}
+                    </select>
                 </div>
                 <div>
                     <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Criticality</label>
@@ -68,6 +83,13 @@ export const ObligationComposer: React.FC<ObligationComposerProps> = ({ initialS
                     </select>
                 </div>
             </div>
+
+            {selectedActorId && (
+                <div className="text-xs text-blue-400 bg-blue-900/20 p-2 rounded flex items-center gap-2">
+                    {candidates.find(c => c.id === selectedActorId)?.type === 'Organization' ? <Building size={12} /> : <User size={12} />}
+                    Mapped to: <span className="font-bold">{candidates.find(c => c.id === selectedActorId)?.name}</span>
+                </div>
+            )}
 
             <div>
                 <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Deadline / Frequency (Optional)</label>
@@ -84,7 +106,7 @@ export const ObligationComposer: React.FC<ObligationComposerProps> = ({ initialS
                 <button onClick={onCancel} className="text-sm text-slate-400 hover:text-white px-3 py-1.5">Cancel</button>
                 <button
                     onClick={handleSave}
-                    disabled={!statement || !actorName}
+                    disabled={!statement || !selectedActorId}
                     className="text-sm bg-blue-600 text-white px-4 py-1.5 rounded hover:bg-blue-500 disabled:opacity-50"
                 >
                     Add Obligation

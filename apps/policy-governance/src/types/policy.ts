@@ -3,9 +3,11 @@ export type DocumentType = 'Instruction' | 'Notice' | 'Order' | 'SOP' | 'Doctrin
 export type PolicyStatus = 'draft' | 'review' | 'active' | 'superseded' | 'archived';
 
 export interface OwnerRef {
-    id: string;
-    name: string;
+    id: string; // Real UUID from Org Store
+    name: string; // Display name
     type: 'Organization' | 'Position' | 'RoleTag';
+    uic?: string; // For Orgs
+    billetCode?: string; // For Positions
 }
 
 export interface Obligation {
@@ -16,7 +18,8 @@ export interface Obligation {
     deadline?: string;
     criticality: 'high' | 'medium' | 'low';
     status: 'draft' | 'validated' | 'deprecated';
-    clauseRef?: string; // ID of the clause this came from
+    clauseRef?: string;
+    suggestedProcessId?: string; // Link to How-Do
 }
 
 export interface Clause {
