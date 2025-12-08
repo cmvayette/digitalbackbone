@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { mockProcesses } from '../mocks/mock-processes';
+import { useExternalProcessData } from '@som/api-client';
 import type { Process } from '../types/process';
 import { useDriftDetection } from '../hooks/useDriftDetection';
 import { AlertOctagon } from 'lucide-react';
@@ -35,9 +35,10 @@ const ProcessListItem: React.FC<{ process: Process; onSelect: (p: Process) => vo
 };
 
 export const ProcessSearch: React.FC<ProcessSearchProps> = ({ onSelectProcess }) => {
+    const { processes } = useExternalProcessData();
     const [searchTerm, setSearchTerm] = useState('');
 
-    const filteredProcesses = mockProcesses.filter(p =>
+    const filteredProcesses = processes.filter(p =>
         p.properties.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         p.properties.description?.toLowerCase().includes(searchTerm.toLowerCase())
     );

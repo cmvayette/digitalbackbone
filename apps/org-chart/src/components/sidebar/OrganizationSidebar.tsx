@@ -16,8 +16,8 @@ export function OrganizationSidebar({ node }: { node: Node }) {
     const children = getOrgChildren(org.id);
     const positions = getOrgPositions(org.id);
 
-    const filledPositions = positions.filter(p => p.state !== 'vacant').length;
-    const vacancyCount = positions.filter(p => p.state === 'vacant').length;
+    const filledPositions = positions.filter(p => p.properties.state !== 'vacant').length;
+    const vacancyCount = positions.filter(p => p.properties.state === 'vacant').length;
     const totalPositions = positions.length;
 
     return (
@@ -29,8 +29,8 @@ export function OrganizationSidebar({ node }: { node: Node }) {
                         <Building size={24} />
                     </div>
                     <div>
-                        <h2 className="text-xl font-bold leading-tight">{org.name}</h2>
-                        <span className="text-sm text-text-secondary uppercase tracking-wider">{org.type}</span>
+                        <h2 className="text-xl font-bold leading-tight">{org.properties.name}</h2>
+                        <span className="text-sm text-text-secondary uppercase tracking-wider">{org.properties.type}</span>
                     </div>
                 </div>
             </div>
@@ -44,7 +44,7 @@ export function OrganizationSidebar({ node }: { node: Node }) {
                         Mission
                     </h3>
                     <p className="text-sm text-text-primary leading-relaxed opacity-90">
-                        {org.description || 'No mission statement available.'}
+                        {org.properties.missionStatement || 'No mission statement available.'}
                     </p>
                 </section>
 
@@ -86,13 +86,13 @@ export function OrganizationSidebar({ node }: { node: Node }) {
                 </section>
 
                 {/* Services */}
-                {org.services.length > 0 && (
+                {org.properties.services.length > 0 && (
                     <section>
                         <h3 className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-3 flex items-center gap-2">
                             <Briefcase size={12} /> Functional Services
                         </h3>
                         <div className="space-y-2">
-                            {org.services.map((svc) => (
+                            {org.properties.services.map((svc) => (
                                 <div key={svc.id} className="flex items-center justify-between p-3 bg-bg-surface border border-border-color rounded hover:bg-slate-700 cursor-pointer transition-colors group">
                                     <span className="text-sm font-medium text-text-primary">{svc.name}</span>
                                     <Activity size={14} className="text-text-secondary group-hover:text-accent-green transition-colors" />
@@ -124,14 +124,14 @@ export function OrganizationSidebar({ node }: { node: Node }) {
                 isOpen={isCreateModalOpen}
                 onClose={() => setIsCreateModalOpen(false)}
                 onSubmit={(name, uic) => addOrganization(node.id, name, uic)}
-                parentName={org.name}
+                parentName={org.properties.name}
             />
 
             <CreatePositionModal
                 isOpen={isCreatePosModalOpen}
                 onClose={() => setIsCreatePosModalOpen(false)}
                 onSubmit={(title, roleCode) => addPosition(node.id, title, roleCode)}
-                parentName={org.name}
+                parentName={org.properties.name}
             />
         </div>
     );

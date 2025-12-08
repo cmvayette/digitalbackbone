@@ -1,11 +1,9 @@
 import { HolonType } from '@som/shared-types';
 import React from 'react';
 import type { Process } from '../types/process';
-import mockData from '../mocks/mock-policy.json';
+import { useExternalOrgData, useExternalPolicyData } from '@som/api-client';
 import { CheckCircle2, ChevronDown, Clock, FileText, ShieldAlert, User } from 'lucide-react';
 import { StepCard } from './viewer/StepCard';
-
-const { agents, policies } = mockData;
 
 interface TimelineViewerProps {
     process: Process;
@@ -14,10 +12,19 @@ interface TimelineViewerProps {
 }
 
 export const TimelineViewer: React.FC<TimelineViewerProps> = ({ process, onEdit, onBack }) => {
+    // Shared Data Hooks
+    const { getCandidates } = useExternalOrgData();
+    const { getObligationsForOwner } = useExternalPolicyData();
 
-    // Helper to find relevant obligations for a position
-    const getObligationsForPosition = (posId: string) => {
-        return policies.obligations.filter(o => o.assignedTo === posId);
+    // Helper to resolve owner names
+    const resolveOwnerName = (ownerId: string): { name: string; isAgent: boolean } => {
+        const candidates = getCandidates();
+        const found = candidates.find(c => c.id === ownerId);
+        const isAgent = ownerId.startsWith('agent-');
+        return {
+            name: found ? found.name : ownerId,
+            isAgent
+        };
     };
 
     return (
@@ -54,11 +61,8 @@ export const TimelineViewer: React.FC<TimelineViewerProps> = ({ process, onEdit,
                     <div className="absolute left-8 top-4 bottom-0 w-0.5 bg-slate-700" />
 
                     {process.properties.steps.map((step, index) => {
-                        const obligations = getObligationsForPosition(step.owner);
-                        const isAgent = agents?.some(a => a.id === step.owner);
-                        const ownerName = isAgent
-                            ? agents.find(a => a.id === step.owner)?.name
-                            : step.owner;
+                        const obligations = getObligationsForOwner(step.owner);
+                        const { name: ownerName, isAgent } = resolveOwnerName(step.owner);
 
                         return (
                             <div key={step.id} className="relative pl-24 pb-12 group animate-in slide-in-from-bottom-4 duration-500" style={{ animationDelay: `${index * 100}ms` }}>

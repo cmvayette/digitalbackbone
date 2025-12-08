@@ -4,6 +4,8 @@ import type { GraphNode } from '../../types/graph';
 import clsx from 'clsx';
 import { HelpCircle } from 'lucide-react';
 
+
+
 export function PositionNode({ data }: NodeProps<GraphNode>) {
     const roleTitle = data.label || 'Unknown Position';
     const personName = data.subtitle || 'Vacant';

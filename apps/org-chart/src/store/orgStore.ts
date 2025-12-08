@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import type { Organization, Position, Person } from '../types/domain';
+import { HolonType } from '@som/shared-types';
 import { Faker, en } from '@faker-js/faker';
 
 // --- MOCK GENERATOR ---
@@ -10,16 +11,32 @@ const generateMockData = () => {
     const positions: Position[] = [];
     const people: Person[] = [];
 
+    // Helper to create basic Holon fields with strict type
+    const createHolon = <T extends HolonType>(type: T) => ({
+        createdAt: new Date(),
+        createdBy: 'system',
+        status: 'active' as const,
+        sourceDocuments: [],
+        type
+    });
+
     // 1. Create Root Org
     const rootId = 'org-root';
     orgs.push({
+        ...createHolon(HolonType.Organization),
+        type: HolonType.Organization,
         id: rootId,
-        type: 'Command',
-        name: 'Digital Transformation Command',
-        description: 'Leading the enterprise modernization efforts.',
-        parentId: null,
-        services: [],
-        health: 'healthy'
+        properties: {
+            name: 'Digital Transformation Command',
+            missionStatement: 'Leading the enterprise modernization efforts.', // Mapped from description
+            parentId: null,
+            uics: [],
+            services: [],
+            health: 'healthy',
+            type: 'Command',
+            echelonLevel: 'Command',
+            isTigerTeam: false
+        }
     });
 
     // 2. Create Directorates
@@ -27,26 +44,40 @@ const generateMockData = () => {
     directorates.forEach((dirName, idx) => {
         const dirId = `org-dir-${idx}`;
         orgs.push({
+            ...createHolon(HolonType.Organization),
+            type: HolonType.Organization,
             id: dirId,
-            type: 'Directorate',
-            name: `${dirName} Directorate`,
-            description: `Responsible for all ${dirName.toLowerCase()} activities.`,
-            parentId: rootId,
-            services: [{ id: `svc-${idx}`, name: `${dirName} Portal`, icon: 'Globe', url: '#' }],
-            health: Math.random() > 0.8 ? 'warning' : 'healthy'
+            properties: {
+                name: `${dirName} Directorate`,
+                missionStatement: `Responsible for all ${dirName.toLowerCase()} activities.`,
+                parentId: rootId,
+                uics: [],
+                services: [{ id: `svc-${idx}`, name: `${dirName} Portal`, icon: 'Globe', url: '#' }],
+                health: Math.random() > 0.8 ? 'warning' : 'healthy',
+                type: 'Directorate',
+                echelonLevel: 'Directorate',
+                isTigerTeam: false
+            }
         });
 
         // 3. Create Divisions
         for (let i = 0; i < 3; i++) {
             const divId = `org-div-${idx}-${i}`;
             orgs.push({
+                ...createHolon(HolonType.Organization),
+                type: HolonType.Organization,
                 id: divId,
-                type: 'Division',
-                name: `${dirName} Div ${i + 1}`,
-                description: 'Focused execution unit.',
-                parentId: dirId,
-                services: [],
-                health: Math.random() > 0.9 ? 'critical' : 'healthy'
+                properties: {
+                    name: `${dirName} Div ${i + 1}`,
+                    missionStatement: 'Focused execution unit.',
+                    parentId: dirId,
+                    uics: [],
+                    services: [],
+                    health: Math.random() > 0.9 ? 'critical' : 'healthy',
+                    type: 'Division',
+                    echelonLevel: 'Division',
+                    isTigerTeam: false
+                }
             });
 
             // 4. Create Positions for Division
@@ -59,25 +90,44 @@ const generateMockData = () => {
                     const psnId = `psn-${posId}`;
                     personId = psnId;
                     people.push({
+                        ...createHolon(HolonType.Person),
+                        type: HolonType.Person,
                         id: psnId,
-                        name: faker.person.fullName(),
-                        rank: faker.helpers.arrayElement(['GS-12', 'GS-13', 'Capt', 'Maj', 'Ctr']),
-                        type: faker.helpers.arrayElement(['Mil', 'Civ', 'Ctr']),
-                        certificates: ['Sec+', 'PMP'],
-                        primaryPositionId: posId,
-                        tigerTeamIds: []
+                        properties: {
+                            name: faker.person.fullName(),
+                            designatorRating: faker.helpers.arrayElement(['GS-12', 'GS-13', 'Capt', 'Maj', 'Ctr']), // Mapped from rank
+                            category: faker.helpers.arrayElement(['civilian', 'contractor', 'active_duty']), // Mapped from type
+                            serviceBranch: 'USN',
+                            edipi: '1234567890',
+                            serviceNumbers: [],
+                            dob: new Date(),
+                            // Custom/Legacy props stored in properties for now
+                            certificates: ['Sec+', 'PMP'],
+                            primaryPositionId: posId,
+                            tigerTeamIds: []
+                        }
                     });
                 }
 
                 positions.push({
+                    ...createHolon(HolonType.Position),
+                    type: HolonType.Position,
                     id: posId,
-                    orgId: divId,
-                    title: faker.person.jobTitle(),
-                    billetStatus: Math.random() > 0.9 ? 'unfunded' : 'funded',
-                    state: isVacant ? 'vacant' : 'filled',
-                    assignedPersonId: personId,
-                    qualifications: ['TS/SCI'],
-                    isLeadership: p === 0
+                    properties: {
+                        orgId: divId,
+                        title: faker.person.jobTitle(),
+                        billetType: 'staff',
+                        gradeRange: { min: 'O-1', max: 'O-3' },
+                        designatorExpectations: [],
+                        criticality: 'standard',
+                        billetIDs: [],
+                        // Legacy props
+                        billetStatus: Math.random() > 0.9 ? 'unfunded' : 'funded',
+                        state: isVacant ? 'vacant' : 'filled',
+                        assignedPersonId: personId,
+                        qualifications: ['TS/SCI'],
+                        isLeadership: p === 0
+                    }
                 });
             }
         }
@@ -95,7 +145,7 @@ interface OrgState {
     // Actions
     addOrganization: (parentId: string, name: string, uic: string) => void;
     addPosition: (orgId: string, title: string, billetCode: string) => void;
-    updatePosition: (id: string, updates: Partial<Position>) => void;
+    updatePosition: (id: string, updates: Partial<Position['properties']>) => void;
     assignPerson: (positionId: string, name: string, rank: string) => void;
 
     // Selectors helpers
@@ -106,6 +156,14 @@ interface OrgState {
 export const useOrgStore = create<OrgState>((set, get) => {
     const initialData = generateMockData();
 
+    const createHolon = (type: HolonType) => ({
+        createdAt: new Date(),
+        createdBy: 'system',
+        status: 'active' as const,
+        sourceDocuments: [],
+        type
+    });
+
     return {
         organizations: initialData.orgs,
         positions: initialData.positions,
@@ -113,56 +171,79 @@ export const useOrgStore = create<OrgState>((set, get) => {
 
         addOrganization: (parentId, name, uic) => set((state) => {
             const newOrg: Organization = {
+                ...createHolon(HolonType.Organization),
+                type: HolonType.Organization,
                 id: `org-${Date.now()}`,
-                type: 'Division', // Default for now
-                name: name,
-                description: `Newly created unit: ${name}`,
-                parentId: parentId,
-                services: [],
-                health: 'healthy',
-                // Custom prop not in interface but used in sidebars/mocks
-                // @ts-ignore
-                uic: uic
+                properties: {
+                    name: name,
+                    missionStatement: `Newly created unit: ${name}`,
+                    parentId: parentId,
+                    type: 'Division',
+                    echelonLevel: 'Division',
+                    uics: [uic],
+                    services: [],
+                    health: 'healthy',
+                    isTigerTeam: false
+                }
             };
             return { organizations: [...state.organizations, newOrg] };
         }),
 
         addPosition: (orgId, title, billetCode) => set((state) => {
             const newPos: Position = {
+                ...createHolon(HolonType.Position),
+                type: HolonType.Position,
                 id: `pos-${Date.now()}`,
-                orgId: orgId,
-                title: title,
-                billetStatus: 'unfunded',
-                state: 'vacant',
-                assignedPersonId: null,
-                qualifications: [],
-                isLeadership: false,
-                // @ts-ignore
-                billetCode: billetCode
+                properties: {
+                    orgId: orgId,
+                    title: title,
+                    billetType: 'staff',
+                    gradeRange: { min: 'O-1', max: 'O-3' },
+                    designatorExpectations: [],
+                    criticality: 'standard',
+                    billetIDs: [billetCode],
+                    billetStatus: 'unfunded',
+                    state: 'vacant',
+                    assignedPersonId: null,
+                    qualifications: [],
+                    isLeadership: false
+                }
             };
             return { positions: [...state.positions, newPos] };
         }),
 
         updatePosition: (id, updates) => set((state) => ({
-            positions: state.positions.map(p => p.id === id ? { ...p, ...updates } : p)
+            positions: state.positions.map(p =>
+                p.id === id
+                    ? { ...p, properties: { ...p.properties, ...updates } }
+                    : p
+            )
         })),
 
         assignPerson: (positionId, name, rank) => set((state) => {
             // 1. Create new Person
             const newPerson: Person = {
+                ...createHolon(HolonType.Person),
+                type: HolonType.Person,
                 id: `psn-${Date.now()}`,
-                name: name,
-                rank: rank,
-                type: 'Mil',
-                certificates: [],
-                primaryPositionId: positionId,
-                tigerTeamIds: []
+                properties: {
+                    name: name,
+                    designatorRating: rank,
+                    category: 'active_duty',
+                    serviceBranch: 'USN',
+                    edipi: 'generated',
+                    serviceNumbers: [],
+                    dob: new Date(),
+                    certificates: [],
+                    primaryPositionId: positionId,
+                    tigerTeamIds: []
+                }
             };
 
             // 2. Update Position to link to Person
             const updatedPositions = state.positions.map(p =>
                 p.id === positionId
-                    ? { ...p, state: 'filled' as const, assignedPersonId: newPerson.id }
+                    ? { ...p, properties: { ...p.properties, state: 'filled' as const, assignedPersonId: newPerson.id } }
                     : p
             );
 
@@ -172,7 +253,7 @@ export const useOrgStore = create<OrgState>((set, get) => {
             };
         }),
 
-        getOrgChildren: (orgId) => get().organizations.filter(o => o.parentId === orgId),
-        getOrgPositions: (orgId) => get().positions.filter(p => p.orgId === orgId),
+        getOrgChildren: (orgId) => get().organizations.filter(o => o.properties.parentId === orgId),
+        getOrgPositions: (orgId) => get().positions.filter(p => p.properties.orgId === orgId),
     };
 });

@@ -4,6 +4,8 @@ import type { GraphNode } from '../../types/graph';
 import clsx from 'clsx';
 import { User, Award, Shield } from 'lucide-react';
 
+
+
 export function PersonNode({ data }: NodeProps<GraphNode>) {
     const name = data.label || 'Unknown Person';
     const rank = data.properties?.rank || 'Unknown Rank';

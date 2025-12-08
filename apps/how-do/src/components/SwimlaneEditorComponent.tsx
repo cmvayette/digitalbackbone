@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import './SwimlaneEditor.css';
-import mockData from '../mocks/mock-policy.json';
+import { useExternalOrgData, useExternalPolicyData } from '@som/api-client';
 import { HolonType } from '@som/shared-types';
 import type { Process, ProcessStep } from '../types/process';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
@@ -14,14 +14,17 @@ import { AlertTriangle, AlertCircle } from 'lucide-react';
 import { DriftAlert } from './alerts/DriftAlert';
 import { useDriftDetection } from '../hooks/useDriftDetection';
 
-const { policies, agents } = mockData;
-
 interface SwimlaneEditorProps {
     initialProcess?: Process;
     onBack?: () => void;
 }
 
 export const SwimlaneEditor: React.FC<SwimlaneEditorProps> = ({ initialProcess, onBack }) => {
+    // Shared Data Hooks
+    const { getCandidates } = useExternalOrgData();
+    // (Note: Editor currently doesn't list obligations directly in the main view in the loop, 
+    // mostly delegates to internal components, but we set it up anyway if needed later)
+
     // Basic Process State
     const [process, setProcess] = useState<Process>(initialProcess || {
         id: 'new-process',
@@ -39,8 +42,6 @@ export const SwimlaneEditor: React.FC<SwimlaneEditorProps> = ({ initialProcess, 
             steps: [
                 { id: 'step-1', title: 'Initiate Request', description: 'Start the form', owner: 'pos-1', obligations: [] },
                 { id: 'step-2', title: 'Review & Approve', description: 'Manager review', owner: 'pos-2', obligations: [] },
-                { id: 'step-JIRA-123', title: 'Provision Hardware', description: 'IT Dept Ticket', owner: 'pos-3', source: 'external', externalId: 'JIRA-123', externalSource: 'jira', obligations: [] },
-                { id: 'step-3', title: 'Finalize Logistics', description: 'Supply check', owner: 'pos-3', obligations: [] }
             ]
         }
     });
@@ -140,6 +141,18 @@ export const SwimlaneEditor: React.FC<SwimlaneEditorProps> = ({ initialProcess, 
         }
     };
 
+    // Helper to resolve owner names
+    const resolveOwnerName = (ownerId: string): { name: string; isAgent: boolean } => {
+        const candidates = getCandidates();
+        const found = candidates.find(c => c.id === ownerId);
+        const isAgent = ownerId.startsWith('agent-');
+        return {
+            name: found ? found.name : ownerId,
+            isAgent
+        };
+    };
+
+
     return (
         <div className="swimlane-editor flex flex-col h-full bg-slate-900 text-slate-100 p-4">
             <div className="toolbar flex justify-between items-center mb-6">
@@ -196,10 +209,7 @@ export const SwimlaneEditor: React.FC<SwimlaneEditorProps> = ({ initialProcess, 
                         strategy={horizontalListSortingStrategy}
                     >
                         {process.properties.steps.map((step, index) => {
-                            const isAgent = agents?.some(a => a.id === step.owner);
-                            const ownerName = isAgent
-                                ? agents.find(a => a.id === step.owner)?.name
-                                : step.owner;
+                            const { name: ownerName, isAgent } = resolveOwnerName(step.owner);
 
                             const stepIssues = validationIssues.filter(i => i.stepId === step.id);
                             const hasError = stepIssues.some(i => i.type === 'error');

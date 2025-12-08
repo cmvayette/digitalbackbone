@@ -28,7 +28,8 @@ export enum HolonType {
   Constraint = 'Constraint',
 
   Process = 'Process',
-  Agent = 'Agent'
+  Agent = 'Agent',
+  KeyResult = 'KeyResult'
 }
 
 export type Actor = Person | Agent | Position | System;
@@ -50,7 +51,7 @@ export interface Holon {
   properties: Record<string, any>;
   createdAt: Timestamp;
   createdBy: EventID;
-  status: 'active' | 'inactive';
+  status: 'active' | 'inactive' | 'archived' | 'draft';
   sourceDocuments: DocumentID[];
 }
 
@@ -91,24 +92,34 @@ export interface Organization extends Holon {
   };
 }
 
+export interface ObligationLink {
+  id: string;
+}
+
+export interface ProcessStep {
+  id: string;
+  title: string;
+  description: string;
+  owner: string;
+  obligations: ObligationLink[];
+  source?: 'native' | 'external';
+  externalId?: string;
+  externalSource?: string;
+}
+
+export interface ProcessProperties {
+  name: string;
+  description: string;
+  inputs: string[];
+  outputs: string[];
+  steps: ProcessStep[];
+  estimatedDuration: number; // in milliseconds
+}
+
 export interface Process extends Holon {
   type: HolonType.Process;
-  properties: {
-    name: string;
-    description: string;
-    inputs: string[];
-    outputs: string[];
-    steps: Array<{
-      id: string;
-      title: string;
-      description: string;
-      owner: string;
-      source?: 'native' | 'external';
-      externalId?: string;
-      externalSource?: string;
-    }>;
-    estimatedDuration: number; // in milliseconds
-  };
+  status: 'active' | 'inactive' | 'archived' | 'draft';
+  properties: ProcessProperties;
 }
 
 export interface Mission extends Holon {
@@ -152,14 +163,31 @@ export interface Qualification extends Holon {
 export interface Objective extends Holon {
   type: HolonType.Objective;
   properties: {
-    description: string;
     statement: string;
+    narrative?: string;
+    ownerId: string; // Position or Organization
     level: 'strategic' | 'operational' | 'tactical';
     timeHorizon: Date;
+    linkedKRs: string[]; // KeyResult Holon IDs
     status: 'proposed' | 'approved' | 'active' | 'achieved' | 'abandoned' | 'revised';
     source?: 'native' | 'external';
     externalId?: string;
-    externalSource?: string; // e.g., 'jira', 'trello'
+    externalSource?: string;
+  };
+}
+
+export interface KeyResult extends Holon {
+  type: HolonType.KeyResult;
+  properties: {
+    statement: string; // "From X to Y by T"
+    baseline: number;
+    target: number;
+    currentValue: number;
+    measureRefId?: string; // Link to MeasureDefinition
+    ownerId: string;
+    cadence: 'weekly' | 'monthly' | 'quarterly';
+    health: 'on-track' | 'at-risk' | 'off-track' | 'unknown';
+    evidenceLogIds: string[]; // Links to EvidenceLog (if we had them as holons) or just keep internal
   };
 }
 
@@ -168,8 +196,9 @@ export interface LOE extends Holon {
   properties: {
     name: string;
     description: string;
-    sponsoringEchelon: string;
+    ownerId: string; // Org/Position
     timeframe: { start: Date; end: Date };
+    relatedPolicyIds?: string[];
   };
 }
 

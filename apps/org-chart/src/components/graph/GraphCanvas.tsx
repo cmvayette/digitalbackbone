@@ -1,17 +1,13 @@
 import { useCallback, useEffect } from 'react';
 import {
     ReactFlow,
-    Background,
     Controls,
     MiniMap,
     useNodesState,
     useEdgesState,
     addEdge,
-    useReactFlow,
     type Node,
     type Edge,
-    type NodeTypes,
-    ReactFlowProvider
 } from '@xyflow/react';
 import type { Connection } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
@@ -73,7 +69,7 @@ export function GraphCanvas({ initialNodes, initialEdges, onNodeClick }: GraphCa
                     },
                 }}
             >
-                />
+                <Controls />
                 <MiniMap
                     className="bg-bg-panel border border-border-color"
                     maskColor="rgba(15, 23, 42, 0.7)" // bg-canvas with opacity

@@ -10,19 +10,19 @@ export function PositionSidebar({ node }: { node: Node }) {
     const { people, assignPerson } = useOrgStore();
     const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
 
-    const occupant = position.assignedPersonId ? people.find(p => p.id === position.assignedPersonId) : null;
-    const isVacant = position.state === 'vacant';
+    const occupant = position.properties.assignedPersonId ? people.find(p => p.id === position.properties.assignedPersonId) : null;
+    const isVacant = position.properties.state === 'vacant';
 
     return (
         <div className="flex flex-col h-full bg-bg-panel text-text-primary">
             {/* Header */}
             <div className="p-6 border-b border-border-color">
-                <h2 className="text-xl font-bold leading-tight mb-2">{position.title}</h2>
+                <h2 className="text-xl font-bold leading-tight mb-2">{position.properties.title}</h2>
                 <div className="flex gap-2">
-                    <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border border-border-color ${position.billetStatus === 'funded' ? 'bg-green-900/30 text-green-400' : 'bg-red-900/30 text-red-400'}`}>
-                        {position.billetStatus}
+                    <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border border-border-color ${position.properties.billetStatus === 'funded' ? 'bg-green-900/30 text-green-400' : 'bg-red-900/30 text-red-400'}`}>
+                        {position.properties.billetStatus}
                     </span>
-                    {position.isLeadership && (
+                    {position.properties.isLeadership && (
                         <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-indigo-900/30 text-indigo-400 border border-indigo-500/30">
                             Key Leadership
                         </span>
@@ -36,16 +36,16 @@ export function PositionSidebar({ node }: { node: Node }) {
                     <h3 className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-3">Current Occupant</h3>
                     <div className="flex items-center gap-3">
                         <div className={`w-12 h-12 rounded-full flex items-center justify-center border-2 ${isVacant ? 'border-dashed border-border-color' : 'border-transparent bg-border-color overflow-hidden'}`}>
-                            {occupant?.avatarUrl ? (
-                                <img src={occupant.avatarUrl} alt={occupant.name} className="w-full h-full object-cover" />
+                            {occupant?.properties.avatarUrl ? (
+                                <img src={occupant.properties.avatarUrl} alt={occupant.properties.name} className="w-full h-full object-cover" />
                             ) : (
                                 <User size={24} className={isVacant ? 'text-text-secondary' : 'text-text-primary'} />
                             )}
                         </div>
                         <div>
-                            <div className="font-bold text-lg">{occupant ? occupant.name : 'Vacant'}</div>
+                            <div className="font-bold text-lg">{occupant ? occupant.properties.name : 'Vacant'}</div>
                             <div className="text-xs text-text-secondary">
-                                {occupant ? `${occupant.rank} • ${occupant.type}` : 'Open for assignment'}
+                                {occupant ? `${occupant.properties.designatorRating} • ${occupant.properties.category}` : 'Open for assignment'}
                             </div>
                         </div>
                     </div>
@@ -57,13 +57,13 @@ export function PositionSidebar({ node }: { node: Node }) {
                         <Shield size={12} /> Requirements
                     </h3>
                     <ul className="text-sm space-y-3">
-                        {position.qualifications.map((qual, idx) => (
+                        {position.properties.qualifications.map((qual, idx) => (
                             <li key={idx} className="flex items-center gap-2 text-text-primary">
                                 <div className="w-1.5 h-1.5 rounded-full bg-accent-blue" />
                                 {qual}
                             </li>
                         ))}
-                        {position.qualifications.length === 0 && (
+                        {position.properties.qualifications.length === 0 && (
                             <li className="text-text-secondary italic">No specific qualifications listed.</li>
                         )}
                     </ul>
@@ -88,7 +88,7 @@ export function PositionSidebar({ node }: { node: Node }) {
                 isOpen={isAssignModalOpen}
                 onClose={() => setIsAssignModalOpen(false)}
                 onSubmit={(name, rank) => assignPerson(node.id, name, rank)}
-                positionTitle={position.title}
+                positionTitle={position.properties.title}
             />
         </div>
     );

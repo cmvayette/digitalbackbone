@@ -82,9 +82,52 @@ Every pixel in the UI should theoretically be traceable back to a source.
 ## 4. The "Missing Questions" (Strategic Gaps)
 
 To fully mature this design, we identified and **resolved** the following strategic gaps.
-Detailed resolutions can be found in [Strategic Decisions](./strategic_decisions.md).
 
-1.  **Identity & Federation**: Resolved via **Event Sourcing / Git-style Replay**.
-2.  **The Role of Agents**: Resolved via **`IActor` Interface** (Agents defined as Systems, not Persons).
-3.  **Legacy Coexistence**: Resolved via **Semantic Proxies** (Unified Meaning, Distributed Mastery).
-4.  **Classification Boundaries**: Resolved via **Network Segregation** (Single-Level Security).
+## 1. Disconnected & Federated Operations
+**Question**: How do we handle disconnected units (e.g., ships, forward teams) or partners?
+### Solution: Event Sourcing as Sync Mechanism
+Because our system is Event Sourced, we have a superpower: **Time-Travel and Replay**.
+*   **Disconnected**: A disconnected unit runs a local instance of the SOM. They generate a local Event Log (e.g., `ShipA_Log`).
+*   **Reconnection**: When they reconnect, they don't "sync the database". They **stream their Event Log** to the central node.
+*   **Merge**: The central node replays these "past" events into the main graph.
+    *   *Conflict Resolution*: Since events are intents (e.g., "Assign Smith"), late-arriving events can either be rejected ("Smith is already gone") or accepted with a warning ("Retroactive change").
+    *   *Benefit*: No complex database merging. Just appending logs.
+## 2. The Role of Agents
+**Question**: Are AI Agents "Persons" or "Systems"?
+### Solution: The `IActor` Interface (Separate but Equal)
+We should **not** make Agents "Persons". "Person" implies liability, rank, and physical existence.
+*   **Approach**: Create `HolonType.Agent`.
+*   **Unification**: Create a shared interface `IActor` (or `IAssignee`) that both `Person` and `Agent` implement.
+*   **Why**:
+    *   Positions can be typed to accept `IActor` (generic) or `Person` (strictly human).
+    *   Example: A "Logistics Analyst" position could be filled by an Agent. A "Platoon Commander" position must be filled by a Person.
+    *   Governance: We can write policies like "Agents cannot hold Command Authority positions."
+## 3. Legacy Coexistence & "Shadow Holons"
+**Question**: How do we link to systems we don't fully ingest?
+### Solution: The Shadow Holon Strategy
+You asked for an example. Imagine **JIRA** (Task tracking) or a **Medical Record System**.
+*   **Full Ingestion (Ideal)**: We read the DB, convert rows to `Events`, and fully recreate the data in SOM.
+*   **The Problem**: Sometimes we can't. (Too much data, privacy, no API access).
+*   **The Shadow Holon**: We create a lightweight "Stub" in SOM.
+    *   It has: `id`, `externalRefId` ("JIRA-1234"), `url`, and maybe `status`.
+    *   **Value**: We can now link a SOM `Objective` to that "Shadow JIRA Ticket".
+    
+### Solution: The "Semantic Proxy" Strategy (Real Objects, External Source)
+You are right. If it walks like a Task, it *is* a Task.
+*   **The Principle**: "Unified Meaning, Distributed Mastery."
+*   **Mechanism**:
+    *   **Semantic Mapping**: We map JIRA Tickets to SOM `Task` Holons, and JIRA Epics to SOM `Objective` Holons.
+    *   **The "Proxy" Flag**: These Holons are first-class citizens (they show up in "All Tasks" lists), but they are marked as `source: 'external'` and `master: 'jira'`.
+    *   **Behavior**: SOM controls (like "Must have an assignee") might be relaxed or strictly enforced depending on policy.
+    *   **Result**: A unified view. You can see a native SOM Task alongside a JIRA Ticket in the same Swimlane, because they are both just `Tasks`.
+*   **The Exception (Shadows)**: We keep the "Shadow/Stub" pattern *only* for things we simply cannot map (e.g., a proprietary "Medical Record" that has no equivalent in our ontology). But for work management, we convert to our Types.
+## 4. Classification Boundaries
+**Question**: How do we handle Secret data on top of Unclassified data?
+### Solution: Network-Segregated Instances (Single-Level Security)
+We explicitly **reject** the complexity of Multi-Level Security (MLS) within a single application instance.
+*   **The Assumption**: The system will always run on a single network (e.g., NIPR *or* SIPR *or* JWICS).
+*   **Implication**:
+    *   An instance of SOM on the Unclassified network contains *only* Unclassified data.
+    *   An instance of SOM on the Secret network is a biologically separate system.
+*   **Benefit**: This eliminates the massive cost of "Label-Based Access Control" (LBAC) and row-level security filtering.
+*   **Cross-Domain**: Moving data from Low-to-High is an *external* ETL process (e.g., a Cross-Domain Solution pumping UNCLASS events to the SECRET instance), not an internal feature.

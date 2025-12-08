@@ -1,29 +1,44 @@
 import { useState, useEffect } from 'react';
 import orgStructure from '../mocks/org-structure.json';
+import type { ProcessStep } from '@som/shared-types';
+import { useExternalProcessData } from '@som/api-client';
 
-export interface ProcessStep {
-    id: string;
-    title: string;
-    ownerId: string;
+// Extend shared type for local UI needs if necessary, or just use it.
+// The app currently uses ownerType for UI icons. We'll keep it as a local extension.
+export interface LocalProcessStep extends Omit<ProcessStep, 'obligations'> {
     ownerType: 'Position' | 'Organization' | 'RoleTag';
+    obligations: any[]; // relax for now or use shared ObligationLink[]
 }
 
 export function useProcess(initialProcessId?: string) {
-    const [steps, setSteps] = useState<ProcessStep[]>([]);
+    const { processes, getProcessById } = useExternalProcessData();
+    const [steps, setSteps] = useState<LocalProcessStep[]>([]);
 
     // Load mock data or initialize empty
     useEffect(() => {
         if (initialProcessId) {
-            // Mock load
+            const process = getProcessById(initialProcessId);
+            if (process) {
+                // Map shared process steps to local UI steps
+                // In a real app, this mapping might happen in the API layer or specific view model adapters
+                const mappedSteps: LocalProcessStep[] = process.properties.steps.map(s => ({
+                    ...s,
+                    ownerType: 'Position', // Defaulting for now, real app would look up owner type from ID
+                    obligations: s.obligations
+                }));
+                setSteps(mappedSteps);
+            }
         }
-    }, [initialProcessId]);
+    }, [initialProcessId, getProcessById]);
 
     const addStep = (ownerId: string, ownerType: 'Position' | 'Organization' | 'RoleTag') => {
-        const newStep: ProcessStep = {
+        const newStep: LocalProcessStep = {
             id: `step_${Date.now()}`,
             title: 'New Step',
-            ownerId,
-            ownerType
+            description: '',
+            owner: ownerId, // Shared type uses 'owner'
+            ownerType,
+            obligations: []
         };
         setSteps([...steps, newStep]);
     };
@@ -33,13 +48,13 @@ export function useProcess(initialProcessId?: string) {
     const moveStep = (stepId: string, newOwnerId: string, newOwnerType: 'Position' | 'Organization' | 'RoleTag') => {
         setSteps(currentSteps => currentSteps.map(step => {
             if (step.id === stepId) {
-                return { ...step, ownerId: newOwnerId, ownerType: newOwnerType };
+                return { ...step, owner: newOwnerId, ownerType: newOwnerType };
             }
             return step;
         }));
     };
 
-    const updateStep = (stepId: string, updates: Partial<ProcessStep>) => {
+    const updateStep = (stepId: string, updates: Partial<LocalProcessStep>) => {
         setSteps(currentSteps => currentSteps.map(step => {
             if (step.id === stepId) {
                 return { ...step, ...updates };

@@ -5,6 +5,8 @@ import clsx from 'clsx';
 
 import { useTooltip, HolonTooltip } from '../tooltip/HolonTooltip';
 
+
+
 export function OrganizationNode({ data }: NodeProps<GraphNode>) {
     const { tooltipState, showTooltip, hideTooltip } = useTooltip();
 
