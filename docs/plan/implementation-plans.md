@@ -10,7 +10,7 @@ This document provides detailed implementation plans for each Tier-1 frontend ap
 |-----|---------------|--------------|----------|
 | **Org Chart** | Completed - MVP Delivered | 100% | High |
 | **How-Do** | MVP Process Editor, Governance & Health | ~80% | High |
-| **Policy Governance** | Minimal scaffold - textarea-only editor | ~10% | Medium |
+| **Policy Governance** | MVP Delivered - Editor, Extraction, Dashboard | 100% (MVP) | Medium |
 | **Task Management** | Scaffolded - mock task generation only | ~15% | High |
 | **Objectives/OKR** | Scaffolded - mock dashboard with seed data | ~15% | Medium |
 
@@ -362,22 +362,18 @@ interface ProcessStep {
 
 **Completed:**
 - ✅ React + Vite + Tailwind setup
-- ✅ Basic PolicyEditor component (textarea only)
-- ✅ Mock org data
-- ✅ DocumentIssued event emission (console)
+- ✅ Policy Editor (Tiptap Rich Text)
+- ✅ Obligation Extraction (Bubble Menu)
+- ✅ Policy Lifecycle (Draft -> Active)
+- ✅ Compliance Dashboard
+- ✅ State Management (Zustand)
+- ✅ Read-Only Mode for Active Policies
 
 **Not Yet Implemented:**
-- ❌ Rich text editing
-- ❌ Policy document structure (sections, scope, definitions)
-- ❌ Obligation extraction
-- ❌ Constraint definition
-- ❌ Policy lifecycle management
-- ❌ Compliance tracking
-- ❌ Integration with How-Do processes
-- ❌ Document versioning
-- ❌ Effective date management
-- ❌ Policy search and discovery
+- ❌ Integration with How-Do processes (Process Linking)
+- ❌ Advanced Search & Discovery
 - ❌ API integration with SOM backend
+- ❌ Effective Date scheduling automation
 
 ## 3.2 Implementation Plan
 
@@ -487,15 +483,18 @@ interface Obligation {
 
 ## 4.1 Current Implementation Status
 
+## 4.1 Current Implementation Status
+
 **Completed:**
 - ✅ React + Vite + Tailwind setup
-- ✅ TaskInbox component
-- ✅ Mock traffic generator
-- ✅ Task completion handling
-- ✅ TaskCreated/TaskCompleted event emission (console)
+- ✅ TaskInbox component (Position-based)
+- ✅ ProjectList component
+- ✅ Holonic Domain Model (Task/Project)
+- ✅ Zustand Store with Mock Data
+- ✅ UI Navigation
 
 **Not Yet Implemented:**
-- ❌ Position-based task inbox (vs person-based)
+- ❌ Kanban View
 - ❌ Task detail panel
 - ❌ Semantic source context (why task exists)
 - ❌ Organizational workload view

@@ -12,7 +12,7 @@ The project is organized into workspaces managed by npm:
 
 - **`apps/som-tier0`**: The core Tier-0 Semantic Operating Model application (source code in `apps/som-tier0/src`).
 - **`apps/how-do`**: Operational process definition with governance drift detection and health monitoring.
-- **`apps/policy-governance`**: Editor for Policy documents and constraints.
+- **`apps/policy-governance`**: Computable Policy Editor with obligation extraction and compliance monitoring.
 - **`apps/org-chart`**: interactive Organization, Position, and Person visualizer.
 - **`apps/task-management`**: Task and Initiative management interface.
 - **`apps/objectives-okr`**: Strategy dashboard for Objectives and Key Results.

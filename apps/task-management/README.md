@@ -1,73 +1,34 @@
-# React + TypeScript + Vite
+# Task Management Application
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+The **Task Management** application handles the execution layer of the Digital Backbone. It tracks actionable items (`Tasks`) and strategic containers (`Projects`) assigned to Organization units and Positions.
 
-Currently, two official plugins are available:
+## 🚀 Key Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+*   **Task Inbox**: A prioritized list of tasks assigned to your position(s).
+*   **Project Dashboard**: High-level view of initiatives, timelines, and progress.
+*   **Holonic Structure**: Tasks are typed Holons linked to `Person`, `Position`, or `Organization` owners.
+*   **State Management**: Local Zustand store (mocked for MVP) ready for API integration.
 
-## React Compiler
+## 🛠 Tech Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+*   **Framework**: React 18 + Vite
+*   **Styling**: TailwindCSS + Lucide Icons
+*   **State**: Zustand
 
-## Expanding the ESLint configuration
+## 🏗 Project Structure
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+*   `src/store`: `taskStore` managing global state.
+*   `src/types`: Domain models for `Task`, `Project`, `Milestone`.
+*   `src/components`: UI components (`TaskInbox`, `ProjectList`).
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## 🏃‍♂️ Usage
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+1.  **Install**: `npm install`
+2.  **Run**: `npm run dev`
+3.  **Test**: `npm test`
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## 🔮 Future Roadmap
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+*   **Process Integration**: Auto-generate tasks from "How-Do" process steps.
+*   **Kanban View**: Drag-and-drop task management.
+*   **SLA Tracking**: Visual countdowns for Governance compliance.
