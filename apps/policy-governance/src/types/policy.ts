@@ -20,6 +20,7 @@ export interface Obligation {
     status: 'draft' | 'validated' | 'deprecated';
     clauseRef?: string;
     suggestedProcessId?: string; // Link to How-Do
+    linkedProcessId?: string;
 }
 
 export interface Clause {

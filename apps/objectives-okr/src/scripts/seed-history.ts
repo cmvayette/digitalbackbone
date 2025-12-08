@@ -37,9 +37,11 @@ export const MOCK_OBJECTIVES: Objective[] = [
         sourceDocuments: [],
         properties: {
             statement: "Achieve Operational Readiness for Q4",
-            description: "Main effort for Q4",
+            narrative: "Main effort for Q4",
+            ownerId: 'org-root',
             level: 'operational',
             timeHorizon: new Date('2025-12-31'),
+            linkedKRs: [],
             status: 'active'
         }
     },
@@ -52,9 +54,11 @@ export const MOCK_OBJECTIVES: Objective[] = [
         sourceDocuments: [],
         properties: {
             statement: "Modernize Digital Backbone Infrastructure",
-            description: "Tech refresh",
+            narrative: "Tech refresh",
+            ownerId: 'org-root',
             level: 'strategic',
             timeHorizon: new Date('2026-06-30'),
+            linkedKRs: [],
             status: 'active'
         }
     },
@@ -67,9 +71,11 @@ export const MOCK_OBJECTIVES: Objective[] = [
         sourceDocuments: [],
         properties: {
             statement: "Ensure Personnel Compliance",
-            description: "Training compliance",
+            narrative: "Training compliance",
+            ownerId: 'org-root',
             level: 'tactical',
             timeHorizon: new Date('2025-01-01'),
+            linkedKRs: [],
             status: 'active'
         }
     }

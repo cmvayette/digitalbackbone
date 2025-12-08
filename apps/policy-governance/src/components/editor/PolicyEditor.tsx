@@ -2,6 +2,8 @@ import React, { useEffect } from 'react';
 import { usePolicyStore } from '../../store/policyStore';
 import { ArrowLeft, Edit3, Save, Trash2, FileText, CheckSquare, Plus, Bold, List, Heading1 } from 'lucide-react';
 import { ObligationComposer } from './ObligationComposer';
+import { useExternalProcessData } from '@som/api-client';
+import { HolonType, type Process } from '@som/shared-types';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Highlight from '@tiptap/extension-highlight';
@@ -13,7 +15,7 @@ interface PolicyEditorProps {
 }
 
 export const PolicyEditor: React.FC<PolicyEditorProps> = ({ onBack }) => {
-    const { currentPolicy, updatePolicy, addObligation, publishPolicy } = usePolicyStore();
+    const { currentPolicy, updatePolicy, addObligation, updateObligation, publishPolicy } = usePolicyStore();
     const [activeTab, setActiveTab] = React.useState<'document' | 'obligations'>('document');
     const [showComposer, setShowComposer] = React.useState(false);
     const [pendingClauseText, setPendingClauseText] = React.useState('');
@@ -209,16 +211,57 @@ export const PolicyEditor: React.FC<PolicyEditorProps> = ({ onBack }) => {
                                 )}
 
                                 <div className="space-y-3">
-                                    {currentPolicy.obligations.map(obl => (
-                                        <div key={obl.id} className="bg-slate-800 border-l-4 border-blue-500 p-4 rounded shadow-sm hover:translate-x-1 transition-transform cursor-default">
-                                            <p className="font-medium text-slate-200 mb-2">"{obl.statement}"</p>
-                                            <div className="flex items-center gap-4 text-xs text-slate-400">
-                                                <span className="flex items-center gap-1"><span className="text-slate-500">Actor:</span> {obl.actor.name}</span>
-                                                {obl.deadline && <span className="flex items-center gap-1"><span className="text-slate-500">By:</span> {obl.deadline}</span>}
-                                                <span className={`uppercase font-bold px-1.5 py-0.5 rounded ${obl.criticality === 'high' ? 'bg-red-900/30 text-red-400' : 'bg-slate-700'}`}>{obl.criticality}</span>
+                                    {currentPolicy.obligations.map(obl => {
+                                        const { getProcessById, addProcess } = useExternalProcessData();
+                                        const linkedProcess = obl.suggestedProcessId ? getProcessById(obl.suggestedProcessId) : undefined;
+
+                                        return (
+                                            <div key={obl.id} className="bg-slate-800 border-l-4 border-blue-500 p-4 rounded shadow-sm hover:translate-x-1 transition-transform cursor-default group">
+                                                <p className="font-medium text-slate-200 mb-2">"{obl.statement}"</p>
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex items-center gap-4 text-xs text-slate-400">
+                                                        <span className="flex items-center gap-1"><span className="text-slate-500">Actor:</span> {obl.actor.name}</span>
+                                                        {obl.deadline && <span className="flex items-center gap-1"><span className="text-slate-500">By:</span> {obl.deadline}</span>}
+                                                        <span className={`uppercase font-bold px-1.5 py-0.5 rounded ${obl.criticality === 'high' ? 'bg-red-900/30 text-red-400' : 'bg-slate-700'}`}>{obl.criticality}</span>
+                                                    </div>
+
+                                                    {linkedProcess ? (
+                                                        <div className="text-xs bg-green-900/30 text-green-400 px-2 py-1 rounded border border-green-900/50 flex items-center gap-1">
+                                                            <CheckSquare size={12} />
+                                                            Linked: {linkedProcess.properties.name}
+                                                        </div>
+                                                    ) : (
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                const newProcess: Process = {
+                                                                    id: `proc-sug-${Date.now()}`,
+                                                                    type: HolonType.Process,
+                                                                    createdAt: new Date(),
+                                                                    createdBy: 'policy-gov',
+                                                                    status: 'draft' as const,
+                                                                    sourceDocuments: [currentPolicy.id],
+                                                                    properties: {
+                                                                        name: `Process: ${obl.statement.substring(0, 30)}...`,
+                                                                        description: `Derived from obligation: ${obl.statement}`,
+                                                                        inputs: [],
+                                                                        outputs: [],
+                                                                        estimatedDuration: 0,
+                                                                        steps: []
+                                                                    }
+                                                                };
+                                                                addProcess(newProcess);
+                                                                updateObligation(currentPolicy.id, obl.id, { suggestedProcessId: newProcess.id });
+                                                            }}
+                                                            className="opacity-0 group-hover:opacity-100 transition-opacity text-xs bg-indigo-600 text-white px-2 py-1 rounded hover:bg-indigo-500 flex items-center gap-1"
+                                                        >
+                                                            <List size={12} /> Suggest Process
+                                                        </button>
+                                                    )}
+                                                </div>
                                             </div>
-                                        </div>
-                                    ))}
+                                        );
+                                    })}
                                     {currentPolicy.obligations.length === 0 && !showComposer && (
                                         <div className="text-center py-8 text-slate-500 italic">No obligations extracted yet. Select text in the document to begin.</div>
                                     )}

@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-// Replicating types locally to avoid monorepo linking issues for MVP
+// Replicating types locally/shared for MVP (eventually refer to @som/shared-types)
 export interface ExternalOrganization {
     id: string;
     name: string;
@@ -15,7 +15,7 @@ export interface ExternalPosition {
     orgId: string;
 }
 
-// Mock data mirrored from Org Chart app
+// Mock data mirrored from Org Chart app (Centralized Source of Truth)
 const MOCK_ORGS: ExternalOrganization[] = [
     { id: 'org-root', name: 'Digital Transformation Command', type: 'Command' },
     { id: 'org-dir-0', name: 'Operations Directorate', type: 'Directorate' },
@@ -26,7 +26,8 @@ const MOCK_ORGS: ExternalOrganization[] = [
 const MOCK_POSITIONS: ExternalPosition[] = [
     { id: 'pos-1', title: 'Director of Operations', billetCode: '0203', orgId: 'org-dir-0' },
     { id: 'pos-2', title: 'Chief Strategy Officer', billetCode: '11A', orgId: 'org-dir-1' },
-    { id: 'pos-3', title: 'Operations Officer', billetCode: '0203', orgId: 'org-div-0-0' }
+    { id: 'pos-3', title: 'Operations Officer', billetCode: '0203', orgId: 'org-div-0-0' },
+    { id: 'pos-4', title: 'Training Officer', billetCode: '8832', orgId: 'org-div-0-0' }
 ];
 
 export function useExternalOrgData() {
@@ -34,7 +35,7 @@ export function useExternalOrgData() {
         return {
             organizations: MOCK_ORGS,
             positions: MOCK_POSITIONS,
-            // Helper to get formatted candidates for dropdowns
+            // Helper to get formatted candidates for dropdowns/pickers
             getCandidates: () => {
                 const orgs = MOCK_ORGS.map(o => ({
                     id: o.id,

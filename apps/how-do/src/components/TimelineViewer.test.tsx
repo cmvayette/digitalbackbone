@@ -23,13 +23,15 @@ const mockProcess: Process = {
                 id: "step-1",
                 title: "First Step",
                 description: "Do the first thing",
-                owner: "pos-1"
+                owner: "pos-1",
+                obligations: []
             },
             {
                 id: "step-2",
-                title: "Second Step",
-                description: "Do the next thing",
-                owner: "pos-2"
+                title: "Step 2",
+                description: "Step 2 description",
+                owner: "pos-2",
+                obligations: []
             }
         ]
     }
@@ -39,7 +41,7 @@ describe('TimelineViewer', () => {
     it('renders process title and steps', () => {
         render(
             <TimelineViewer
-                process={mockProcess}
+                process={mockProcess as any}
                 onEdit={() => { }}
                 onBack={() => { }}
             />
@@ -57,7 +59,7 @@ describe('TimelineViewer', () => {
         const handleBack = vi.fn();
         render(
             <TimelineViewer
-                process={mockProcess}
+                process={mockProcess as any}
                 onEdit={() => { }}
                 onBack={handleBack}
             />
@@ -71,7 +73,7 @@ describe('TimelineViewer', () => {
         const handleEdit = vi.fn();
         render(
             <TimelineViewer
-                process={mockProcess}
+                process={mockProcess as any}
                 onEdit={handleEdit}
                 onBack={() => { }}
             />

@@ -31,17 +31,17 @@ function OrgChartContent() {
         id: org.id,
         type: 'organization', // Matches GraphCanvas nodeTypes
         data: {
-          label: org.name,
-          properties: org
+          label: org.properties.name,
+          properties: org.properties
         },
         position: { x: 0, y: 0 }
       }));
 
       const edges: Edge[] = organizations
-        .filter(org => org.parentId)
+        .filter(org => org.properties.parentId)
         .map(org => ({
-          id: `e-${org.parentId}-${org.id}`,
-          source: org.parentId!,
+          id: `e-${org.properties.parentId}-${org.id}`,
+          source: org.properties.parentId!,
           target: org.id,
           type: 'smoothstep'
         }));

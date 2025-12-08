@@ -1,7 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import type { Obligation, OwnerRef } from '../../types/policy';
-import { useExternalOrgData } from '../../hooks/useExternalOrgData';
-import { Building, User } from 'lucide-react';
+import { useExternalOrgData } from '@som/api-client';
+import { OwnerPicker } from '@som/ui-components';
+import { Building, User, ChevronDown } from 'lucide-react';
 
 interface ObligationComposerProps {
     initialStatement?: string;
@@ -13,7 +14,9 @@ export const ObligationComposer: React.FC<ObligationComposerProps> = ({ initialS
     const [statement, setStatement] = useState(initialStatement);
     const [selectedActorId, setSelectedActorId] = useState('');
     const [criticality, setCriticality] = useState<Obligation['criticality']>('medium');
+
     const [deadline, setDeadline] = useState('');
+    const [isPickerOpen, setIsPickerOpen] = useState(false);
 
     // Access External Org Data (Simulated Integration)
     const { getCandidates } = useExternalOrgData();
@@ -55,20 +58,28 @@ export const ObligationComposer: React.FC<ObligationComposerProps> = ({ initialS
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-                <div>
-                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Responsible Actor (Select)</label>
-                    <select
-                        value={selectedActorId}
-                        onChange={(e) => setSelectedActorId(e.target.value)}
-                        className="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm text-slate-200 focus:border-blue-500 outline-none"
+                <div className="relative">
+                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Responsible Actor</label>
+                    <button
+                        onClick={() => setIsPickerOpen(!isPickerOpen)}
+                        className="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm text-slate-200 focus:border-blue-500 outline-none flex items-center justify-between"
                     >
-                        <option value="">-- Choose Actor --</option>
-                        {candidates.map(c => (
-                            <option key={c.id} value={c.id}>
-                                {c.name} ({c.type})
-                            </option>
-                        ))}
-                    </select>
+                        <span>
+                            {selectedActorId
+                                ? candidates.find(c => c.id === selectedActorId)?.name
+                                : <span className="text-slate-500">Select Actor...</span>}
+                        </span>
+                        <ChevronDown size={14} className="text-slate-500" />
+                    </button>
+
+                    {isPickerOpen && (
+                        <OwnerPicker
+                            value={selectedActorId}
+                            onChange={(id) => setSelectedActorId(id)}
+                            onClose={() => setIsPickerOpen(false)}
+                            className="absolute top-full left-0 mt-1 w-full"
+                        />
+                    )}
                 </div>
                 <div>
                     <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Criticality</label>

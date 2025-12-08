@@ -1,10 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import './SwimlaneEditor.css';
 import { StepCard } from './viewer/StepCard';
-import mockData from '../mocks/mock-policy.json';
+import { useExternalOrgData, useExternalPolicyData } from '@som/api-client';
 import type { Process } from '../types/process';
-
-const { agents, policies } = mockData;
 
 interface SwimlaneViewerProps {
     process: Process;
@@ -13,10 +11,28 @@ interface SwimlaneViewerProps {
 }
 
 export const SwimlaneViewer: React.FC<SwimlaneViewerProps> = ({ process, onEdit, onBack }) => {
+    // Shared Data Hooks
+    const { getCandidates } = useExternalOrgData();
+    const { getObligationsForOwner } = useExternalPolicyData();
 
-    // Helper to find relevant obligations for a position
-    const getObligationsForPosition = (posId: string) => {
-        return policies.obligations.filter(o => o.assignedTo === posId);
+    // Helper to resolve owner names (Agents or Positions)
+    const resolveOwnerName = (ownerId: string): { name: string; isAgent: boolean } => {
+        // In this MVP, we assume Org/Position IDs are distinct.
+        // Also, we don't have a direct "Agent" types in the Org hook yet,
+        // so we'll check if the ownerId is an "Agent" ID pattern or rely on getCandidates()
+        // For now, let's just search the candidates list.
+        const candidates = getCandidates();
+        const found = candidates.find(c => c.id === ownerId);
+
+        // Simulating "Agent" detection by ID convention or type if we had it.
+        // Real app would have a dedicated separate "Agents" hook or merged directory.
+        // For MVP, if it starts with 'agent-', it's an agent.
+        const isAgent = ownerId.startsWith('agent-');
+
+        return {
+            name: found ? found.name : ownerId,
+            isAgent
+        };
     };
 
     return (
@@ -31,11 +47,8 @@ export const SwimlaneViewer: React.FC<SwimlaneViewerProps> = ({ process, onEdit,
 
             <div className="canvas">
                 {process.properties.steps.map((step, index) => {
-                    const obligations = getObligationsForPosition(step.owner);
-                    const isAgent = agents?.some(a => a.id === step.owner);
-                    const ownerName = isAgent
-                        ? agents.find(a => a.id === step.owner)?.name
-                        : step.owner;
+                    const obligations = getObligationsForOwner(step.owner);
+                    const { name: ownerName, isAgent } = resolveOwnerName(step.owner);
 
                     return (
                         <div key={step.id} className="swimlane-column">

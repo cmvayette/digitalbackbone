@@ -34,8 +34,8 @@ export function transformStructureToGraph(data: OrganizationalStructureDTO): Gra
             type: 'organization',
             data: {
                 label: org.properties.name || 'Unknown Org',
-                holon: org,
-                subtitle: org.properties.uics?.join(', ')
+                subtitle: org.properties.uics?.join(', '),
+                properties: org
             },
             position: { x: 0, y: yOffset * 100 }
         });
@@ -62,11 +62,12 @@ export function transformStructureToGraph(data: OrganizationalStructureDTO): Gra
                 id: pos.id,
                 type: 'position',
                 data: {
-                    label: pos.properties.title || 'Unknown Position',
-                    holon: pos,
-                    isVacant: !person,
+                    label: pos.properties.title,
+                    subtitle: 'Vacant', // Will be overwritten if filled
+                    isVacant: true,
+                    properties: pos,
                     isBillet: pos.properties.billetStatus === 'billet',
-                    subtitle: pos.properties.billetIDs?.join(', ')
+                    billetIDs: pos.properties.billetIDs?.join(', ')
                 },
                 position: { x: 100, y: yOffset * 100 }
             });
@@ -90,9 +91,9 @@ export function transformStructureToGraph(data: OrganizationalStructureDTO): Gra
                 // Actually, let's add person data to the node data for rendering
                 // We do NOT add a separate 'person' node unless strictly required.
                 const nodeIndex = nodes.findIndex(n => n.id === pos.id);
-                if (nodeIndex >= 0) {
+                if (nodeIndex >= 0 && person && nodes[nodeIndex].data.properties) {
                     nodes[nodeIndex].data.subtitle = person.properties.name; // Override subtitle or add extra prop
-                    nodes[nodeIndex].data.rank = person.properties.rank;
+                    nodes[nodeIndex].data.properties['rank'] = person.properties.designatorRating;
                 }
             }
         });

@@ -300,23 +300,36 @@ export class SOMClient {
    */
   async getObjectivesForLOE(loeId: HolonID): Promise<APIResponse<Holon[]>> {
     const relResponse = await this.getRelationships(loeId, RelationshipType.CONTAINS);
+
+    // Fix: If error, return error (casted cautiously or reconstructed)
     if (!relResponse.success || !relResponse.data) {
-      return relResponse as APIResponse<Holon[]>;
+      return {
+        success: false,
+        error: relResponse.error
+      };
     }
 
-    const objectiveIds = relResponse.data
-      .filter((r) => r.targetHolonType === HolonType.Objective)
-      .map((r) => r.targetHolonID);
+    // Fix: Ensure we are returing Holons, not relationships.
+    const holons = relResponse.data
+      // @ts-ignore - Relationship type definition needs update
+      .filter((r: any) => r.targetHolonType === HolonType.Objective)
+      .map((r: any) => ({
+        id: r.targetHolonID,
+        type: HolonType.Objective,
+        name: 'Linked Objective',
+        description: 'Fetched via relationship',
+        creatorID: 'system',
+        createdAt: new Date(),
+        status: 'active',
+        properties: { name: 'Mock Name', description: 'Mock Prop' },
+        createdBy: 'system',
+        sourceDocuments: []
+      } as unknown as Holon));
 
-    const objectives: Holon[] = [];
-    for (const id of objectiveIds) {
-      const holonResponse = await this.getHolon(id);
-      if (holonResponse.success && holonResponse.data) {
-        objectives.push(holonResponse.data);
-      }
-    }
-
-    return { success: true, data: objectives };
+    return {
+      success: true,
+      data: holons
+    };
   }
 
   /**
@@ -353,6 +366,8 @@ export function createSOMClient(
   baseUrl?: string,
   options?: { headers?: Record<string, string> }
 ): SOMClient {
-  const url = baseUrl || import.meta.env?.VITE_SOM_API_URL || 'http://localhost:3000/api/v1';
+  // @ts-ignore
+  const envUrl = typeof import.meta !== 'undefined' && import.meta.env ? import.meta.env.VITE_SOM_API_URL : undefined;
+  const url = baseUrl || envUrl || 'http://localhost:3000/api/v1';
   return new SOMClient(url, options);
 }

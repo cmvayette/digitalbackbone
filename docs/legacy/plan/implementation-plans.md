@@ -167,192 +167,37 @@ This document provides detailed implementation plans for each Tier-1 frontend ap
 
 **Completed:**
 - ✅ React + Vite + Tailwind setup
-- ✅ Basic SwimlaneEditor component
-- ✅ Mock data (policy.json, org-structure.json)
-- ✅ Add step functionality (prompt-based)
-- ✅ Basic obligation linking (keyword match)
-- ✅ ProcessDefined event emission (console)
-- ✅ Process Discovery (Search UI)
-- ✅ Process Viewer (Read-only Swimlane)
+- ✅ Basic SwimlaneEditor component (Drag & Drop)
+- ✅ Process Discovery (Basic Search)
+- ✅ Process Viewer (Swimlane & Timeline Modes)
 - ✅ Agent Assignment (Semantic Proxy)
+- ✅ Governance Integration (Drift Alerts)
+- ✅ **Real Org Integration** (via Simulated Hook - `OwnerPicker`)
+- ✅ **Execution Mode** (V2 Hybrid - `ExecutionView`)
 
 **Not Yet Implemented:**
-- ❌ Linear Timeline Layout
-- ✅ Step card enhancements (attachments, SLA, decision logic)
-- ✅ Drag-and-drop step reordering
-- ✅ Owner selection from Org Chart
-- ✅ Governance integration (obligation badges, drift alerts)
-- ❌ Execution Mode (V2)
-- ✅ Process health indicators
-- ❌ Version history & diff
-- ❌ "Show Only My Steps" filter
-- ❌ "Explain It to Me Like I'm New" mode
-- ❌ API integration with SOM backend
+- ❌ **Smart Discovery** (Recommendations, Domain Filters)
+- ❌ **Advanced Viewer Features** ("Show Only My Steps", "Explain Like I'm New")
+- ❌ **Robust Validation** (Orphan branches, broken links)
 
-## 2.2 Implementation Plan
+## 2.2 Implementation Plan (v2 Spec Alignment)
 
-### Phase 1: Process Viewer (MVP)
+### Phase 1: Deep Integration (Structuring)
+- [x] **Data Model Alignment**: Update `ProcessStep` to use `OwnerRef` (Org/Pos/RoleTag).
+- [x] **Org Chart Connection**: Refactor `OwnerPicker` to use `useOrgStore` (or shared hook).
+- [ ] **Validation Engine**: Implement R4 checks (Orphans, Steps without owners).
 
-#### 1.1 Process Data Model
-**File:** `src/types/process.ts`
-```typescript
-interface Process {
-  id: string;
-  name: string;
-  description: string;
-  owner: OwnerRef;
-  steps: ProcessStep[];
-  version: number;
-  health: ProcessHealth;
-  tags: string[];
-}
+### Phase 2: User Experience (Clarity)
+- [ ] **Smart Discovery**:
+    - Implement "Recommended for You" based on User Position.
+    - Add Filters: Domain, Role Tag, Obligation.
+- [ ] **Viewer Enhancements**:
+    - "Show Only My Steps" filter.
+    - "Explain It to Me Like I'm New" (Mock NLP toggle).
 
-interface ProcessStep {
-  id: string;
-  title: string;
-  description: string;
-  owner: OwnerRef;
-  attachments: Attachment[];
-  obligations: ObligationLink[];
-  estimatedTime?: number;
-  decisionBranches?: DecisionBranch[];
-}
-```
-
-#### 1.2 API Integration
-**File:** `src/api/process-client.ts`
-- Fetch processes from SOM API
-- Query by type, owner, tags
-- Get process details with steps
-
-#### 1.3 Swimlane Viewer Component
-**File:** `src/components/viewer/SwimlaneViewer.tsx`
-- Read-only swimlane layout
-- Steps grouped by owner
-- Horizontal handoff arrows
-- Click lanes to open Org Chart sidebar
-
-#### 1.4 Linear Timeline Layout
-**File:** `src/components/viewer/TimelineViewer.tsx`
-- Vertical scrolling for mobile
-- Compressed owner badges
-- Same data, different presentation
-
-### Phase 2: Process Discovery
-
-#### 2.1 Search Bar Component
-**File:** `src/components/search/ProcessSearch.tsx`
-- "How do I...?" natural language input
-- Auto-suggestions while typing
-- Match by title, description, tags, owners, obligations
-
-#### 2.2 Search Results Component
-**File:** `src/components/search/SearchResults.tsx`
-- Name, owner, description, last updated
-- Step count, health indicator
-- Click to view process
-
-#### 2.3 Filters Panel
-**File:** `src/components/search/FiltersPanel.tsx`
-- Domain filter (training, logistics, IT, etc.)
-- Owning organization
-- Role Tag relevance
-- Obligation relevance
-
-### Phase 3: Enhanced Viewer Features
-
-#### 3.1 Step Card Enhancements
-**File:** `src/components/viewer/StepCard.tsx`
-- Linked attachments (SOPs, templates, forms)
-- Obligation badges with hover expand
-- Estimated time / SLA indicator
-- Decision logic visualization (V-shape branches)
-
-#### 3.2 "Show Only My Steps" Mode
-**File:** `src/hooks/useStepFilter.ts`
-- Filter to user's position-owned steps
-- Show upstream dependencies
-- Show immediate downstream expectations
-
-#### 3.3 "Explain It to Me Like I'm New" Mode
-**File:** `src/hooks/useSimplifiedView.ts`
-- Jargon removal
-- Acronym expansion
-- Contextual examples
-
-### Phase 4: Process Editor
-
-#### 4.1 Enhanced Swimlane Editor
-**File:** `src/components/editor/SwimlaneEditor.tsx` (refactor existing)
-- Drag-and-drop step reordering (use @dnd-kit)
-- Add/edit/delete steps
-- Decision branch creation
-- Attachment management
-
-#### 4.2 Owner Selection
-**File:** `src/components/editor/OwnerPicker.tsx`
-- Fetch owners from Org Chart API
-- Organization, Position, Role Tag options
-- Show eligible positions & personnel
-- Warnings for archived/vacant positions
-
-#### 4.3 Obligation Linking
-**File:** `src/components/editor/ObligationLinker.tsx`
-- Select obligations from Policy system
-- Multiple obligations per step
-- Missing coverage warnings
-
-#### 4.4 Validation Engine
-**File:** `src/utils/process-validator.ts`
-- Steps without owners
-- Broken links
-- Missing obligation coverage
-- Orphan branches
-
-### Phase 5: Governance Integration
-
-#### 5.1 Drift Detection
-**File:** `src/hooks/useDriftDetection.ts`
-- Monitor policy changes
-- Detect structural misalignments
-- Flag "Needs Review" processes
-
-#### 5.2 Drift Alerts UI
-**File:** `src/components/alerts/DriftAlert.tsx`
-- Banner in Editor
-- Health indicator in Process list
-- One-click navigation to resolve
-
-### Phase 6: Process Health Model
-
-#### 6.1 Health Computation
-**File:** `src/utils/health-calculator.ts`
-- Freshness (last updated/validated)
-- Obligation coverage %
-- Structural alignment
-- Complexity score
-
-#### 6.2 Health Dashboard
-**File:** `src/components/health/ProcessHealthDashboard.tsx`
-- Overview of all processes
-- Filter by health status
-- Prioritized review queue
-
-### Phase 7: Execution Mode (V2)
-
-#### 7.1 Execution State Management
-**File:** `src/hooks/useExecution.ts`
-- Track current step per user per process
-- Mark step complete
-- Auto-advance
-- Persist partial progress
-
-#### 7.2 Execution UI
-**File:** `src/components/execution/ExecutionView.tsx`
-- Highlighted current step
-- Handoff owner display
-- Attached templates
-- Resume/abandon/restart controls
+### Phase 3: Execution Mode (V2 Hybrid)
+- [x] **Execution State**: model `ExecutionInstance` (User + Process + Step).
+- [x] **Execution View**: Lightweight "Next Step" wizard interface.
 
 ---
 
@@ -366,14 +211,14 @@ interface ProcessStep {
 - ✅ Obligation Extraction (Bubble Menu)
 - ✅ Policy Lifecycle (Draft -> Active)
 - ✅ Compliance Dashboard
-- ✅ State Management (Zustand)
-- ✅ Read-Only Mode for Active Policies
+- ✅ **Real Actor Mapping** (Org Chart Integration via `useExternalOrgData`)
+- ✅ **Enhanced Domain Model** (Deep Linking)
 
 **Not Yet Implemented:**
-- ❌ Integration with How-Do processes (Process Linking)
-- ❌ Advanced Search & Discovery
-- ❌ API integration with SOM backend
-- ❌ Effective Date scheduling automation
+- ❌ **Integration with How-Do processes** (Process Linking)
+- ❌ **Advanced Search & Discovery**
+- ❌ **Effective Date scheduling automation**
+- ❌ **Drift Detection/Correction loop**
 
 ## 3.2 Implementation Plan
 

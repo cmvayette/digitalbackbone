@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { useReactFlow, type Node, type Edge } from '@xyflow/react';
 import { useUndo } from './useUndo';
-import type { GraphNode } from '../types/graph';
+import type { GraphNode, GraphNodeData } from '../types/graph';
 
 export function useOrgMutations() {
     const { setNodes, setEdges } = useReactFlow();
@@ -9,7 +9,7 @@ export function useOrgMutations() {
 
     const addOrganization = useCallback((parentId: string, name: string, uic: string) => {
         const id = `org-${Date.now()}`;
-        const newOrg: Node<GraphNode> = {
+        const newOrg: GraphNode = {
             id,
             type: 'organization',
             position: { x: Math.random() * 500, y: Math.random() * 500 }, // Random pos for now, layout will fix
@@ -44,7 +44,7 @@ export function useOrgMutations() {
 
     const addPosition = useCallback((parentId: string, title: string, roleCode: string) => {
         const id = `pos-${Date.now()}`;
-        const newPosition: Node<GraphNode> = {
+        const newPosition: GraphNode = {
             id,
             type: 'position',
             position: { x: Math.random() * 500, y: Math.random() * 500 },
@@ -85,7 +85,7 @@ export function useOrgMutations() {
             if (nodeIndex === -1) return nodes;
 
             previousNodeState = nodes[nodeIndex];
-            const prevData = previousNodeState.data as GraphNode; // Cast data to GraphNode
+            const prevData = previousNodeState.data as GraphNodeData; // Cast data to GraphNodeData
             const prevProps = prevData.properties || {};
 
             const updatedNode: Node = {

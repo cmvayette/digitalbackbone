@@ -37,7 +37,7 @@ describe('SwimlaneViewer', () => {
 
         render(
             <SwimlaneViewer
-                process={agentProcess}
+                process={agentProcess as any}
                 onEdit={() => { }}
                 onBack={() => { }}
             />

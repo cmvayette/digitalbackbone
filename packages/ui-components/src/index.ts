@@ -23,7 +23,7 @@ export { EmptyState } from './components/EmptyState';
 export type { EmptyStateProps, EmptyStateVariant } from './components/EmptyState';
 
 export { OwnerPicker } from './components/OwnerPicker';
-export type { OwnerPickerProps, OwnerRef, OwnerType } from './components/OwnerPicker';
+export type { OwnerPickerProps } from './components/OwnerPicker';
 
 // Hooks
 export { useDebounce } from './hooks/useDebounce';

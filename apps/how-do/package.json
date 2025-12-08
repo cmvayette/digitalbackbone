@@ -20,6 +20,8 @@
     "react-dom": "^19.0.0",
     "react-router-dom": "^7.10.1",
     "@som/shared-types": "file:../../packages/som-shared-types",
+    "@som/api-client": "file:../../packages/api-client",
+    "@som/ui-components": "file:../../packages/ui-components",
     "tailwind-merge": "^3.4.0"
   },
   "devDependencies": {
