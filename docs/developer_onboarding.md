@@ -149,7 +149,7 @@ npm run lint:semantic
 ---
 
 ## 8. Agentic Workflow
-If you are an AI Agent (or a human acting like one), you must follow the **[Agent Implementation Protocol](file:///Users/baxter/devProject/digital_backbone/docs/plan/agent_implementation_protocol.md)**.
+If you are an AI Agent (or a human acting like one), you must follow the **[Agent Implementation Protocol](file:///Users/baxter/devProject/digital_backbone/docs/design/process/agent_protocol.md)**.
 This defines the **Review-Verify-Task** cycle required to convert Strategy into Code.
 
 1.  **Context Alignment**: Read Strategy.

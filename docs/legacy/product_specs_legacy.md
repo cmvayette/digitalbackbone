@@ -1,3 +1,6 @@
+# [DEPRECATED] Digital Backbone Product Specs
+> **Note:** This document is archived. Please refer to `docs/design/specs/` for the current, modular specifications.
+
 ## I. Purpose of the Tier-0 Semantic Operating Model (SOM)
 
 ### 1. What the SOM *is*

@@ -1,4 +1,7 @@
-# Developer Onboarding – Branching Workflows
+# [DEPRECATED] Developer Onboarding – Branching Workflows
+> **Note:** This document is archived. Please see `docs/design/branchingStrategy.md` for the current standard.
+
+Welcome to the **Digital Backbone** (Semantic Operating Model) codebase.
 
 Welcome to the **Digital Backbone** (Semantic Operating Model) codebase.
 
