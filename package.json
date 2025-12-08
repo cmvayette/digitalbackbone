@@ -8,6 +8,8 @@
   "scripts": {
     "build": "npm run build --workspaces",
     "test": "npm run test --workspaces",
+    "coverage": "npm run test --workspaces -- run --coverage",
+    "lint": "npm run lint --workspaces",
     "lint:semantic": "npm run start -w packages/semantic-linter -- audit"
   }
 }
