@@ -39,7 +39,7 @@ describe('TimelineViewer', () => {
     it('renders process title and steps', () => {
         render(
             <TimelineViewer
-                process={mockProcess}
+                process={mockProcess as any}
                 onEdit={() => { }}
                 onBack={() => { }}
             />
@@ -57,7 +57,7 @@ describe('TimelineViewer', () => {
         const handleBack = vi.fn();
         render(
             <TimelineViewer
-                process={mockProcess}
+                process={mockProcess as any}
                 onEdit={() => { }}
                 onBack={handleBack}
             />
@@ -71,7 +71,7 @@ describe('TimelineViewer', () => {
         const handleEdit = vi.fn();
         render(
             <TimelineViewer
-                process={mockProcess}
+                process={mockProcess as any}
                 onEdit={handleEdit}
                 onBack={() => { }}
             />

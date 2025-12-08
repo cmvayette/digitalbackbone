@@ -43,7 +43,7 @@ function App() {
 
       <main className="flex-1 overflow-hidden relative">
         {view === 'dashboard' && <ComplianceDashboard />}
-        {view === 'list' && <PolicyList onSelect={() => setView('editor')} />}
+        {view === 'list' && <PolicyList onSelectPolicy={() => setView('editor')} />}
         {view === 'editor' && (
           <PolicyEditor
             onBack={() => {

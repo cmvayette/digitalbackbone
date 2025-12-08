@@ -16,8 +16,8 @@ describe('ComplianceDashboard', () => {
                     status: 'active', // Active
                     sections: [],
                     obligations: [
-                        { id: 'o1', statement: 'Crit 1', actor: { type: 'Position', name: 'Pos A' }, criticality: 'high', triggeredBy: '', policyId: 'p1' },
-                        { id: 'o2', statement: 'Low 1', actor: { type: 'Position', name: 'Pos B' }, criticality: 'low', triggeredBy: '', policyId: 'p1' }
+                        { id: 'o1', statement: 'Crit 1', actor: { id: 'a1', type: 'Position', name: 'Pos A' }, criticality: 'high', status: 'validated' },
+                        { id: 'o2', statement: 'Low 1', actor: { id: 'a2', type: 'Position', name: 'Pos B' }, criticality: 'low', status: 'validated' }
                     ],
                     createdAt: '',
                     updatedAt: ''

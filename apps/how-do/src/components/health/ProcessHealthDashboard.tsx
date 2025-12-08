@@ -70,7 +70,7 @@ const HealthCard: React.FC<{ process: Process }> = ({ process }) => {
 export const ProcessHealthDashboard: React.FC = () => {
     // Sort processes by health score (lowest first)
     const sortedProcesses = useMemo(() => {
-        return [...mockProcesses].sort((a, b) => {
+        return [...mockProcesses].sort((a) => {
             const healthA = calculateProcessHealth(a, false).score; // Rough sort without drift check for perf? 
             // Better to include drift if possible, but useDriftDetection is a hook.
             // We can't use hook in sort callback easily without strict rules check.

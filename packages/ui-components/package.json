@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@som/shared-types": "^0.1.0",
+    "@som/api-client": "^0.1.0",
     "clsx": "^2.1.0",
     "lucide-react": "^0.400.0"
   },

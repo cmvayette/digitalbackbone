@@ -1,6 +1,6 @@
 import React from 'react';
 import { usePolicyStore } from '../../store/policyStore';
-import { ShieldAlert, shieldCheck, FileText, Activity, AlertTriangle, CheckCircle } from 'lucide-react';
+import { ShieldAlert, ShieldCheck, FileText, Activity, AlertTriangle, CheckCircle } from 'lucide-react';
 
 export const ComplianceDashboard: React.FC = () => {
     const { policies } = usePolicyStore();

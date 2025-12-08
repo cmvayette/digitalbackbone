@@ -168,24 +168,23 @@ This document provides detailed implementation plans for each Tier-1 frontend ap
 **Completed:**
 - ✅ React + Vite + Tailwind setup
 - ✅ Basic SwimlaneEditor component (Drag & Drop)
-- ✅ Mock data (policy.json, org-structure.json)
 - ✅ Process Discovery (Basic Search)
 - ✅ Process Viewer (Swimlane & Timeline Modes)
 - ✅ Agent Assignment (Semantic Proxy)
 - ✅ Governance Integration (Drift Alerts)
+- ✅ **Real Org Integration** (via Simulated Hook - `OwnerPicker`)
+- ✅ **Execution Mode** (V2 Hybrid - `ExecutionView`)
 
 **Not Yet Implemented:**
-- ❌ **Real Org Integration** (Currently using mocks)
 - ❌ **Smart Discovery** (Recommendations, Domain Filters)
-- ❌ **Execution Mode** (V2 Hybrid)
 - ❌ **Advanced Viewer Features** ("Show Only My Steps", "Explain Like I'm New")
 - ❌ **Robust Validation** (Orphan branches, broken links)
 
 ## 2.2 Implementation Plan (v2 Spec Alignment)
 
 ### Phase 1: Deep Integration (Structuring)
-- [ ] **Data Model Alignment**: Update `ProcessStep` to use `OwnerRef` (Org/Pos/RoleTag).
-- [ ] **Org Chart Connection**: Refactor `OwnerPicker` to use `useOrgStore` (or shared hook).
+- [x] **Data Model Alignment**: Update `ProcessStep` to use `OwnerRef` (Org/Pos/RoleTag).
+- [x] **Org Chart Connection**: Refactor `OwnerPicker` to use `useOrgStore` (or shared hook).
 - [ ] **Validation Engine**: Implement R4 checks (Orphans, Steps without owners).
 
 ### Phase 2: User Experience (Clarity)
@@ -197,8 +196,8 @@ This document provides detailed implementation plans for each Tier-1 frontend ap
     - "Explain It to Me Like I'm New" (Mock NLP toggle).
 
 ### Phase 3: Execution Mode (V2 Hybrid)
-- [ ] **Execution State**: model `ExecutionInstance` (User + Process + Step).
-- [ ] **Execution View**: Lightweight "Next Step" wizard interface.
+- [x] **Execution State**: model `ExecutionInstance` (User + Process + Step).
+- [x] **Execution View**: Lightweight "Next Step" wizard interface.
 
 ---
 
@@ -212,14 +211,14 @@ This document provides detailed implementation plans for each Tier-1 frontend ap
 - ✅ Obligation Extraction (Bubble Menu)
 - ✅ Policy Lifecycle (Draft -> Active)
 - ✅ Compliance Dashboard
-- ✅ State Management (Zustand)
-- ✅ Read-Only Mode for Active Policies
+- ✅ **Real Actor Mapping** (Org Chart Integration via `useExternalOrgData`)
+- ✅ **Enhanced Domain Model** (Deep Linking)
 
 **Not Yet Implemented:**
-- ❌ Integration with How-Do processes (Process Linking)
-- ❌ Advanced Search & Discovery
-- ❌ API integration with SOM backend
-- ❌ Effective Date scheduling automation
+- ❌ **Integration with How-Do processes** (Process Linking)
+- ❌ **Advanced Search & Discovery**
+- ❌ **Effective Date scheduling automation**
+- ❌ **Drift Detection/Correction loop**
 
 ## 3.2 Implementation Plan
 

@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-// Replicating types locally/shared for MVP
+// Replicating types locally/shared for MVP (eventually refer to @som/shared-types)
 export interface ExternalOrganization {
     id: string;
     name: string;
@@ -15,7 +15,7 @@ export interface ExternalPosition {
     orgId: string;
 }
 
-// Mock data mirrored from Org Chart app
+// Mock data mirrored from Org Chart app (Centralized Source of Truth)
 const MOCK_ORGS: ExternalOrganization[] = [
     { id: 'org-root', name: 'Digital Transformation Command', type: 'Command' },
     { id: 'org-dir-0', name: 'Operations Directorate', type: 'Directorate' },
