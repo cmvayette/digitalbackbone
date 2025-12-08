@@ -11,6 +11,7 @@ interface PolicyState {
     createPolicy: (policy: Omit<PolicyDocument, 'id' | 'createdAt' | 'updatedAt'>) => void;
     updatePolicy: (id: string, updates: Partial<PolicyDocument>) => void;
     deletePolicy: (id: string) => void;
+    publishPolicy: (id: string) => void;
 
     // Editor Actions
     addObligation: (policyId: string, obligation: Omit<Obligation, 'id'>) => void;
@@ -66,6 +67,27 @@ export const usePolicyStore = create<PolicyState>((set) => ({
             ? { ...state.currentPolicy, ...updates, updatedAt: new Date().toISOString() }
             : state.currentPolicy
     })),
+
+    publishPolicy: (id) => set((state) => {
+        const policy = state.policies.find(p => p.id === id);
+        if (!policy) return {};
+
+        const publishedPolicy: PolicyDocument = {
+            ...policy,
+            status: 'active',
+            effectiveDate: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+        };
+
+        // In a real app, we'd keep the old version as a separate record. 
+        // For MVP, we just update the current one to Active.
+        // Future: Create a new 'Draft' version linked to this one?
+
+        return {
+            policies: state.policies.map(p => p.id === id ? publishedPolicy : p),
+            currentPolicy: state.currentPolicy?.id === id ? publishedPolicy : state.currentPolicy
+        };
+    }),
 
     deletePolicy: (id) => set((state) => ({
         policies: state.policies.filter(p => p.id !== id),

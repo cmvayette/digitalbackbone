@@ -13,14 +13,17 @@ interface PolicyEditorProps {
 }
 
 export const PolicyEditor: React.FC<PolicyEditorProps> = ({ onBack }) => {
-    const { currentPolicy, updatePolicy, addObligation } = usePolicyStore();
+    const { currentPolicy, updatePolicy, addObligation, publishPolicy } = usePolicyStore();
     const [activeTab, setActiveTab] = React.useState<'document' | 'obligations'>('document');
     const [showComposer, setShowComposer] = React.useState(false);
     const [pendingClauseText, setPendingClauseText] = React.useState('');
 
     if (!currentPolicy) return <div>No policy selected</div>;
 
+    const isReadOnly = currentPolicy.status !== 'draft' && currentPolicy.status !== 'review';
+
     const editor = useEditor({
+        editable: !isReadOnly,
         extensions: [
             StarterKit,
             Highlight.configure({ multicolor: true }),
@@ -33,6 +36,7 @@ export const PolicyEditor: React.FC<PolicyEditorProps> = ({ onBack }) => {
             }
         },
         onUpdate: ({ editor }) => {
+            if (isReadOnly) return;
             if (currentPolicy.sections[0]) {
                 const updatedSections = [...currentPolicy.sections];
                 updatedSections[0] = { ...updatedSections[0], content: editor.getHTML() };
@@ -51,7 +55,7 @@ export const PolicyEditor: React.FC<PolicyEditorProps> = ({ onBack }) => {
     };
 
     const handleExtract = () => {
-        if (!editor) return;
+        if (!editor || isReadOnly) return;
         const selection = editor.state.doc.textBetween(editor.state.selection.from, editor.state.selection.to, ' ');
         setPendingClauseText(selection);
         setActiveTab('obligations');
@@ -61,15 +65,23 @@ export const PolicyEditor: React.FC<PolicyEditorProps> = ({ onBack }) => {
         editor.chain().focus().setHighlight({ color: '#f59e0b' }).run(); // Amber highlight for pending
     };
 
+    const handlePublish = () => {
+        if (confirm('Are you sure you want to publish this policy? It will become active and read-only.')) {
+            publishPolicy(currentPolicy.id);
+            // Optionally force editor to update its editable state
+            editor?.setEditable(false);
+        }
+    };
+
     // Sync content if it changes externally (e.g. reload) - minimal implementation
     useEffect(() => {
         if (editor && currentPolicy.sections[0]?.content && editor.getHTML() !== currentPolicy.sections[0].content) {
-            // Be careful with cursor jumps here, usually only sync on initial load or if drastically different
             if (editor.getText() === '') {
                 editor.commands.setContent(currentPolicy.sections[0].content);
             }
         }
-    }, [currentPolicy.id, editor]);
+        editor?.setEditable(!isReadOnly);
+    }, [currentPolicy.id, editor, isReadOnly]);
 
 
     return (
@@ -85,22 +97,38 @@ export const PolicyEditor: React.FC<PolicyEditorProps> = ({ onBack }) => {
                             type="text"
                             value={currentPolicy.title}
                             onChange={handleTitleChange}
-                            className="bg-transparent text-lg font-bold text-slate-100 focus:outline-none focus:ring-1 focus:ring-blue-500 rounded px-1 -ml-1 border border-transparent hover:border-slate-700"
+                            readOnly={isReadOnly}
+                            className={`bg-transparent text-lg font-bold text-slate-100 focus:outline-none focus:ring-1 focus:ring-blue-500 rounded px-1 -ml-1 border border-transparent ${!isReadOnly && 'hover:border-slate-700'}`}
                         />
                         <div className="flex items-center gap-2 text-xs text-slate-500">
                             <span className="uppercase font-bold tracking-wider">{currentPolicy.documentType}</span>
                             <span>•</span>
                             <span>Version {currentPolicy.version}</span>
+                            <span className={`px-2 py-0.5 rounded-full text-[10px] uppercase font-bold ml-2 ${currentPolicy.status === 'active' ? 'bg-green-900 text-green-400' : 'bg-slate-700'}`}>
+                                {currentPolicy.status}
+                            </span>
                         </div>
                     </div>
                 </div>
                 <div className="flex gap-2">
-                    <button className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 rounded">
-                        <Save size={16} /> Save Draft
-                    </button>
-                    <button className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-blue-400 hover:text-blue-300 hover:bg-blue-900/20 rounded border border-blue-900">
-                        Publish
-                    </button>
+                    {!isReadOnly && (
+                        <>
+                            <button className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 rounded">
+                                <Save size={16} /> Save Draft
+                            </button>
+                            <button
+                                onClick={handlePublish}
+                                className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-blue-400 hover:text-blue-300 hover:bg-blue-900/20 rounded border border-blue-900"
+                            >
+                                Publish
+                            </button>
+                        </>
+                    )}
+                    {isReadOnly && (
+                        <button className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-slate-400 border border-slate-700 rounded cursor-not-allowed opacity-75">
+                            Published (Read Only)
+                        </button>
+                    )}
                 </div>
             </header>
 
@@ -126,15 +154,17 @@ export const PolicyEditor: React.FC<PolicyEditorProps> = ({ onBack }) => {
                     <div className="flex-1 overflow-auto p-4 max-w-5xl mx-auto w-full flex gap-6">
                         {/* Document Column */}
                         <div className={`flex-1 transition-all ${activeTab === 'obligations' ? 'hidden xl:block xl:w-1/2' : 'w-full'}`}>
-                            {editor && <ClauseHighlighter editor={editor} onExtract={handleExtract} />}
+                            {editor && !isReadOnly && <ClauseHighlighter editor={editor} onExtract={handleExtract} />}
 
-                            <div className="mb-2 flex items-center gap-2 bg-slate-800 p-2 rounded-t-lg border border-slate-700 border-b-0">
-                                <button onClick={() => editor?.chain().focus().toggleBold().run()} className={`p-1.5 rounded hover:bg-slate-700 ${editor?.isActive('bold') ? 'bg-slate-700 text-blue-400' : 'text-slate-300'}`}><Bold size={16} /></button>
-                                <button onClick={() => editor?.chain().focus().toggleHeading({ level: 1 }).run()} className={`p-1.5 rounded hover:bg-slate-700 ${editor?.isActive('heading', { level: 1 }) ? 'bg-slate-700 text-blue-400' : 'text-slate-300'}`}><Heading1 size={16} /></button>
-                                <button onClick={() => editor?.chain().focus().toggleBulletList().run()} className={`p-1.5 rounded hover:bg-slate-700 ${editor?.isActive('bulletList') ? 'bg-slate-700 text-blue-400' : 'text-slate-300'}`}><List size={16} /></button>
-                            </div>
+                            {!isReadOnly && (
+                                <div className="mb-2 flex items-center gap-2 bg-slate-800 p-2 rounded-t-lg border border-slate-700 border-b-0">
+                                    <button onClick={() => editor?.chain().focus().toggleBold().run()} className={`p-1.5 rounded hover:bg-slate-700 ${editor?.isActive('bold') ? 'bg-slate-700 text-blue-400' : 'text-slate-300'}`}><Bold size={16} /></button>
+                                    <button onClick={() => editor?.chain().focus().toggleHeading({ level: 1 }).run()} className={`p-1.5 rounded hover:bg-slate-700 ${editor?.isActive('heading', { level: 1 }) ? 'bg-slate-700 text-blue-400' : 'text-slate-300'}`}><Heading1 size={16} /></button>
+                                    <button onClick={() => editor?.chain().focus().toggleBulletList().run()} className={`p-1.5 rounded hover:bg-slate-700 ${editor?.isActive('bulletList') ? 'bg-slate-700 text-blue-400' : 'text-slate-300'}`}><List size={16} /></button>
+                                </div>
+                            )}
 
-                            <div className="bg-slate-950 border border-slate-800 rounded-b-lg p-6 min-h-[600px] shadow-inner">
+                            <div className={`bg-slate-950 border border-slate-800 rounded-b-lg p-6 min-h-[600px] shadow-inner ${isReadOnly && 'opacity-80'}`}>
                                 <EditorContent editor={editor} />
                             </div>
                         </div>
@@ -143,12 +173,14 @@ export const PolicyEditor: React.FC<PolicyEditorProps> = ({ onBack }) => {
                         <div className={`w-full xl:w-96 flex-col gap-4 overflow-hidden flex transition-all ${activeTab === 'document' ? 'hidden' : 'flex'}`}>
                             <div className="flex justify-between items-center shrink-0">
                                 <h3 className="text-lg font-bold">Extracted Obligations</h3>
-                                <button
-                                    onClick={() => { setShowComposer(true); setPendingClauseText(''); }}
-                                    className="flex items-center gap-2 text-sm bg-blue-600 text-white px-3 py-1.5 rounded hover:bg-blue-500"
-                                >
-                                    <Plus size={16} /> Add
-                                </button>
+                                {!isReadOnly && (
+                                    <button
+                                        onClick={() => { setShowComposer(true); setPendingClauseText(''); }}
+                                        className="flex items-center gap-2 text-sm bg-blue-600 text-white px-3 py-1.5 rounded hover:bg-blue-500"
+                                    >
+                                        <Plus size={16} /> Add
+                                    </button>
+                                )}
                             </div>
 
                             <div className="flex-1 overflow-auto pr-2 space-y-4">
