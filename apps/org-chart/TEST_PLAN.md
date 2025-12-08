@@ -67,9 +67,21 @@
     - Check: New node appears in graph.
 
 - [ ] **Undo Action**:
-    - Setup: Perform "Create Organization" action.
-    - Action: Click "Undo" in toast/UI.
-    - Check: New node is removed from graph.
+
+- [ ] **Create Position**:
+    - Action: Open "Add Position" modal from Organization Sidebar.
+    - Input: Title="Ops Officer", Code="1110".
+    - Action: Submit.
+    - Check: New Position node appears connected to Organization.
+
+- [ ] **Assign Person**:
+    - Action: Select Vacant Position.
+    - Action: Click "Fill Position".
+    - Input: Name="John Doe".
+    - Action: Submit.
+    - Check: Position node updates to show "John Doe".
+    - Check: "VACANT" badge disappears.
+
 
 
 

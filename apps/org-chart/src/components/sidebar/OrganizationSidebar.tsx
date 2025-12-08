@@ -3,12 +3,14 @@ import { Briefcase } from 'lucide-react';
 import { useState } from 'react';
 import { useOrgMutations } from '../../hooks/useOrgMutations';
 import { CreateOrgModal } from '../modals/CreateOrgModal';
+import { CreatePositionModal } from '../modals/CreatePositionModal';
 
 export function OrganizationSidebar({ node }: { node: Node }) {
     const data = node.data;
     const stats = (data.properties as any)?.stats || { totalSeats: 0, vacancies: 0 };
-    const { addOrganization } = useOrgMutations();
+    const { addOrganization, addPosition } = useOrgMutations();
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [isCreatePosModalOpen, setIsCreatePosModalOpen] = useState(false);
 
     return (
         <div className="flex flex-col h-full bg-bg-panel">
@@ -53,11 +55,16 @@ export function OrganizationSidebar({ node }: { node: Node }) {
                     <h3 className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-3">Management</h3>
                     <button
                         onClick={() => setIsCreateModalOpen(true)}
-                        className="w-full py-2 bg-accent-orange text-bg-panel rounded font-bold text-sm hover:bg-orange-400 transition-colors flex items-center justify-center gap-2"
+                        className="w-full py-2 bg-accent-orange text-bg-panel rounded font-bold text-sm hover:bg-orange-400 transition-colors flex items-center justify-center gap-2 mb-2"
                     >
                         <span>Add Sub-Unit</span>
                     </button>
-                    {/* Placeholder for Add Position */}
+                    <button
+                        onClick={() => setIsCreatePosModalOpen(true)}
+                        className="w-full py-2 bg-bg-surface text-text-primary border border-border-color rounded font-bold text-sm hover:bg-bg-canvas transition-colors flex items-center justify-center gap-2"
+                    >
+                        <span>Add Position</span>
+                    </button>
                 </section>
 
                 {/* Services/Functions Mockup */}
@@ -78,6 +85,13 @@ export function OrganizationSidebar({ node }: { node: Node }) {
                 isOpen={isCreateModalOpen}
                 onClose={() => setIsCreateModalOpen(false)}
                 onSubmit={(name, uic) => addOrganization(node.id, name, uic)}
+                parentName={data.label as string}
+            />
+
+            <CreatePositionModal
+                isOpen={isCreatePosModalOpen}
+                onClose={() => setIsCreatePosModalOpen(false)}
+                onSubmit={(title, roleCode) => addPosition(node.id, title, roleCode)}
                 parentName={data.label as string}
             />
         </div>
