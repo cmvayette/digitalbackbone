@@ -1,17 +1,33 @@
 import type { Node } from '@xyflow/react';
-import { User } from 'lucide-react';
+import { User, Shield, Award } from 'lucide-react';
+import { useState } from 'react';
+import { useOrgStore } from '../../store/orgStore';
+import type { Position } from '../../types/domain';
+import { AssignPersonModal } from '../modals/AssignPersonModal';
 
 export function PositionSidebar({ node }: { node: Node }) {
-    const data = node.data;
-    const isVacant = (data as any).isVacant;
+    const position = node.data.properties as Position;
+    const { people, assignPerson } = useOrgStore();
+    const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
+
+    const occupant = position.assignedPersonId ? people.find(p => p.id === position.assignedPersonId) : null;
+    const isVacant = position.state === 'vacant';
 
     return (
-        <div className="flex flex-col h-full bg-bg-panel">
+        <div className="flex flex-col h-full bg-bg-panel text-text-primary">
+            {/* Header */}
             <div className="p-6 border-b border-border-color">
-                <h2 className="text-xl font-bold text-text-primary leading-tight mb-1">{data.label}</h2>
-                <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-bg-surface text-text-secondary border border-border-color">
-                    {String((data.properties as any)?.billetCode || 'Billet')}
-                </span>
+                <h2 className="text-xl font-bold leading-tight mb-2">{position.title}</h2>
+                <div className="flex gap-2">
+                    <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border border-border-color ${position.billetStatus === 'funded' ? 'bg-green-900/30 text-green-400' : 'bg-red-900/30 text-red-400'}`}>
+                        {position.billetStatus}
+                    </span>
+                    {position.isLeadership && (
+                        <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-indigo-900/30 text-indigo-400 border border-indigo-500/30">
+                            Key Leadership
+                        </span>
+                    )}
+                </div>
             </div>
 
             <div className="flex-1 overflow-y-auto p-6 space-y-6">
@@ -19,25 +35,61 @@ export function PositionSidebar({ node }: { node: Node }) {
                 <section className="bg-bg-surface p-4 rounded border border-border-color">
                     <h3 className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-3">Current Occupant</h3>
                     <div className="flex items-center gap-3">
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 ${isVacant ? 'border-dashed border-border-color' : 'border-transparent bg-border-color'}`}>
-                            <User size={20} className={isVacant ? 'text-text-secondary' : 'text-text-primary'} />
+                        <div className={`w-12 h-12 rounded-full flex items-center justify-center border-2 ${isVacant ? 'border-dashed border-border-color' : 'border-transparent bg-border-color overflow-hidden'}`}>
+                            {occupant?.avatarUrl ? (
+                                <img src={occupant.avatarUrl} alt={occupant.name} className="w-full h-full object-cover" />
+                            ) : (
+                                <User size={24} className={isVacant ? 'text-text-secondary' : 'text-text-primary'} />
+                            )}
                         </div>
                         <div>
-                            <div className="font-bold text-text-primary">{(data as any).subtitle || 'Vacant'}</div>
-                            <div className="text-xs text-text-secondary">{isVacant ? 'Open for 14 days' : 'Assigned'}</div>
+                            <div className="font-bold text-lg">{occupant ? occupant.name : 'Vacant'}</div>
+                            <div className="text-xs text-text-secondary">
+                                {occupant ? `${occupant.rank} • ${occupant.type}` : 'Open for assignment'}
+                            </div>
                         </div>
                     </div>
                 </section>
 
+                {/* Requirements */}
                 <section>
-                    <h3 className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-3">Requirements</h3>
-                    <ul className="text-sm text-text-primary space-y-2 list-disc list-inside">
-                        <li>Rank: {(data.properties as any)?.rank || 'O-3'}</li>
-                        <li>Clearance: TS/SCI</li>
-                        <li>Cert: DAWIA Level II</li>
+                    <h3 className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-3 flex items-center gap-2">
+                        <Shield size={12} /> Requirements
+                    </h3>
+                    <ul className="text-sm space-y-3">
+                        {position.qualifications.map((qual, idx) => (
+                            <li key={idx} className="flex items-center gap-2 text-text-primary">
+                                <div className="w-1.5 h-1.5 rounded-full bg-accent-blue" />
+                                {qual}
+                            </li>
+                        ))}
+                        {position.qualifications.length === 0 && (
+                            <li className="text-text-secondary italic">No specific qualifications listed.</li>
+                        )}
                     </ul>
                 </section>
+
+                {/* Actions */}
+                {isVacant && (
+                    <section className="mt-6 border-t border-border-color pt-6">
+                        <h3 className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-3">Management</h3>
+                        <button
+                            onClick={() => setIsAssignModalOpen(true)}
+                            className="w-full py-2 bg-accent-blue text-bg-panel rounded font-bold text-sm hover:bg-blue-400 transition-colors flex items-center justify-center gap-2 shadow-lg shadow-blue-900/20"
+                        >
+                            <Award size={16} />
+                            <span>Find Eligible Candidates</span>
+                        </button>
+                    </section>
+                )}
             </div>
+
+            <AssignPersonModal
+                isOpen={isAssignModalOpen}
+                onClose={() => setIsAssignModalOpen(false)}
+                onSubmit={(name, rank) => assignPerson(node.id, name, rank)}
+                positionTitle={position.title}
+            />
         </div>
     );
 }

@@ -26,12 +26,17 @@ export function PositionNode({ data }: NodeProps<GraphNode>) {
             {/* Header */}
             <div className="flex justify-between items-start p-3 pb-2">
                 <div>
-                    {isFunctional ? (
-                        <span className="bg-accent-green text-bg-panel text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded font-semibold">Functional</span>
-                    ) : (
-                        <span className="bg-accent-orange text-bg-panel text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded font-semibold">Billet</span>
-                    )}
-                    <h3 className="font-bold text-base text-text-primary mt-1 leading-tight">
+                    <div className="flex gap-2 mb-1">
+                        {isFunctional ? (
+                            <span className="bg-accent-green text-bg-panel text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded font-semibold">Functional</span>
+                        ) : (
+                            <span className="bg-accent-orange text-bg-panel text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded font-semibold">Billet</span>
+                        )}
+                        {isVacant && (
+                            <span className="bg-red-500/20 text-red-400 border border-red-500/50 text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded font-bold">VACANT</span>
+                        )}
+                    </div>
+                    <h3 className="font-bold text-base text-text-primary leading-tight">
                         {roleTitle}
                     </h3>
                 </div>

@@ -1,82 +1,140 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { GraphCanvas } from './components/graph/GraphCanvas'
-import type { Node, Edge } from '@xyflow/react'
-import { useOrgStructure } from './hooks/useOrgStructure'
-import { getLayoutedElements } from './utils/layout'
-import { useEffect, useState } from 'react'
-
-const queryClient = new QueryClient()
-
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { GraphCanvas } from './components/graph/GraphCanvas';
+import type { Node, Edge } from '@xyflow/react';
+import { useOrgStore } from './store/orgStore';
+import { getLayoutedElements } from './utils/layout';
+import { useEffect, useState } from 'react';
 import { SidebarPanel } from './components/sidebar/SidebarPanel';
+import { DiscoveryBar } from './components/discovery/DiscoveryBar';
+import { useGraphNavigation } from './hooks/useGraphNavigation';
+import type { SearchResult } from './hooks/useSearch';
+import { Breadcrumb } from './components/navigation/Breadcrumb';
+import { ReactFlowProvider } from '@xyflow/react';
+import { Toaster } from 'sonner';
 
-function OrgChartApp() {
-  // 1. Fetch Data (Hardcoded Root ID for now)
-  const { data, isLoading } = useOrgStructure('org-root');
+const queryClient = new QueryClient();
 
-  // 2. State for Layouted Elements
+// Inner component to access ReactFlow Context
+function OrgChartContent() {
+  const { organizations } = useOrgStore();
   const [layoutedNodes, setLayoutedNodes] = useState<Node[]>([]);
   const [layoutedEdges, setLayoutedEdges] = useState<Edge[]>([]);
-
-  // 3. Selection State
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
 
-  // 4. Run Layout when data arrives
+  // Navigation Hook (MUST be inside ReactFlowProvider)
+  const { focusNode } = useGraphNavigation();
+
   useEffect(() => {
-    if (data && data.nodes.length > 0) {
-      const { nodes, edges } = getLayoutedElements(
-        data.nodes,
-        data.edges,
-        'TB' // Top-to-Bottom
-      );
-      setLayoutedNodes(nodes);
-      setLayoutedEdges(edges);
+    if (organizations.length > 0) {
+      // Transform Domain Data to React Flow Nodes/Edges
+      const nodes: Node[] = organizations.map(org => ({
+        id: org.id,
+        type: 'organization', // Matches GraphCanvas nodeTypes
+        data: {
+          label: org.name,
+          properties: org
+        },
+        position: { x: 0, y: 0 }
+      }));
+
+      const edges: Edge[] = organizations
+        .filter(org => org.parentId)
+        .map(org => ({
+          id: `e-${org.parentId}-${org.id}`,
+          source: org.parentId!,
+          target: org.id,
+          type: 'smoothstep'
+        }));
+
+      // Apply Layout
+      const { nodes: layoutNodes, edges: layoutEdges } = getLayoutedElements(nodes, edges, 'TB');
+      setLayoutedNodes(layoutNodes);
+      setLayoutedEdges(layoutEdges);
     }
-  }, [data]);
+  }, [organizations]);
 
   const onNodeClick = (_: React.MouseEvent, node: Node) => {
     setSelectedNode(node);
+    focusNode(node.id);
   };
 
-  const onCloseSidebar = () => {
-    setSelectedNode(null);
+  const handleSearchResult = (result: SearchResult) => {
+    setSelectedNode(result.node);
+    focusNode(result.id);
   };
+
+  const getBreadcrumbPath = (nodeId: string | null): SearchResult[] => {
+    if (!nodeId) return [];
+    const path: SearchResult[] = [];
+    let currentId = nodeId;
+
+    while (currentId) {
+      const node = layoutedNodes.find(n => n.id === currentId);
+      if (!node) break;
+
+      path.unshift({
+        id: node.id,
+        label: (node.data.label as string) || 'Unknown',
+        type: node.type as any,
+        node: node
+      });
+
+      // Traverse up using domain properties
+      // @ts-ignore - we know properties exists from our mapper
+      currentId = node.data.properties?.parentId;
+
+      if (path.length > 10) break; // Safety
+    }
+
+    return path;
+  };
+
+  const breadcrumbPath = getBreadcrumbPath(selectedNode?.id || null);
 
   return (
-    <div className="flex h-screen w-screen bg-bg-canvas text-text-primary font-ui overflow-hidden">
+    <div className="flex h-screen w-screen bg-bg-canvas text-text-primary font-ui overflow-hidden relative">
+      <main className="flex-1 relative z-0">
+        <GraphCanvas
+          initialNodes={layoutedNodes}
+          initialEdges={layoutedEdges}
+          onNodeClick={onNodeClick}
+        />
 
-      {/* Main Canvas Area */}
-      <main className="flex-1 relative h-full">
-        {isLoading ? (
-          <div className="flex items-center justify-center h-full text-text-secondary">
-            Loading Structure...
+        {/* Top Center Overlay */}
+        <div className="absolute top-4 left-0 right-0 pointer-events-none flex justify-center z-10 px-4">
+          <div className="pointer-events-auto flex flex-col items-center gap-2 w-full max-w-2xl">
+            <DiscoveryBar nodes={layoutedNodes} onResultSelect={handleSearchResult} />
+            {/* Breadcrumb below search */}
+            {breadcrumbPath.length > 1 && (
+              <Breadcrumb
+                path={breadcrumbPath.map(p => ({ id: p.id, label: p.label }))}
+                onNavigate={(id) => {
+                  const node = layoutedNodes.find(n => n.id === id);
+                  if (node) onNodeClick({} as any, node);
+                }}
+              />
+            )}
           </div>
-        ) : (
-          <GraphCanvas
-            initialNodes={layoutedNodes}
-            initialEdges={layoutedEdges}
-            onNodeClick={onNodeClick}
-          />
-        )}
-
-        {/* Discovery Bar Overlay */}
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 w-[400px] h-12 bg-bg-panel border border-border-color rounded-lg shadow-lg flex items-center px-4 z-50">
-          <span className="text-text-secondary text-sm">Search organizations, people, positions...</span>
         </div>
       </main>
 
       {/* Side Panel */}
-      <SidebarPanel selectedNode={selectedNode} onClose={onCloseSidebar} />
+      <SidebarPanel selectedNode={selectedNode} onClose={() => setSelectedNode(null)} />
 
+      {/* Notifications */}
+      <Toaster theme="dark" position="bottom-center" />
     </div>
-  )
+  );
 }
 
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <OrgChartApp />
+      <ReactFlowProvider>
+        <OrgChartContent />
+      </ReactFlowProvider>
     </QueryClientProvider>
   )
 }
 
-export default App
+export default App;

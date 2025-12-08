@@ -8,9 +8,9 @@ This document provides detailed implementation plans for each Tier-1 frontend ap
 
 | App | Current Status | Completion % | Priority |
 |-----|---------------|--------------|----------|
-| **Org Chart** | Actively developing - graph canvas working, API integration started | ~35% | High |
-| **How-Do** | Scaffolded - basic swimlane editor with mock data | ~15% | High |
-| **Policy Governance** | Minimal scaffold - textarea-only editor | ~10% | Medium |
+| **Org Chart** | Completed - MVP Delivered | 100% | High |
+| **How-Do** | MVP Process Editor, Governance & Health | ~80% | High |
+| **Policy Governance** | MVP Delivered - Editor, Extraction, Dashboard | 100% (MVP) | Medium |
 | **Task Management** | Scaffolded - mock task generation only | ~15% | High |
 | **Objectives/OKR** | Scaffolded - mock dashboard with seed data | ~15% | Medium |
 
@@ -28,25 +28,27 @@ This document provides detailed implementation plans for each Tier-1 frontend ap
 - ✅ Data transformer (API → Graph nodes/edges)
 - ✅ useOrgStructure hook with React Query
 - ✅ Dagre-based layout utility
-- ✅ Blueprint aesthetic dark theme (partial)
+- ✅ Blueprint aesthetic dark theme
 - ✅ MiniMap and Controls components
+- ✅ Discovery Bar (search/filter)
+- ✅ Sidebar Panel (holon details)
+- ✅ Person Node component
+- ✅ Smart hover micro-tooltips
+- ✅ Vacancy indicators
+- ✅ Org health dots (green/yellow/red)
+- ✅ Roster preview on hover
+- ✅ Tiger Team highlighting
+- ✅ "Where Am I?" functionality
+- ✅ Keyboard navigation
+- ✅ Breadcrumb navigation
+- ✅ Undo toast for structural changes
+- ✅ Fuzzy search implementation
+- ✅ Edit/create organization workflows
+- ✅ Position management (create/assign)
 
 **Not Yet Implemented:**
-- ❌ Discovery Bar (search/filter)
-- ❌ Sidebar Panel (holon details)
-- ❌ Person Node component
-- ❌ Smart hover micro-tooltips
-- ❌ Vacancy indicators
-- ❌ Org health dots (green/yellow/red)
-- ❌ Roster preview on hover
-- ❌ Tiger Team highlighting
-- ❌ "Where Am I?" button
-- ❌ Keyboard navigation
-- ❌ Breadcrumb navigation
-- ❌ Undo toast for structural changes
-- ❌ Natural language search
-- ❌ Edit/create organization workflows
-- ❌ Position management (create/assign)
+- ❌ Natural language search (Full NLP backend)
+- ❌ Advanced permissioning/RBAC
 
 ## 1.2 Implementation Plan
 
@@ -176,12 +178,12 @@ This document provides detailed implementation plans for each Tier-1 frontend ap
 
 **Not Yet Implemented:**
 - ❌ Linear Timeline Layout
-- ❌ Step card enhancements (attachments, SLA, decision logic)
-- ❌ Drag-and-drop step reordering
-- ❌ Owner selection from Org Chart
-- ❌ Governance integration (obligation badges, drift alerts)
+- ✅ Step card enhancements (attachments, SLA, decision logic)
+- ✅ Drag-and-drop step reordering
+- ✅ Owner selection from Org Chart
+- ✅ Governance integration (obligation badges, drift alerts)
 - ❌ Execution Mode (V2)
-- ❌ Process health indicators
+- ✅ Process health indicators
 - ❌ Version history & diff
 - ❌ "Show Only My Steps" filter
 - ❌ "Explain It to Me Like I'm New" mode
@@ -360,22 +362,18 @@ interface ProcessStep {
 
 **Completed:**
 - ✅ React + Vite + Tailwind setup
-- ✅ Basic PolicyEditor component (textarea only)
-- ✅ Mock org data
-- ✅ DocumentIssued event emission (console)
+- ✅ Policy Editor (Tiptap Rich Text)
+- ✅ Obligation Extraction (Bubble Menu)
+- ✅ Policy Lifecycle (Draft -> Active)
+- ✅ Compliance Dashboard
+- ✅ State Management (Zustand)
+- ✅ Read-Only Mode for Active Policies
 
 **Not Yet Implemented:**
-- ❌ Rich text editing
-- ❌ Policy document structure (sections, scope, definitions)
-- ❌ Obligation extraction
-- ❌ Constraint definition
-- ❌ Policy lifecycle management
-- ❌ Compliance tracking
-- ❌ Integration with How-Do processes
-- ❌ Document versioning
-- ❌ Effective date management
-- ❌ Policy search and discovery
+- ❌ Integration with How-Do processes (Process Linking)
+- ❌ Advanced Search & Discovery
 - ❌ API integration with SOM backend
+- ❌ Effective Date scheduling automation
 
 ## 3.2 Implementation Plan
 
@@ -485,15 +483,18 @@ interface Obligation {
 
 ## 4.1 Current Implementation Status
 
+## 4.1 Current Implementation Status
+
 **Completed:**
 - ✅ React + Vite + Tailwind setup
-- ✅ TaskInbox component
-- ✅ Mock traffic generator
-- ✅ Task completion handling
-- ✅ TaskCreated/TaskCompleted event emission (console)
+- ✅ TaskInbox component (Position-based)
+- ✅ ProjectList component
+- ✅ Holonic Domain Model (Task/Project)
+- ✅ Zustand Store with Mock Data
+- ✅ UI Navigation
 
 **Not Yet Implemented:**
-- ❌ Position-based task inbox (vs person-based)
+- ❌ Kanban View
 - ❌ Task detail panel
 - ❌ Semantic source context (why task exists)
 - ❌ Organizational workload view

@@ -1,20 +1,60 @@
-import './App.css'
-import { PolicyEditor } from './components/PolicyEditor'
+import React from 'react';
+import { usePolicyStore } from './store/policyStore';
+import { PolicyList } from './components/PolicyList';
+import { PolicyEditor } from './components/editor/PolicyEditor';
+import { ComplianceDashboard } from './components/dashboard/ComplianceDashboard';
+import { Layout, FileText, BarChart2 } from 'lucide-react';
 
 function App() {
+  const { currentPolicy, selectPolicy } = usePolicyStore();
+  const [view, setView] = React.useState<'list' | 'editor' | 'dashboard'>('list');
+
+  // If a policy is selected in the store, we should probably be in editor mode if we were in list
+  React.useEffect(() => {
+    if (currentPolicy && view === 'list') {
+      setView('editor');
+    }
+  }, [currentPolicy, view]);
+
   return (
-    <>
-      <div className="app-container">
-        <header className="app-header">
-          <h1>Policy & Governance</h1>
-          <p>Author and Govern Policies</p>
-        </header>
-        <main>
-          <PolicyEditor />
-        </main>
+    <div className="min-h-screen bg-slate-950 text-slate-200 font-sans flex text-sm">
+      {/* Simple Sidebar Navigation */}
+      <div className="w-16 bg-slate-900 border-r border-slate-800 flex flex-col items-center py-6 gap-6 shrink-0 z-50">
+        <div className="p-2 bg-blue-600 rounded-lg text-white mb-4">
+          <Layout size={20} />
+        </div>
+
+        <button
+          onClick={() => setView('dashboard')}
+          className={`p-3 rounded-xl transition-all ${view === 'dashboard' ? 'bg-slate-800 text-blue-400 shadow-inner' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}
+          title="Dashboard"
+        >
+          <BarChart2 size={20} />
+        </button>
+
+        <button
+          onClick={() => setView('list')}
+          className={`p-3 rounded-xl transition-all ${view === 'list' || view === 'editor' ? 'bg-slate-800 text-blue-400 shadow-inner' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}
+          title="Policies"
+        >
+          <FileText size={20} />
+        </button>
       </div>
-    </>
-  )
+
+      <main className="flex-1 overflow-hidden relative">
+        {view === 'dashboard' && <ComplianceDashboard />}
+        {view === 'list' && <PolicyList onSelect={() => setView('editor')} />}
+        {view === 'editor' && (
+          <PolicyEditor
+            onBack={() => {
+              selectPolicy(''); // Clear selection
+              setView('list');
+            }}
+          />
+        )}
+      </main>
+    </div>
+  );
 }
 
-export default App
+export default App;

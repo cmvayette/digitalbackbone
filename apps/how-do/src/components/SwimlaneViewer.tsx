@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import './SwimlaneEditor.css';
+import { StepCard } from './viewer/StepCard';
 import mockData from '../mocks/mock-policy.json';
-import { HolonType } from '@som/shared-types';
-import type { Process } from '@som/shared-types';
+import type { Process } from '../types/process';
 
 const { agents, policies } = mockData;
 
@@ -46,38 +46,14 @@ export const SwimlaneViewer: React.FC<SwimlaneViewerProps> = ({ process, onEdit,
                                 </div>
                             </div>
 
-                            <div className="step-card">
-                                <div className="step-number">{index + 1}</div>
-
-                                <h3>
-                                    {step.source === 'external' && (
-                                        <span className="proxy-badge" title={`Source: ${step.externalSource}`}>
-                                            {step.externalSource || 'EXT'}
-                                        </span>
-                                    )}
-                                    {step.title}
-                                </h3>
-                                {(step.source === 'external' && step.externalId) && (
-                                    <div className="external-ref" style={{ fontSize: '0.8em', color: '#666', marginBottom: '4px' }}>
-                                        REF: {step.externalId}
-                                    </div>
-                                )}
-                                <p>{step.description}</p>
-                            </div>
-
-                            {obligations.length > 0 && (
-                                <div className="obligation-hint">
-                                    <h4>Obligations:</h4>
-                                    <ul>
-                                        {obligations.map(obl => (
-                                            <li key={obl.id}>
-                                                <span className={`criticality-${obl.criticality}`} />
-                                                {obl.statement.substring(0, 50)}...
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
-                            )}
+                            <StepCard
+                                step={step}
+                                index={index}
+                                ownerName={ownerName}
+                                isAgent={isAgent}
+                                obligations={obligations as any}
+                                viewMode="swimlane"
+                            />
 
                             {index < process.properties.steps.length - 1 && (
                                 <div className="connector-arrow">→</div>

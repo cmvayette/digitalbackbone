@@ -6,18 +6,28 @@ import {
     MiniMap,
     useNodesState,
     useEdgesState,
-    addEdge
+    addEdge,
+    useReactFlow,
+    type Node,
+    type Edge,
+    type NodeTypes,
+    ReactFlowProvider
 } from '@xyflow/react';
-import type { Node, Edge, Connection } from '@xyflow/react';
+import type { Connection } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { OrganizationNode } from '../nodes/OrganizationNode';
 import { PositionNode } from '../nodes/PositionNode';
 import { PersonNode } from '../nodes/PersonNode';
+import { TigerTeamEdge } from '../edges/TigerTeamEdge';
 
 const nodeTypes = {
     organization: OrganizationNode,
     position: PositionNode,
     person: PersonNode,
+};
+
+const edgeTypes = {
+    tigerTeam: TigerTeamEdge,
 };
 
 interface GraphCanvasProps {
@@ -53,6 +63,7 @@ export function GraphCanvas({ initialNodes, initialEdges, onNodeClick }: GraphCa
                 className="bg-bg-canvas"
                 colorMode="dark"
                 nodeTypes={nodeTypes}
+                edgeTypes={edgeTypes}
                 defaultEdgeOptions={{
                     type: 'smoothstep',
                     style: { stroke: '#475569', strokeWidth: 1.5 }, // border-color
@@ -62,14 +73,6 @@ export function GraphCanvas({ initialNodes, initialEdges, onNodeClick }: GraphCa
                     },
                 }}
             >
-                <Background
-                    className="bg-bg-canvas"
-                    color="#334155" // border-color or surface
-                    gap={20}
-                    size={1}
-                />
-                <Controls
-                    className="bg-bg-panel border-border-color text-text-primary fill-text-primary"
                 />
                 <MiniMap
                     className="bg-bg-panel border border-border-color"

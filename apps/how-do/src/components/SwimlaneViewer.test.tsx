@@ -43,7 +43,7 @@ describe('SwimlaneViewer', () => {
             />
         );
 
-        expect(screen.getByText(/Logistics Bot/)).toBeDefined();
+        expect(screen.getAllByText(/Logistics Bot/)[0]).toBeDefined();
         expect(screen.getByText(/🤖/)).toBeDefined();
     });
 
