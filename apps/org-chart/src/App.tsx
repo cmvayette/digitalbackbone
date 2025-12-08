@@ -13,6 +13,7 @@ import { DiscoveryBar } from './components/discovery/DiscoveryBar';
 import { useGraphNavigation } from './hooks/useGraphNavigation';
 import type { SearchResult } from './hooks/useSearch';
 import { ReactFlowProvider } from '@xyflow/react';
+import { Toaster } from 'sonner';
 
 // Inner component to access ReactFlow Context
 function OrgChartContent() {
@@ -58,7 +59,11 @@ function OrgChartContent() {
         {/* Discovery Bar */}
         <DiscoveryBar nodes={layoutedNodes} onResultSelect={handleSearchResult} />
       </main>
+      {/* Side Panel */}
       <SidebarPanel selectedNode={selectedNode} onClose={() => setSelectedNode(null)} />
+
+      {/* Notifications */}
+      <Toaster theme="dark" position="bottom-center" />
     </div>
   );
 }

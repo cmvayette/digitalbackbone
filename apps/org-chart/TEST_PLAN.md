@@ -56,6 +56,20 @@
 
 - [ ] **Hover Tooltip**:
     - Action: Hover over Organization Node.
-    - Check: Tooltip appears showing roster summary (e.g., "45/50 Seats").
+
+## 6. Edit & Management (Phase 4)
+**Goal**: Verify creation and undo actions.
+
+- [ ] **Create Organization**:
+    - Action: Open "Add Sub-Unit" modal from Sidebar.
+    - Input: Name="Test Unit", UIC="TST-1".
+    - Action: Submit.
+    - Check: New node appears in graph.
+
+- [ ] **Undo Action**:
+    - Setup: Perform "Create Organization" action.
+    - Action: Click "Undo" in toast/UI.
+    - Check: New node is removed from graph.
+
 
 

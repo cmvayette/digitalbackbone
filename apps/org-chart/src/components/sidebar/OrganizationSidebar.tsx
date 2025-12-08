@@ -1,9 +1,14 @@
 import type { Node } from '@xyflow/react';
 import { Briefcase } from 'lucide-react';
+import { useState } from 'react';
+import { useOrgMutations } from '../../hooks/useOrgMutations';
+import { CreateOrgModal } from '../modals/CreateOrgModal';
 
 export function OrganizationSidebar({ node }: { node: Node }) {
     const data = node.data;
     const stats = (data.properties as any)?.stats || { totalSeats: 0, vacancies: 0 };
+    const { addOrganization } = useOrgMutations();
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
     return (
         <div className="flex flex-col h-full bg-bg-panel">
@@ -43,6 +48,18 @@ export function OrganizationSidebar({ node }: { node: Node }) {
                     </div>
                 </section>
 
+                {/* Actions */}
+                <section>
+                    <h3 className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-3">Management</h3>
+                    <button
+                        onClick={() => setIsCreateModalOpen(true)}
+                        className="w-full py-2 bg-accent-orange text-bg-panel rounded font-bold text-sm hover:bg-orange-400 transition-colors flex items-center justify-center gap-2"
+                    >
+                        <span>Add Sub-Unit</span>
+                    </button>
+                    {/* Placeholder for Add Position */}
+                </section>
+
                 {/* Services/Functions Mockup */}
                 <section>
                     <h3 className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-3">Functional Services</h3>
@@ -56,6 +73,13 @@ export function OrganizationSidebar({ node }: { node: Node }) {
                     </div>
                 </section>
             </div>
+
+            <CreateOrgModal
+                isOpen={isCreateModalOpen}
+                onClose={() => setIsCreateModalOpen(false)}
+                onSubmit={(name, uic) => addOrganization(node.id, name, uic)}
+                parentName={data.label as string}
+            />
         </div>
     );
 }
