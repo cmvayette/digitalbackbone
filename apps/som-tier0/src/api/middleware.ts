@@ -4,15 +4,13 @@
 
 import { UserContext, Role } from '../access-control';
 import { APIRequest, APIResponse, APIError } from './api-types';
+import { IAuthProvider, AuthenticationResult } from './auth/auth-types';
 
 /**
  * Authentication result
+ * Re-exported for compatibility
  */
-export interface AuthenticationResult {
-  authenticated: boolean;
-  user?: UserContext;
-  error?: string;
-}
+export { AuthenticationResult };
 
 /**
  * Authorization result
@@ -24,63 +22,53 @@ export interface AuthorizationResult {
 
 /**
  * Authentication middleware
- * Validates API tokens and extracts user context
+ * Delegating authentication to a configured IAuthProvider
  */
 export class AuthenticationMiddleware {
-  private apiKeys: Map<string, UserContext>; // Simple API key storage
+  private provider: IAuthProvider;
 
-  constructor() {
-    this.apiKeys = new Map();
+  constructor(provider: IAuthProvider) {
+    this.provider = provider;
   }
 
   /**
-   * Register an API key for a user
+   * Register an API key for a user (if supported by provider)
    */
   registerAPIKey(apiKey: string, user: UserContext): void {
-    this.apiKeys.set(apiKey, user);
+    if (this.provider.registerAPIKey) {
+      this.provider.registerAPIKey(apiKey, user);
+    } else {
+      console.warn('Current auth provider does not support API key registration');
+    }
   }
 
   /**
-   * Revoke an API key
+   * Revoke an API key (if supported by provider)
    */
   revokeAPIKey(apiKey: string): void {
-    this.apiKeys.delete(apiKey);
-  }
-
-  /**
-   * Authenticate a request using API key
-   */
-  authenticate(apiKey: string): AuthenticationResult {
-    const user = this.apiKeys.get(apiKey);
-
-    if (!user) {
-      return {
-        authenticated: false,
-        error: 'Invalid API key',
-      };
+    if (this.provider.revokeAPIKey) {
+      this.provider.revokeAPIKey(apiKey);
     }
-
-    return {
-      authenticated: true,
-      user,
-    };
   }
 
   /**
-   * Extract API key from authorization header
+   * Authenticate a request
+   */
+  async authenticate(headers: Record<string, string>): Promise<AuthenticationResult> {
+    return await this.provider.authenticate(headers);
+  }
+
+  /**
+   * Legacy helper: Extract API key
+   * Retained for compatibility if needed, but logic is mainly in provider now.
+   * Can be removed if no other dependencies.
    */
   extractAPIKey(authHeader?: string): string | undefined {
-    if (!authHeader) {
-      return undefined;
-    }
-
-    // Support "Bearer <token>" format
+    // This method might be deprecated or moved to specific provider
+    // For now, implementing basic extraction to match previous signature if external callers use it
+    if (!authHeader) return undefined;
     const parts = authHeader.split(' ');
-    if (parts.length === 2 && parts[0] === 'Bearer') {
-      return parts[1];
-    }
-
-    // Support direct API key
+    if (parts.length === 2 && parts[0] === 'Bearer') return parts[1];
     return authHeader;
   }
 }

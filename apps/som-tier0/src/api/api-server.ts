@@ -22,6 +22,7 @@ import {
   RateLimitMiddleware,
 } from './middleware';
 import { APIRequest, APIResponse } from './api-types';
+import { ApiKeyAuthProvider } from './auth/api-key-provider';
 
 /**
  * API Server configuration
@@ -99,7 +100,10 @@ export class APIServer {
       documentRegistry
     );
 
-    this.authMiddleware = new AuthenticationMiddleware();
+    // Default to API Key Auth for now (or could be config driven)
+    const authProvider = new ApiKeyAuthProvider();
+    this.authMiddleware = new AuthenticationMiddleware(authProvider);
+
     this.authzMiddleware = new AuthorizationMiddleware();
     this.validationMiddleware = new RequestValidationMiddleware();
     this.errorHandler = new ErrorHandlerMiddleware();
@@ -306,7 +310,7 @@ export class APIServer {
       const colonIndex = key.indexOf(':');
       const routeMethod = key.substring(0, colonIndex);
       const routePath = key.substring(colonIndex + 1);
-      
+
       if (routeMethod !== method) {
         continue;
       }
@@ -364,7 +368,7 @@ export class APIServer {
     try {
       // Find matching route
       const match = this.findRoute(method, path);
-      
+
       if (!match) {
         return {
           success: false,
@@ -380,7 +384,7 @@ export class APIServer {
       // Check rate limit
       const clientId = headers['x-client-id'] || headers['x-forwarded-for'] || 'unknown';
       const rateLimitResult = this.rateLimiter.checkRateLimit(clientId);
-      
+
       if (!rateLimitResult.allowed) {
         return {
           success: false,
@@ -394,20 +398,9 @@ export class APIServer {
       // Authenticate if required
       let user: any = undefined;
       if (route.requiresAuth !== false) {
-        const apiKey = this.authMiddleware.extractAPIKey(headers['authorization']);
-        
-        if (!apiKey) {
-          return {
-            success: false,
-            error: {
-              code: 'AUTHENTICATION_ERROR',
-              message: 'Missing authentication credentials',
-            },
-          };
-        }
+        // New Auth Flow: Pass headers to authenticate()
+        const authResult = await this.authMiddleware.authenticate(headers);
 
-        const authResult = this.authMiddleware.authenticate(apiKey);
-        
         if (!authResult.authenticated) {
           return {
             success: false,
@@ -442,7 +435,7 @@ export class APIServer {
 
       // Execute route handler
       const response = await route.handler(request);
-      
+
       return response;
     } catch (error: any) {
       return this.errorHandler.handleError(error);
