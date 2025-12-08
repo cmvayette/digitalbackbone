@@ -2,12 +2,13 @@ import React, { useState } from 'react';
 import type { Obligation, OwnerRef } from '../../types/policy';
 
 interface ObligationComposerProps {
+    initialStatement?: string;
     onSave: (obligation: Omit<Obligation, 'id'>) => void;
     onCancel: () => void;
 }
 
-export const ObligationComposer: React.FC<ObligationComposerProps> = ({ onSave, onCancel }) => {
-    const [statement, setStatement] = useState('');
+export const ObligationComposer: React.FC<ObligationComposerProps> = ({ initialStatement = '', onSave, onCancel }) => {
+    const [statement, setStatement] = useState(initialStatement);
     const [actorName, setActorName] = useState(''); // Simple text for MVP, replace with OwnerPicker later
     const [criticality, setCriticality] = useState<Obligation['criticality']>('medium');
     const [deadline, setDeadline] = useState('');

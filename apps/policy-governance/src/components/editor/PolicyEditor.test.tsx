@@ -1,18 +1,39 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { PolicyEditor } from './PolicyEditor';
 import { usePolicyStore } from '../../store/policyStore';
 import React from 'react';
 
-// Mock dependencies
+// Mock Tiptap to avoid complex JSDOM interactions in unit tests
+// We just want to check if the component renders and interacts with store
+vi.mock('@tiptap/react', () => ({
+    useEditor: () => ({
+        commands: { setContent: vi.fn(), focus: vi.fn() },
+        chain: () => ({ focus: () => ({ toggleBold: () => ({ run: vi.fn() }), toggleHeading: () => ({ run: vi.fn() }), toggleBulletList: () => ({ run: vi.fn() }), setHighlight: () => ({ run: vi.fn() }), unsetHighlight: () => ({ run: vi.fn() }), undo: () => ({ run: vi.fn() }) }) }),
+        isActive: () => false,
+        getHTML: () => '<p>Mock Content</p>',
+        getText: () => 'Mock Content',
+        state: {
+            selection: { from: 0, to: 0 },
+            doc: { textBetween: () => 'Mock Selection' }
+        }
+    }),
+    EditorContent: () => <div data-testid="editor-content">Editor Content</div>,
+    BubbleMenu: ({ children }: any) => <div data-testid="bubble-menu">{children}</div>
+}));
+
 vi.mock('lucide-react', () => ({
-    ArrowLeft: () => <span data-testid="icon-back">Back</span>,
+    ArrowLeft: () => <span>Back</span>,
     Edit3: () => <span>Edit</span>,
     Save: () => <span>Save</span>,
     Trash2: () => <span>Trash</span>,
     FileText: () => <span>File</span>,
     CheckSquare: () => <span>Obligations</span>,
-    Plus: () => <span>Plus</span>
+    Plus: () => <span>Plus</span>,
+    Bold: () => <span>Bold</span>,
+    List: () => <span>List</span>,
+    Heading1: () => <span>H1</span>,
+    ShieldCheck: () => <span>Shield</span>
 }));
 
 describe('PolicyEditor', () => {
@@ -35,27 +56,33 @@ describe('PolicyEditor', () => {
 
     it('renders policy title', () => {
         render(<PolicyEditor onBack={() => { }} />);
-        expect(screen.getByDisplayValue('Test Policy')).toBeDefined();
+        expect(screen.getByDisplayValue('Test Policy')).toBeInTheDocument();
+    });
+
+    it('renders editor content', () => {
+        render(<PolicyEditor onBack={() => { }} />);
+        expect(screen.getByTestId('editor-content')).toBeInTheDocument();
     });
 
     it('switches tabs', () => {
         render(<PolicyEditor onBack={() => { }} />);
         // Default is Document Text
-        expect(screen.getByText('Policy Content')).toBeDefined();
+        expect(screen.getByText('Document Text')).toBeInTheDocument();
 
         // Switch to Obligations
         fireEvent.click(screen.getByText(/Obligations \(/));
-        expect(screen.getByText('Extracted Obligations')).toBeDefined();
+        expect(screen.getByText('Extracted Obligations')).toBeInTheDocument();
     });
 
     it('opens and closes obligation composer', () => {
         render(<PolicyEditor onBack={() => { }} />);
         fireEvent.click(screen.getByText(/Obligations \(/)); // Switch tab
 
-        fireEvent.click(screen.getByText('Add Obligation'));
-        expect(screen.getByText('Requirement Statement')).toBeDefined();
+        fireEvent.click(screen.getByText('Add'));
+        // We look for parts of the composed form
+        expect(screen.getByText('Requirement Statement')).toBeInTheDocument();
 
         fireEvent.click(screen.getByText('Cancel'));
-        expect(screen.queryByText('Requirement Statement')).toBeNull();
+        expect(screen.queryByText('Requirement Statement')).not.toBeInTheDocument();
     });
 });
