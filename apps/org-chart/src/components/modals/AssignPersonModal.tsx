@@ -1,6 +1,5 @@
-import { useState } from 'react';
 import { X } from 'lucide-react';
-import { toast } from 'sonner';
+import { useState } from 'react';
 
 interface AssignPersonModalProps {
     isOpen: boolean;
@@ -17,10 +16,6 @@ export function AssignPersonModal({ isOpen, onClose, onSubmit, positionTitle }: 
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!name || !rank) {
-            toast.error('Please fill in all fields');
-            return;
-        }
         onSubmit(name, rank);
         onClose();
         setName('');
@@ -28,56 +23,51 @@ export function AssignPersonModal({ isOpen, onClose, onSubmit, positionTitle }: 
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-bg-panel border border-border-color rounded-lg shadow-xl w-[400px] overflow-hidden animate-in zoom-in-95 duration-200">
-                <div className="bg-bg-surface px-4 py-3 border-b border-border-color flex justify-between items-center">
-                    <h2 className="text-text-primary font-bold text-sm uppercase tracking-wide">Assign Person</h2>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+            <div className="bg-bg-panel border border-border-color rounded-lg shadow-2xl w-[400px] overflow-hidden">
+                <div className="p-4 border-b border-border-color flex justify-between items-center bg-bg-surface">
+                    <h3 className="font-bold text-text-primary">Assign Member</h3>
                     <button onClick={onClose} className="text-text-secondary hover:text-text-primary">
-                        <X size={16} />
+                        <X size={20} />
                     </button>
                 </div>
 
-                <form onSubmit={handleSubmit} className="p-4 flex flex-col gap-4">
-                    <div className="text-sm text-text-secondary mb-2">
-                        Assigning to position <span className="text-accent-blue font-bold">{positionTitle}</span>
+                <form onSubmit={handleSubmit} className="p-6 space-y-4">
+                    <div className="text-sm text-text-secondary">
+                        Filling position: <span className="text-accent-blue font-bold">{positionTitle}</span>
                     </div>
 
-                    <div className="flex flex-col gap-1.5">
-                        <label className="text-xs font-bold text-text-secondary uppercase">Person Name</label>
+                    <div className="space-y-2">
+                        <label className="text-xs font-bold text-text-secondary uppercase">Member Name</label>
                         <input
-                            autoFocus
                             type="text"
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
+                            className="w-full bg-bg-canvas border border-border-color rounded p-2 text-text-primary focus:border-accent-blue outline-none"
                             placeholder="e.g. John Doe"
-                            className="bg-bg-canvas border border-border-color rounded px-3 py-2 text-sm text-text-primary focus:border-accent-blue outline-none"
+                            value={name}
+                            onChange={e => setName(e.target.value)}
+                            autoFocus
+                            required
                         />
                     </div>
 
-                    <div className="flex flex-col gap-1.5">
-                        <label className="text-xs font-bold text-text-secondary uppercase">Rank</label>
+                    <div className="space-y-2">
+                        <label className="text-xs font-bold text-text-secondary uppercase">Rank / Grade</label>
                         <input
                             type="text"
+                            className="w-full bg-bg-canvas border border-border-color rounded p-2 text-text-primary focus:border-accent-blue outline-none"
+                            placeholder="e.g. O-3 / GS-12"
                             value={rank}
-                            onChange={(e) => setRank(e.target.value)}
-                            placeholder="e.g. LT"
-                            className="bg-bg-canvas border border-border-color rounded px-3 py-2 text-sm text-text-primary focus:border-accent-blue outline-none"
+                            onChange={e => setRank(e.target.value)}
+                            required
                         />
                     </div>
 
-                    <div className="flex justify-end gap-2 mt-2">
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            className="px-3 py-2 rounded text-sm font-medium text-text-secondary hover:bg-bg-surface transition-colors"
-                        >
+                    <div className="flex gap-2 pt-4">
+                        <button type="button" onClick={onClose} className="flex-1 py-2 rounded border border-border-color text-text-primary hover:bg-bg-surface">
                             Cancel
                         </button>
-                        <button
-                            type="submit"
-                            className="px-4 py-2 rounded text-sm font-bold bg-accent-blue text-bg-panel hover:bg-blue-400 transition-colors"
-                        >
-                            Assign
+                        <button type="submit" className="flex-1 py-2 rounded bg-accent-blue text-bg-panel font-bold hover:bg-blue-400">
+                            Confirm Assignment
                         </button>
                     </div>
                 </form>

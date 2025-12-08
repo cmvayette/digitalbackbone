@@ -1,10 +1,12 @@
+```javascript
 import React from 'react';
 import { TaskInbox } from './components/TaskInbox';
 import { ProjectList } from './components/ProjectList';
-import { CheckSquare, Folder, Layout } from 'lucide-react';
+import { MyTasksView } from './components/MyTasksView';
+import { CheckSquare, Folder, Layout, User } from 'lucide-react';
 
 function App() {
-  const [view, setView] = React.useState<'inbox' | 'projects'>('inbox');
+  const [view, setView] = React.useState<'inbox' | 'projects' | 'hub'>('hub');
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-200 font-sans flex text-sm">
@@ -15,16 +17,24 @@ function App() {
         </div>
 
         <button
+          onClick={() => setView('hub')}
+          className={`p - 3 rounded - xl transition - all ${ view === 'hub' ? 'bg-slate-800 text-indigo-400 shadow-inner' : 'text-slate-400 hover:text-white hover:bg-slate-800' } `}
+          title="My Hub"
+        >
+          <User size={20} />
+        </button>
+
+        <button
           onClick={() => setView('inbox')}
-          className={`p-3 rounded-xl transition-all ${view === 'inbox' ? 'bg-slate-800 text-indigo-400 shadow-inner' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}
-          title="My Tasks"
+          className={`p - 3 rounded - xl transition - all ${ view === 'inbox' ? 'bg-slate-800 text-indigo-400 shadow-inner' : 'text-slate-400 hover:text-white hover:bg-slate-800' } `}
+          title="Position Inbox"
         >
           <CheckSquare size={20} />
         </button>
 
         <button
           onClick={() => setView('projects')}
-          className={`p-3 rounded-xl transition-all ${view === 'projects' ? 'bg-slate-800 text-indigo-400 shadow-inner' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}
+          className={`p - 3 rounded - xl transition - all ${ view === 'projects' ? 'bg-slate-800 text-indigo-400 shadow-inner' : 'text-slate-400 hover:text-white hover:bg-slate-800' } `}
           title="Projects"
         >
           <Folder size={20} />
@@ -32,6 +42,7 @@ function App() {
       </div>
 
       <main className="flex-1 overflow-hidden relative">
+        {view === 'hub' && <MyTasksView />}
         {view === 'inbox' && <TaskInbox />}
         {view === 'projects' && <ProjectList />}
       </main>

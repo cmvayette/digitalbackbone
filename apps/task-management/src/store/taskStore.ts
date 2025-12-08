@@ -10,11 +10,12 @@ interface TaskState {
     // Actions
     addProject: (project: Omit<Project, 'id' | 'progress'>) => void;
     addTask: (task: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>) => void;
-    updateTaskStatus: (taskId: string, status: Task['status']) => void;
+    updateTaskStatus: (taskId: string, status: Task['state']) => void;
 
     // Computed/Selectors (can be derived in components, but helpers here useful)
     getTasksByProject: (projectId: string) => Task[];
     getTasksByOwner: (ownerId: string) => Task[];
+    getTasksForMember: (personId: string, positionIds: string[]) => Task[];
 }
 
 // Mock Data Generators
@@ -49,7 +50,7 @@ const generateMockTasks = (): Task[] => [
     {
         id: 't-1',
         title: 'Draft Job Descriptions',
-        status: 'done',
+        state: 'done',
         priority: 'high',
         ownerId: 'pos-hr-mgr',
         ownerType: 'Position',
@@ -62,7 +63,7 @@ const generateMockTasks = (): Task[] => [
     {
         id: 't-2',
         title: 'Screen Candidates',
-        status: 'in-progress',
+        state: 'in-progress',
         priority: 'high',
         ownerId: 'pos-hr-recruiter',
         ownerType: 'Position',
@@ -75,7 +76,7 @@ const generateMockTasks = (): Task[] => [
     {
         id: 't-3',
         title: 'Review Legacy Codebase',
-        status: 'todo',
+        state: 'todo',
         priority: 'medium',
         ownerId: 'pos-eng-lead',
         ownerType: 'Position',
@@ -107,10 +108,14 @@ export const useTaskStore = create<TaskState>((set, get) => ({
 
     updateTaskStatus: (taskId, status) => set((state) => ({
         tasks: state.tasks.map(t =>
-            t.id === taskId ? { ...t, status, updatedAt: new Date().toISOString() } : t
+            t.id === taskId ? { ...t, state: status, updatedAt: new Date().toISOString() } : t
         )
     })),
 
     getTasksByProject: (projectId) => get().tasks.filter(t => t.projectId === projectId),
-    getTasksByOwner: (ownerId) => get().tasks.filter(t => t.ownerId === ownerId)
+    getTasksByOwner: (ownerId) => get().tasks.filter(t => t.ownerId === ownerId),
+    getTasksForMember: (personId, positionIds) => get().tasks.filter(t =>
+        (t.ownerType === 'Person' && t.ownerId === personId) ||
+        (t.ownerType === 'Position' && positionIds.includes(t.ownerId))
+    )
 }));

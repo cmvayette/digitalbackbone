@@ -1,31 +1,28 @@
-import { OwnerRef } from '@som/shared-types';
-// Note: adjusting import based on assumptions, if @som/shared-types isn't set up as an alias yet, 
-// I might need to define OwnerRef locally or import relatively. 
-// For safety in this MVP step, I will define a local compatible interface or use 'any' if strictly needed, 
-// but sticking to the plan's structure.
+// Based on Design Spec v1
 
 export type TaskStatus = 'todo' | 'in-progress' | 'review' | 'blocked' | 'done' | 'cancelled';
 export type TaskPriority = 'critical' | 'high' | 'medium' | 'low';
-export type TaskSource = 'Manual' | 'Governance' | 'HowDo' | 'OKR' | 'External';
+export type TaskSource = 'Manual' | 'Governance' | 'HowDo' | 'OKR' | 'WorkPackage' | 'Request' | 'Calendar' | 'External';
+export type TaskImpact = 'readiness' | 'admin_load' | 'compliance' | 'risk';
 
 export interface Task {
     id: string;
     title: string;
     description?: string;
-    status: TaskStatus;
+    state: TaskStatus; // Spec uses 'state', keeping aligned
     priority: TaskPriority;
 
     // Ownership & Assignment
-    ownerId: string; // The person/position responsible for doing it
-    ownerType: 'Person' | 'Position';
+    ownerId: string;
+    ownerType: 'Person' | 'Position' | 'Organization';
 
     // Hierarchy
     projectId?: string;
-    parentId?: string; // For sub-tasks
+    parentId?: string;
 
-    // Context
+    // Context (The "Why")
     source: TaskSource;
-    sourceReferenceId?: string; // ID of the triggering entity (e.g., Obligation ID)
+    sourceRefId?: string; // ID of the triggering entity (e.g., Obligation ID)
 
     // Timeline
     dueDate?: string; // ISO Date
@@ -33,8 +30,13 @@ export interface Task {
     createdAt: string;
     updatedAt: string;
 
+    // Metadata
     tags: string[];
+    classification?: string; // e.g. "Unclassified", "FOUO"
+    impactType?: TaskImpact;
+    effortEstimate?: number; // Hours or points
 }
+
 
 export type ProjectStatus = 'planning' | 'active' | 'on-hold' | 'completed' | 'cancelled';
 
