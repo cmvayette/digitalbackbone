@@ -1,6 +1,7 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { SidebarPanel } from './SidebarPanel';
+import { ReactFlowProvider } from '@xyflow/react';
 
 const mockNode = {
     id: 'n1',
@@ -22,17 +23,25 @@ describe('SidebarPanel', () => {
     });
 
     it('renders organization content when org node selected', () => {
-        render(<SidebarPanel selectedNode={mockNode} />);
+        render(
+            <ReactFlowProvider>
+                <SidebarPanel selectedNode={mockNode} />
+            </ReactFlowProvider>
+        );
         expect(screen.getByText('Test Node')).toBeInTheDocument();
         expect(screen.getByText('TEST')).toBeInTheDocument();
     });
 
     it('calls onClose when close button clicked', () => {
         const onClose = vi.fn();
-        render(<SidebarPanel selectedNode={mockNode} onClose={onClose} />);
+        render(
+            <ReactFlowProvider>
+                <SidebarPanel selectedNode={mockNode} onClose={onClose} />
+            </ReactFlowProvider>
+        );
 
-        // Find close button by icon or role (implied by button tag)
-        const closeBtn = screen.getByRole('button');
+        // Find close button by label
+        const closeBtn = screen.getByLabelText('Close sidebar');
         fireEvent.click(closeBtn);
 
         expect(onClose).toHaveBeenCalled();

@@ -1,73 +1,71 @@
-# React + TypeScript + Vite
+# Org Chart Application
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+The **Org Chart Application** is the primary interface for visualizing and managing the structure of the organization. It provides an interactive, hierarchical view of Organizations, Positions, and Personnel, serving as both a directory and a command-and-control surface.
 
-Currently, two official plugins are available:
+## 🚀 Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### Navigation & Visualization
+- **Interactive Graph**: Pan, zoom, and explore the hierarchy.
+- **Breadcrumbs**: Track your path deep into the organization and jump back to parents.
+- **Minimap**: Maintain orientation in large structures.
+- **Smart Visuals**:
+  - **Vacancy Indicators**: Dashed borders and badges highlight unfilled positions.
+  - **Health Dots**: Green/Yellow/Red indicators show organizational manning health.
+  - **Tiger Teams**: Distinct styling for cross-functional teams.
 
-## React Compiler
+### Discovery
+- **Global Search**: Press `/` or click the top bar to instantly find any Organization, Position, or Person.
+- **Fuzzy Matching**: Finds results even with partial or imperfect queries.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Management & Editing
+- **Create Units**: Add new sub-organizations directly from the sidebar.
+- **Manage Positions**: Create new billets/positions within any unit.
+- **Assign Personnel**: "Fill" vacant positions by assigning people to them.
+- **Undo System**: Safely experiment with structure; structural changes can be undone.
 
-## Expanding the ESLint configuration
+## 🛠 Usage Guide
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### 1. Navigation
+- **Click** any node to focus on it and open deeper levels of the hierarchy.
+- **Hover** over nodes to see quick stats (e.g., vacancy counts, occupant names).
+- Use the **Breadcrumbs** in the top-left to navigate up the chain of command.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### 2. Inspector Panel (Sidebar)
+When you select a node, the sidebar provides detailed context:
+- **Organizations**: View mission, roster stats, and functional services.
+- **Positions**: View billet code, qualifications, and current occupant.
+- **People**: View rank, rating, and assigned roles.
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+### 3. Management Actions
+To modify the structure (if authorized):
+1. Select the parent Organization or Position.
+2. Look for the **Management** section in the sidebar.
+3. Click **Add Sub-Unit** or **Add Position**.
+4. To fill a vacancy, select the empty Position and click **Assign Person**.
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## 💻 Developer Setup
+
+### Prerequisites
+- Node.js (v18+)
+- npm
+
+### Quick Start
+```bash
+# Install dependencies
+npm install
+
+# Run development server
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### Testing
+Run the unit test suite with Vitest:
+```bash
+npm run test
 ```
+
+### Key Libraries
+- **@xyflow/react**: Core graph visualization engine.
+- **Tailwind CSS**: Styling framework (blueprint-dark theme).
+- **Zustand** (via internal hooks): State management.
+- **Vitest**: Testing framework.

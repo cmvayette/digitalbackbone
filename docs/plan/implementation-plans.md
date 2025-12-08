@@ -8,7 +8,7 @@ This document provides detailed implementation plans for each Tier-1 frontend ap
 
 | App | Current Status | Completion % | Priority |
 |-----|---------------|--------------|----------|
-| **Org Chart** | Actively developing - graph canvas working, API integration started | ~35% | High |
+| **Org Chart** | Completed - MVP Delivered | 100% | High |
 | **How-Do** | Scaffolded - basic swimlane editor with mock data | ~15% | High |
 | **Policy Governance** | Minimal scaffold - textarea-only editor | ~10% | Medium |
 | **Task Management** | Scaffolded - mock task generation only | ~15% | High |
@@ -28,25 +28,27 @@ This document provides detailed implementation plans for each Tier-1 frontend ap
 - ✅ Data transformer (API → Graph nodes/edges)
 - ✅ useOrgStructure hook with React Query
 - ✅ Dagre-based layout utility
-- ✅ Blueprint aesthetic dark theme (partial)
+- ✅ Blueprint aesthetic dark theme
 - ✅ MiniMap and Controls components
+- ✅ Discovery Bar (search/filter)
+- ✅ Sidebar Panel (holon details)
+- ✅ Person Node component
+- ✅ Smart hover micro-tooltips
+- ✅ Vacancy indicators
+- ✅ Org health dots (green/yellow/red)
+- ✅ Roster preview on hover
+- ✅ Tiger Team highlighting
+- ✅ "Where Am I?" functionality
+- ✅ Keyboard navigation
+- ✅ Breadcrumb navigation
+- ✅ Undo toast for structural changes
+- ✅ Fuzzy search implementation
+- ✅ Edit/create organization workflows
+- ✅ Position management (create/assign)
 
 **Not Yet Implemented:**
-- ❌ Discovery Bar (search/filter)
-- ❌ Sidebar Panel (holon details)
-- ❌ Person Node component
-- ❌ Smart hover micro-tooltips
-- ❌ Vacancy indicators
-- ❌ Org health dots (green/yellow/red)
-- ❌ Roster preview on hover
-- ❌ Tiger Team highlighting
-- ❌ "Where Am I?" button
-- ❌ Keyboard navigation
-- ❌ Breadcrumb navigation
-- ❌ Undo toast for structural changes
-- ❌ Natural language search
-- ❌ Edit/create organization workflows
-- ❌ Position management (create/assign)
+- ❌ Natural language search (Full NLP backend)
+- ❌ Advanced permissioning/RBAC
 
 ## 1.2 Implementation Plan
 

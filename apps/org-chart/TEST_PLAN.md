@@ -77,10 +77,20 @@
 - [ ] **Assign Person**:
     - Action: Select Vacant Position.
     - Action: Click "Fill Position".
-    - Input: Name="John Doe".
-    - Action: Submit.
-    - Check: Position node updates to show "John Doe".
-    - Check: "VACANT" badge disappears.
+
+## 7. Polish & Optimization (Phase 5)
+**Goal**: Verify navigation aids.
+
+- [ ] **Breadcrumb Navigation**:
+    - Action: Navigate to a leaf node (e.g. Position inside a Sub-Unit).
+    - Check: Breadcrumb shows "Root > Sub-Unit > Position".
+    - Action: Click "Root" crumb.
+    - Check: Graph focuses Root node. Sidebar shows Root info.
+
+- [ ] **Minimap**:
+    - Action: Drag graph canvas.
+    - Check: Minimap viewport indicator moves.
+
 
 
 

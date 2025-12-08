@@ -12,6 +12,7 @@ import { SidebarPanel } from './components/sidebar/SidebarPanel';
 import { DiscoveryBar } from './components/discovery/DiscoveryBar';
 import { useGraphNavigation } from './hooks/useGraphNavigation';
 import type { SearchResult } from './hooks/useSearch';
+import { Breadcrumb } from './components/navigation/Breadcrumb';
 import { ReactFlowProvider } from '@xyflow/react';
 import { Toaster } from 'sonner';
 
@@ -45,37 +46,92 @@ function OrgChartContent() {
 
   return (
     <div className="flex h-screen w-screen bg-bg-canvas text-text-primary font-ui overflow-hidden">
-      <main className="flex-1 relative h-full">
-        {isLoading ? (
-          <div className="flex items-center justify-center h-full text-text-secondary">Loading...</div>
-        ) : (
-          <GraphCanvas
-            initialNodes={layoutedNodes}
-            initialEdges={layoutedEdges}
-            onNodeClick={onNodeClick}
-          />
-        )}
+  // Calculate Breadcrumb Path
+  const getBreadcrumbPath = (nodeId: string | null): SearchResult[] => {
+    if (!nodeId) return [];
+      const path: SearchResult[] = [];
+      let currentId = nodeId;
 
-        {/* Discovery Bar */}
-        <DiscoveryBar nodes={layoutedNodes} onResultSelect={handleSearchResult} />
-      </main>
-      {/* Side Panel */}
-      <SidebarPanel selectedNode={selectedNode} onClose={() => setSelectedNode(null)} />
+      // Basic parent traversal - this relies on data.properties.parentOrg
+      // We could also traverse edges, but node properties are easier if maintained.
+      // NOTE: This assumes tree structure. 
+      // Since we don't have a fast lookup map for all nodes by ID in this component (only passed to ReactFlow),
+      // we might need to rely on the layoutedNodes provided to ReactFlowProvider? 
+      // Actually, useNodes() inside OrgChartContent can access them!
 
-      {/* Notifications */}
-      <Toaster theme="dark" position="bottom-center" />
-    </div>
-  );
+      // Let's implement this inside OrgChartContent where useNodes() is available? 
+      // ...Wait, App component has `layoutedNodes`.
+
+      while(currentId) {
+        const node = layoutedNodes.find(n => n.id === currentId);
+      if (!node) break;
+
+      path.unshift({
+        id: node.id,
+      label: (node.data.label as string) || 'Unknown',
+      type: node.type as any,
+      node: node // Include the node itself for convenience
+        });
+
+      // Traverse up
+      currentId = (node.data.properties as any)?.parentOrg;
+        // Safety break for cycles
+        if (path.length > 10) break;
+    }
+
+      return path;
+  };
+
+      const breadcrumbPath = getBreadcrumbPath(selectedNode?.id || null);
+
+      return (
+      <div className="w-screen h-screen bg-bg-canvas text-text-primary flex relative overflow-hidden font-sans">
+        <main className="flex-1 relative z-0">
+          {isLoading ? (
+            <div className="flex items-center justify-center h-full text-text-secondary">Loading...</div>
+          ) : (
+            <GraphCanvas
+              initialNodes={layoutedNodes}
+              initialEdges={layoutedEdges}
+              onNodeClick={handleNodeClick}
+              selectedNodeId={selectedNode?.id}
+            />
+          )}
+
+          {/* Top Center Overlay */}
+          <div className="absolute top-4 left-0 right-0 pointer-events-none flex justify-center z-10 px-4">
+            <div className="pointer-events-auto flex flex-col items-center gap-2 w-full max-w-2xl">
+              <DiscoveryBar nodes={layoutedNodes} onResultSelect={handleSearchResult} />
+              {/* Breadcrumb below search */}
+              {breadcrumbPath.length > 1 && (
+                <Breadcrumb
+                  path={breadcrumbPath.map(p => ({ id: p.id, label: p.label }))}
+                  onNavigate={(id) => {
+                    const node = layoutedNodes.find(n => n.id === id);
+                    if (node) handleNodeClick({} as any, node); // Reuse handler
+                  }}
+                />
+              )}
+            </div>
+          </div>
+        </main>
+        {/* Side Panel */}
+        <SidebarPanel selectedNode={selectedNode} onClose={() => setSelectedNode(null)} />
+
+        {/* Notifications */}
+        <Toaster theme="dark" position="bottom-center" />
+      </div>
+      );
 }
 
-function App() {
+      function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <ReactFlowProvider>
-        <OrgChartContent />
-      </ReactFlowProvider>
-    </QueryClientProvider>
-  )
+      <QueryClientProvider client={queryClient}>
+        <ReactFlowProvider>
+          <OrgChartContent />
+        </ReactFlowProvider>
+      </QueryClientProvider>
+      )
 }
 
-export default App
+      export default App
