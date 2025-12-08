@@ -1,0 +1,58 @@
+{
+    "$id": "DocumentIssued.schema.json",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "DocumentIssued",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "string"
+        },
+        "timestamp": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "type": {
+            "type": "string",
+            "const": "DocumentIssued"
+        },
+        "payload": {
+            "type": "object",
+            "properties": {
+                "title": {
+                    "type": "string"
+                },
+                "documentType": {
+                    "type": "string",
+                    "enum": [
+                        "Policy",
+                        "Regulation",
+                        "Memo",
+                        "Order"
+                    ]
+                },
+                "version": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string",
+                    "enum": [
+                        "active",
+                        "draft",
+                        "superseded"
+                    ]
+                }
+            },
+            "required": [
+                "title",
+                "documentType",
+                "status"
+            ]
+        }
+    },
+    "required": [
+        "id",
+        "timestamp",
+        "type",
+        "payload"
+    ]
+}

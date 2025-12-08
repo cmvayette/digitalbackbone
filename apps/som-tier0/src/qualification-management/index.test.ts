@@ -386,9 +386,9 @@ describe('Property 27: Qualification expiration handling', () => {
           expect(relationshipsAfter.length).toBe(0); // No active relationships
 
           // Verify relationship exists with end date when including ended relationships
-          const allRelationships = await relationshipRegistry.getRelationshipsFrom(
+          const allRelationships = await relationshipRegistry.getRelationshipsTo(
             qualResult.holonID!,
-            RelationshipType.HELD_BY,
+            RelationshipType.HAS_QUAL,
             { includeEnded: true }
           );
           expect(allRelationships.length).toBe(1);

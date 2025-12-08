@@ -4,7 +4,7 @@
         "target": "ESNext",
         "module": "ESNext",
         "moduleResolution": "bundler",
-        "allowImportingTsExtensions": true,
+        "allowImportingTsExtensions": false,
         "skipLibCheck": true,
         "forceConsistentCasingInFileNames": true,
         "noFallthroughCasesInSwitch": true,
