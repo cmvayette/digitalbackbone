@@ -5,45 +5,50 @@
 import { describe, it, expect } from 'vitest';
 import { APIServer } from './api-server';
 import { AuthenticationMiddleware, AuthorizationMiddleware, RequestValidationMiddleware, ErrorHandlerMiddleware, RateLimitMiddleware } from './middleware';
+import { ApiKeyAuthProvider } from './auth/api-key-provider';
 import { Role } from '../access-control';
 
 describe('APIServer', () => {
 
   describe('AuthenticationMiddleware', () => {
-    it('should register and authenticate API keys', () => {
-      const authMiddleware = new AuthenticationMiddleware();
+    it('should register and authenticate API keys', async () => {
+      const provider = new ApiKeyAuthProvider();
+      const authMiddleware = new AuthenticationMiddleware(provider);
       const apiKey = 'test-api-key-123';
       const user = {
         userId: 'user-1',
         roles: [Role.DataSubmitter],
         clearanceLevel: 'SECRET',
         organizationID: 'org-1',
-      };
+      }; // as UserContext (duck typing)
 
-      authMiddleware.registerAPIKey(apiKey, user);
+      authMiddleware.registerAPIKey(apiKey, user as any);
 
-      const result = authMiddleware.authenticate(apiKey);
+      const result = await authMiddleware.authenticate({ 'authorization': apiKey });
       expect(result.authenticated).toBe(true);
       expect(result.user).toEqual(user);
     });
 
-    it('should reject invalid API keys', () => {
-      const authMiddleware = new AuthenticationMiddleware();
-      
-      const result = authMiddleware.authenticate('invalid-key');
+    it('should reject invalid API keys', async () => {
+      const provider = new ApiKeyAuthProvider();
+      const authMiddleware = new AuthenticationMiddleware(provider);
+
+      const result = await authMiddleware.authenticate({ 'authorization': 'invalid-key' });
       expect(result.authenticated).toBe(false);
       expect(result.error).toBeDefined();
     });
 
     it('should extract API key from Bearer token', () => {
-      const authMiddleware = new AuthenticationMiddleware();
-      
+      const provider = new ApiKeyAuthProvider();
+      const authMiddleware = new AuthenticationMiddleware(provider);
+
       const apiKey = authMiddleware.extractAPIKey('Bearer test-key-123');
       expect(apiKey).toBe('test-key-123');
     });
 
-    it('should revoke API keys', () => {
-      const authMiddleware = new AuthenticationMiddleware();
+    it('should revoke API keys', async () => {
+      const provider = new ApiKeyAuthProvider();
+      const authMiddleware = new AuthenticationMiddleware(provider);
       const apiKey = 'test-api-key-revoke';
       const user = {
         userId: 'user-1',
@@ -52,11 +57,13 @@ describe('APIServer', () => {
         organizationID: 'org-1',
       };
 
-      authMiddleware.registerAPIKey(apiKey, user);
-      expect(authMiddleware.authenticate(apiKey).authenticated).toBe(true);
+      authMiddleware.registerAPIKey(apiKey, user as any);
+      const res1 = await authMiddleware.authenticate({ 'authorization': apiKey });
+      expect(res1.authenticated).toBe(true);
 
       authMiddleware.revokeAPIKey(apiKey);
-      expect(authMiddleware.authenticate(apiKey).authenticated).toBe(false);
+      const res2 = await authMiddleware.authenticate({ 'authorization': apiKey });
+      expect(res2.authenticated).toBe(false);
     });
   });
 
@@ -70,7 +77,7 @@ describe('APIServer', () => {
         organizationID: 'org-1',
       };
 
-      const result = authzMiddleware.canSubmitEvents(user);
+      const result = authzMiddleware.canSubmitEvents(user as any);
       expect(result.authorized).toBe(true);
     });
 
@@ -83,7 +90,7 @@ describe('APIServer', () => {
         organizationID: 'org-1',
       };
 
-      const result = authzMiddleware.canSubmitEvents(user);
+      const result = authzMiddleware.canSubmitEvents(user as any);
       expect(result.authorized).toBe(false);
       expect(result.error).toBeDefined();
     });
@@ -97,7 +104,7 @@ describe('APIServer', () => {
         organizationID: 'org-1',
       };
 
-      const result = authzMiddleware.canProposeSchemaChanges(user);
+      const result = authzMiddleware.canProposeSchemaChanges(user as any);
       expect(result.authorized).toBe(true);
     });
   });
@@ -150,7 +157,7 @@ describe('APIServer', () => {
   describe('RequestValidationMiddleware', () => {
     it('should validate required fields', () => {
       const validator = new RequestValidationMiddleware();
-      
+
       const result = validator.validateRequiredFields(
         { name: 'test', value: 123 },
         ['name', 'value']
@@ -162,7 +169,7 @@ describe('APIServer', () => {
 
     it('should detect missing required fields', () => {
       const validator = new RequestValidationMiddleware();
-      
+
       const result = validator.validateRequiredFields(
         { name: 'test' },
         ['name', 'value', 'type']
@@ -176,7 +183,7 @@ describe('APIServer', () => {
 
     it('should validate timestamp format', () => {
       const validator = new RequestValidationMiddleware();
-      
+
       const validResult = validator.validateTimestamp('2024-01-01T00:00:00Z');
       expect(validResult.valid).toBe(true);
 
@@ -187,7 +194,7 @@ describe('APIServer', () => {
 
     it('should validate pagination parameters', () => {
       const validator = new RequestValidationMiddleware();
-      
+
       const validResult = validator.validatePagination(1, 50);
       expect(validResult.valid).toBe(true);
 
@@ -210,7 +217,7 @@ describe('APIServer', () => {
       };
 
       const response = errorHandler.handleError(error);
-      
+
       expect(response.success).toBe(false);
       expect(response.error?.code).toBe('VALIDATION_ERROR');
       expect(response.error?.message).toBe('Validation failed');
@@ -224,7 +231,7 @@ describe('APIServer', () => {
       };
 
       const response = errorHandler.handleError(error);
-      
+
       expect(response.success).toBe(false);
       expect(response.error?.code).toBe('AUTHORIZATION_ERROR');
     });
@@ -237,7 +244,7 @@ describe('APIServer', () => {
       };
 
       const response = errorHandler.handleError(error);
-      
+
       expect(response.success).toBe(false);
       expect(response.error?.code).toBe('AUTHENTICATION_ERROR');
     });
@@ -247,7 +254,7 @@ describe('APIServer', () => {
       const error = new Error('Something went wrong');
 
       const response = errorHandler.handleError(error);
-      
+
       expect(response.success).toBe(false);
       expect(response.error?.code).toBe('INTERNAL_ERROR');
     });
