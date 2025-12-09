@@ -22,6 +22,8 @@ function OrgChartContent() {
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
   const [viewMode, setViewMode] = useState<'reporting' | 'mission'>('reporting');
 
+  const [viewMode, setViewMode] = useState<'reporting' | 'mission'>('reporting');
+
   // Navigation Hook (MUST be inside ReactFlowProvider)
   const { focusNode } = useGraphNavigation();
 
@@ -48,15 +50,15 @@ function OrgChartContent() {
         }));
 
       // Apply Layout
-      const { nodes: layoutNodes, edges: layoutEdges } = getLayoutedElements(nodes, edges, 'TB');
+      const { nodes: layoutNodes, edges: layoutEdges } = getLayoutedElements(nodes, edges, 'TB', viewMode);
       setLayoutedNodes(layoutNodes);
       setLayoutedEdges(layoutEdges);
     }
-  }, [organizations]);
+  }, [organizations, viewMode]);
 
   const onNodeClick = (_: React.MouseEvent, node: Node) => {
     setSelectedNode(node);
-    focusNode(node.id);
+    // focusNode(node.id); // Disabled per user request: "All that should happen is the side panel inspector bar should appear."
   };
 
   const handleSearchResult = (result: SearchResult) => {
@@ -99,6 +101,7 @@ function OrgChartContent() {
           initialNodes={layoutedNodes}
           initialEdges={layoutedEdges}
           onNodeClick={onNodeClick}
+          viewMode={viewMode}
         />
 
         {/* Top Center Overlay */}

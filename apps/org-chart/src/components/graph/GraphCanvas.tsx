@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useState } from 'react';
-import { DiscoveryBar } from '../discovery/DiscoveryBar';
 import {
     ReactFlow,
     Controls,
@@ -36,13 +35,15 @@ interface GraphCanvasProps {
     initialNodes: Node[];
     initialEdges: Edge[];
     onNodeClick?: (event: React.MouseEvent, node: Node) => void;
+    viewMode: 'reporting' | 'mission';
 }
 
-export function GraphCanvas({ initialNodes, initialEdges, onNodeClick }: GraphCanvasProps) {
+export function GraphCanvas({ initialNodes, initialEdges, onNodeClick, viewMode }: GraphCanvasProps) {
     const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
     const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
     const [rfInstance, setRfInstance] = useState<ReactFlowInstance | null>(null);
-    const [viewMode, setViewMode] = useState<'reporting' | 'mission'>('reporting');
+
+    console.log('GraphCanvas rendering. Nodes:', nodes.length);
 
     // Collapse Logic
     const onNodeToggle = useCallback((nodeId: string) => {
@@ -96,59 +97,12 @@ export function GraphCanvas({ initialNodes, initialEdges, onNodeClick }: GraphCa
 
     // FOCUS MODE LOGIC
     const handleNodeClick = useCallback((event: React.MouseEvent, node: Node) => {
-        // 1. Notify Parent
+        // 1. Notify Parent (Opens Sidebar)
         if (onNodeClick) onNodeClick(event, node);
 
-        // 2. Calculate Neighborhood
-        const neighborhood = new Set<string>();
-        neighborhood.add(node.id);
-
-        // Parent (Incoming)
-        const parentEdge = edges.find((e) => e.target === node.id);
-        if (parentEdge) {
-            neighborhood.add(parentEdge.source);
-            // Peers (Siblings)
-            edges.filter((e) => e.source === parentEdge.source).forEach((e) => neighborhood.add(e.target));
-        }
-
-        // Children (Outgoing)
-        edges.filter((e) => e.source === node.id).forEach((e) => neighborhood.add(e.target));
-
-        // 3. Update Visibility & Layout (Ghosting Pattern)
-        setNodes((nds) => {
-            const focusedNodes = nds.map((n) => {
-                const isNeighbor = neighborhood.has(n.id);
-                return {
-                    ...n,
-                    // Don't hide, just dim. Ghosting!
-                    // hidden: !isNeighbor, 
-                    data: {
-                        ...n.data,
-                        isDimmed: !isNeighbor
-                    },
-                    // Push dimmed nodes to back, focused to front
-                    zIndex: isNeighbor ? 10 : 0,
-                };
-            });
-
-            // NOTE: We used to re-layout here. With ghosting, we might want to KEEP the layout helpful?
-            // Or usually we usually just dim in place. Let's keep positions stable for now to avoid disorienting jumps.
-            // If the user wants to "Zoom In", the fitView below handles it.
-
-            return focusedNodes;
-        });
-
-        // 4. Animate Camera
-        setTimeout(() => {
-            if (rfInstance) {
-                rfInstance.fitView({
-                    nodes: [{ id: node.id }], // Center roughly on the node
-                    padding: 0.5,
-                    duration: 800
-                });
-            }
-        }, 50);
-    }, [edges, onNodeClick, rfInstance, setNodes]);
+        // Removed: Ghosting (dimming/hiding nodes) and Auto-Zoom (fitView)
+        // User requested ONLY side panel to appear.
+    }, [onNodeClick]);
 
     // DRAG & DROP ASSIGNMENT LOGIC
     const { assignPerson } = useOrgStore();
@@ -302,18 +256,7 @@ export function GraphCanvas({ initialNodes, initialEdges, onNodeClick }: GraphCa
                 }}
                 minZoom={0.1}
             >
-                <DiscoveryBar
-                    nodes={nodes}
-                    onResultSelect={(res) => {
-                        // Focus on selected node
-                        const node = nodes.find(n => n.id === res.id);
-                        if (node && rfInstance) {
-                            rfInstance.fitView({ nodes: [{ id: node.id }], padding: 0.5, duration: 800 });
-                        }
-                    }}
-                    viewMode={viewMode}
-                    onViewModeChange={setViewMode}
-                />
+
                 <Controls className="bg-bg-panel border-border-color fill-text-primary" />
                 <MiniMap
                     className="bg-bg-panel border border-border-color"
