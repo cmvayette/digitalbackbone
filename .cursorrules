@@ -1,0 +1,81 @@
+# Antigravity Rules & Project Standards
+
+You are an expert software engineer working on the **Digital Backbone (Semantic Operating Model)**. This is a complex, event-sourced monorepo. You must adhere to the following strict guidelines.
+
+## 1. Technology Stack & Environment
+
+- **Core**: Node.js v20, React 19, TypeScript (Strict Mode), Vite.
+- **Styling**: TailwindCSS v4 (`@tailwindcss/postcss`). Use utility classes. avoid ad-hoc `style={{}}`.
+- **State Management**: Zustand (local/global UI state), TanStack Query (server state).
+- **Architecture**: Event Sourcing (Tier-0 SOM).
+- **Package Manager**: npm (Workspaces: `apps/*`, `packages/*`).
+
+## 2. Monorepo & File Structure
+
+- **Apps**: `apps/som-tier0` (Backend/Core), `apps/org-chart`, `apps/how-do` (Tier-1 Frontends).
+- **Packages**: `packages/som-shared-types`, `packages/semantic-linter`, `packages/ui-components`.
+- **Imports**:
+  - Use specific workspace imports (e.g., `@som/ui-components`).
+  - **NEVER** import directly from relative paths across workspaces (e.g., `../../../packages/`).
+
+## 3. Branching Strategy
+
+You must follow the **[Branching Strategy](file:///Users/baxter/devProject/digital_backbone/docs/design/branchingStrategy.md)**.
+- **Pattern**: `feature/<scope>/<short-description>`
+- **Scopes**:
+  - `som-core`: Tier-0 engines (Event Store, Projection, Constraints).
+  - `som-sal`: Semantic Access Layer.
+  - `app/<name>`: Tier-1 applications (e.g., `app/org-chart`).
+  - `infra`: Tooling, CI/CD.
+- **Example**: `feature/som-core/temporal-constraints`
+
+## 4. Agentic Workflow (Agent Protocol)
+
+You must follow the **[Agent Implementation Protocol](file:///Users/baxter/devProject/digital_backbone/docs/design/process/agent_protocol.md)** cycle:
+1. **Context Alignment**: Read Strategy/Specs first. Don't guess.
+2. **Gap Analysis**: Check Specs vs Code. Identify what's missing.
+3. **Verification**: Write Test Plans *before* or *during* implementation.
+4. **Execution**: Write Code.
+
+## 5. Semantic Operating Model (SOM) Architecture
+
+This is **NOT** a standard CRUD application. It is a "Glacial" architecture:
+1. **SAL (Semantic Access Layer)**: Maps dirty external data to clean Events.
+2. **Tier-0 Core**: Source of Truth.
+   - **Event Store**: Immutable log.
+   - **Constraint Engine**: Validates every event.
+   - **State Projection**: Derives current state.
+3. **Query Internal**: In-memory Graph Store for fast reads.
+4. **Tier-1 Apps**: Interact via API (Commands -> Events, Queries -> Graph).
+
+### The Three Primitives
+- **Holon**: A persistent entity (Person, Position, Organization). IDs never change.
+- **Relationship**: First-class, directional connection between Holons.
+- **Event**: Immutable record of change. **NEVER** mutate state directly; emit an `Event`.
+
+## 6. Coding Standards
+
+- **React Components**: Functional, typed props, `const` definitions.
+- **TypeScript**: No `any`. Explicit return types. match `HolonType` enums to Interfaces.
+- **Naming**: `kebab-case` files, `PascalCase` components, `camelCase` variables.
+
+## 7. UI & Design
+
+- **Component Library**: ALWAYS check `@som/ui-components` before building custom UI.
+- **Icons**: `lucide-react`.
+- **Aesthetics**: "Premium", clean, modern.
+
+## 8. Testing
+
+- **Engine**: Vitest.
+- **Library**: `@testing-library/react`.
+- **Mocking**: `@faker-js/faker`.
+- **Linting**: Run `npm run lint:semantic` for architectural compliance.
+- **Tests**: Run `npm run coverage` to ensure quality.
+- **Build**: Ensure `tsc -b` passes.
+
+## 9. Specific AI Behaviors
+
+- **Conciseness**: Don't explain standard React concepts. Focus on SOM-specific nuances.
+- **Safety**: Do not delete existing events or history (immutable log).
+- **Proactive**: If editing a component, check if a test file exists and update it.
