@@ -184,11 +184,6 @@ function extractSignatures(filePath) {
         const content = fs.readFileSync(filePath, 'utf-8');
         const lines = content.split('\n');
         // Heuristic: Keep lines that look like structural declarations
-        // - Imports (context)
-        // - Exports (public API)
-        // - Class/Interface/Type definitions
-        // - Method signatures (lines with '(' and ')' inside a class potentially)
-        // - Remove empty lines and comments
         return lines.filter(line => {
             const t = line.trim();
             if (!t || t.startsWith('//') || t.startsWith('/*') || t.startsWith('*')) return false;
@@ -198,8 +193,10 @@ function extractSignatures(filePath) {
                 t.includes('class ') ||
                 t.includes('interface ') ||
                 t.includes('type ') ||
+                t.includes('function ') ||
+                t.includes('const ') || // Capture exported constants/hooks
                 t.includes('constructor') ||
-                (t.includes('(') && t.includes(')') && !t.includes('=')) // Likely method sig
+                (t.includes('(') && t.includes(')') && !t.includes('=') && t.endsWith('{')) // Method sig
             );
         }).join('\n');
     } catch (e) {
@@ -219,15 +216,21 @@ function discoverCodebase(rootDir) {
 
     // Strategy: If spec name contains an app name, focus on that app.
     // Otherwise, scan all apps but be efficient.
-    const targetApp = appDirs.find(app => specName.includes(app.replace(/-/g, ''))); // e.g. 'somtier0' matches 'som-tier0'
+    const targetApp = appDirs.find(app => {
+        const normalizedApp = app.replace(/-/g, '');
+        const normalizedSpec = specName.replace(/-/g, '');
+        return specName.includes(app) || normalizedSpec.includes(normalizedApp);
+    });
 
     if (!targetApp) {
         console.warn(`⚠️  Target app not found in 'apps/' matching spec '${specName}'.`);
+        console.warn(`   Available apps: ${appDirs.join(', ')}`);
         console.warn("   Assuming GREENFIELD project (no existing code to audit).");
         return [];
     }
 
-    const searchDirs = [path.join(appsDir, targetApp)];
+    // Explicitly scan src directory for relevant files
+    const searchDirs = [path.join(appsDir, targetApp, 'src'), path.join(appsDir, targetApp)];
     console.log(`🎯 Focused discovery on app: ${targetApp}`);
 
     const foundFiles = [];

@@ -11,25 +11,25 @@ export interface LocalProcessStep extends Omit<ProcessStep, 'obligations'> {
 }
 
 export function useProcess(initialProcessId?: string) {
-    const { processes, getProcessById } = useExternalProcessData();
+    const { processes, getProcessById, isLoading } = useExternalProcessData();
     const [steps, setSteps] = useState<LocalProcessStep[]>([]);
 
     // Load mock data or initialize empty
     useEffect(() => {
-        if (initialProcessId) {
+        if (initialProcessId && !isLoading) {
             const process = getProcessById(initialProcessId);
             if (process) {
                 // Map shared process steps to local UI steps
                 // In a real app, this mapping might happen in the API layer or specific view model adapters
                 const mappedSteps: LocalProcessStep[] = process.properties.steps.map(s => ({
                     ...s,
-                    ownerType: 'Position', // Defaulting for now, real app would look up owner type from ID
+                    ownerType: 'Position', // Defaulting for now
                     obligations: s.obligations
                 }));
                 setSteps(mappedSteps);
             }
         }
-    }, [initialProcessId, getProcessById]);
+    }, [initialProcessId, processes, isLoading, getProcessById]);
 
     const addStep = (ownerId: string, ownerType: 'Position' | 'Organization' | 'RoleTag') => {
         const newStep: LocalProcessStep = {
