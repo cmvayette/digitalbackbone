@@ -115,7 +115,9 @@ const generateMockData = () => {
                             // Custom/Legacy props stored in properties for now
                             certificates: ['Sec+', 'PMP'],
                             primaryPositionId: posId,
-                            tigerTeamIds: []
+                            tigerTeamIds: [],
+                            workLoad: 0,
+                            capacity: 100
                         }
                     });
                 }
@@ -136,7 +138,12 @@ const generateMockData = () => {
                         billetStatus: Math.random() > 0.9 ? 'unfunded' : 'funded',
                         state: isVacant ? 'vacant' : 'filled',
                         assignedPersonId: personId,
-                        qualifications: ['TS/SCI'],
+                        qualifications: [{
+                            id: 'qual-1',
+                            name: 'TS/SCI',
+                            source: 'Security Manual',
+                            strictness: 'mandatory'
+                        }],
                         isLeadership: p === 0
                     }
                 });
@@ -248,7 +255,9 @@ export const useOrgStore = create<OrgState>((set, get) => {
                     dob: new Date(),
                     certificates: [],
                     primaryPositionId: positionId,
-                    tigerTeamIds: []
+                    tigerTeamIds: [],
+                    workLoad: 0,
+                    capacity: 100
                 }
             };
 

@@ -1,5 +1,5 @@
 import type { Person, Position } from '../types/domain';
-import type { RequiredQualification } from '@som/shared-types';
+
 
 export interface MatchResult {
     score: number; // 0 to 100
@@ -12,6 +12,7 @@ export interface SatisfactionDetail {
     isSatisfied: boolean;
     satisfiedBy?: string; // Certificate name
     source: string; // Policy/SOP
+    strictness: 'mandatory' | 'desired';
 }
 
 // Mock knowledge base of what cert satisfies what qualification
@@ -53,7 +54,8 @@ export function reconcileCompetence(person: Person, position: Position): MatchRe
             qualificationName: req.name,
             isSatisfied,
             satisfiedBy: directMatch ? req.name : mappedMatchRaw,
-            source: req.source
+            source: req.source,
+            strictness: req.strictness
         };
     });
 

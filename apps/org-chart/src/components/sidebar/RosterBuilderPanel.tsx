@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Shield, CheckCircle, AlertTriangle, User, Award, Circle } from 'lucide-react';
+import { Shield, AlertTriangle, User, Award } from 'lucide-react';
 import type { Position } from '../../types/domain';
 import { useOrgStore } from '../../store/orgStore';
 import { reconcileCompetence } from '../../utils/reconciliation';

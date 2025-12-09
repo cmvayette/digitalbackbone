@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 import { useReactFlow } from '@xyflow/react';
 
 export function useGraphNavigation() {
-    const { setCenter } = useReactFlow();
+    const { setCenter, getNode } = useReactFlow();
 
     const focusNode = useCallback((nodeId: string, zoomLevel: number = 1.2) => {
         // We need the node position, but simpler to use fitView with basic nodes option
@@ -11,8 +11,7 @@ export function useGraphNavigation() {
         // Since we don't have direct node access without fetching, we will use the internal store or params passed.
 
         // Actually, useReactFlow provides getNode!
-        const instance = useReactFlow(); // Get instance
-        const node = instance.getNode(nodeId);
+        const node = getNode(nodeId);
 
         if (node) {
             const { position, measured } = node;
@@ -25,7 +24,7 @@ export function useGraphNavigation() {
 
             setCenter(x, y, { zoom: zoomLevel, duration: 800 });
         }
-    }, [setCenter]);
+    }, [setCenter, getNode]);
 
     return { focusNode };
 }

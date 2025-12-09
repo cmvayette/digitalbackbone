@@ -6,27 +6,31 @@ import type { Position } from '../../types/domain';
 import { RosterBuilderPanel } from './RosterBuilderPanel';
 
 export function PositionSidebar({ node }: { node: Node }) {
-    const position = node.data.properties as Position;
+    const props = node.data.properties as Position['properties'];
     const { people } = useOrgStore();
     const [isRosterBuilderOpen, setIsRosterBuilderOpen] = useState(false);
 
-    const occupant = position.properties.assignedPersonId ? people.find(p => p.id === position.properties.assignedPersonId) : null;
-    const isVacant = position.properties.state === 'vacant';
+    const occupant = props.assignedPersonId ? people.find(p => p.id === props.assignedPersonId) : null;
+    const isVacant = props.state === 'vacant';
 
     if (isRosterBuilderOpen) {
-        return <RosterBuilderPanel position={position} onClose={() => setIsRosterBuilderOpen(false)} />;
+        // We need to reconstruct the position object or pass props. 
+        // RosterBuilderPanel expects 'Position'. Let's see what it needs.
+        // It likely needs id and properties.
+        const positionObj = { id: node.id, properties: props } as Position;
+        return <RosterBuilderPanel position={positionObj} onClose={() => setIsRosterBuilderOpen(false)} />;
     }
 
     return (
         <div className="flex flex-col h-full bg-bg-panel text-text-primary">
             {/* Header */}
             <div className="p-6 border-b border-border-color">
-                <h2 className="text-xl font-bold leading-tight mb-2">{position.properties.title}</h2>
+                <h2 className="text-xl font-bold leading-tight mb-2">{props.title}</h2>
                 <div className="flex gap-2">
-                    <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border border-border-color ${position.properties.billetStatus === 'funded' ? 'bg-green-900/30 text-green-400' : 'bg-red-900/30 text-red-400'}`}>
-                        {position.properties.billetStatus}
+                    <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border border-border-color ${props.billetStatus === 'funded' ? 'bg-green-900/30 text-green-400' : 'bg-red-900/30 text-red-400'}`}>
+                        {props.billetStatus}
                     </span>
-                    {position.properties.isLeadership && (
+                    {props.isLeadership && (
                         <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-indigo-900/30 text-indigo-400 border border-indigo-500/30">
                             Key Leadership
                         </span>
@@ -61,7 +65,7 @@ export function PositionSidebar({ node }: { node: Node }) {
                         <Shield size={12} /> Requirements
                     </h3>
                     <ul className="text-sm space-y-3">
-                        {position.properties.qualifications?.map((qual, idx) => (
+                        {props.qualifications?.map((qual, idx) => (
                             <li key={idx} className="flex flex-col gap-1 text-text-primary">
                                 <div className="flex items-center gap-2">
                                     <div className={`w-1.5 h-1.5 rounded-full ${qual.strictness === 'mandatory' ? 'bg-red-400' : 'bg-accent-blue'}`} />
@@ -72,7 +76,7 @@ export function PositionSidebar({ node }: { node: Node }) {
                                 </span>
                             </li>
                         ))}
-                        {(!position.properties.qualifications || position.properties.qualifications.length === 0) && (
+                        {(!props.qualifications || props.qualifications.length === 0) && (
                             <li className="text-text-secondary italic">No specific qualifications listed.</li>
                         )}
                     </ul>

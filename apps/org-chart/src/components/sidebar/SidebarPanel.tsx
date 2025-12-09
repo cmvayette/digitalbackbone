@@ -12,6 +12,7 @@ export function SidebarPanel({ selectedNode, onClose }: SidebarPanelProps) {
     if (!selectedNode) {
         return null;
     }
+    console.log('SidebarPanel rendering for:', selectedNode.id);
 
     const type = selectedNode.type;
 

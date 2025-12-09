@@ -8,14 +8,16 @@ import { CreatePositionModal } from '../modals/CreatePositionModal';
 import { ServiceTile } from './ServiceTile';
 
 export function OrganizationSidebar({ node }: { node: Node }) {
-    const org = node.data.properties as Organization;
+    const props = node.data.properties as Organization['properties'];
     const { getOrgChildren, getOrgPositions, addOrganization, addPosition } = useOrgStore();
 
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [isCreatePosModalOpen, setIsCreatePosModalOpen] = useState(false);
 
-    const children = getOrgChildren(org.id);
-    const positions = getOrgPositions(org.id);
+    // Note: getOrgChildren expects orgId, but we only have props here.
+    // We need the ID. The ID is on the node itself: node.id
+    const children = getOrgChildren(node.id);
+    const positions = getOrgPositions(node.id);
 
     const filledPositions = positions.filter(p => p.properties.state !== 'vacant').length;
     const vacancyCount = positions.filter(p => p.properties.state === 'vacant').length;
@@ -33,14 +35,14 @@ export function OrganizationSidebar({ node }: { node: Node }) {
                     {/* Unit Title Block */}
                     <div className="flex flex-col justify-center">
                         <span className="font-mono text-[10px] text-orange-500 uppercase tracking-widest mb-0.5">
-                            {org.properties.type}
+                            {props.type}
                         </span>
                         <h2 className="text-2xl font-bold text-slate-50 leading-none mb-1 tracking-tight">
-                            {org.properties.name}
+                            {props.name}
                         </h2>
-                        {org.properties.uics && (
+                        {props.uics && (
                             <span className="text-xs text-slate-400 font-mono opacity-80">
-                                {org.properties.uics.join(' • ') || 'NO UIC'}
+                                {(props.uics || []).join(' • ') || 'NO UIC'}
                             </span>
                         )}
                     </div>
@@ -51,13 +53,13 @@ export function OrganizationSidebar({ node }: { node: Node }) {
             <div className="flex-1 overflow-y-auto p-6 space-y-8 bg-slate-900">
 
                 {/* Services Grid - Issue 1.2 Integration */}
-                {org.properties.services.length > 0 && (
+                {props.services?.length > 0 && (
                     <section>
                         <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3 flex items-center gap-2 font-mono">
                             Available Services & POCs
                         </h3>
                         <div className="flex flex-col gap-2">
-                            {org.properties.services.map((svc) => (
+                            {(props.services || []).map((svc) => (
                                 <ServiceTile key={svc.id} service={svc} />
                             ))}
                         </div>
@@ -65,7 +67,7 @@ export function OrganizationSidebar({ node }: { node: Node }) {
                 )}
 
                 {/* Tiger Team Details - Issue 3.1 */}
-                {org.properties.isTigerTeam && (
+                {props.isTigerTeam && (
                     <section className="bg-amber-500/10 border border-amber-500/30 rounded p-3">
                         <h3 className="text-[10px] font-bold text-amber-500 uppercase tracking-widest mb-2 flex items-center gap-2 font-mono">
                             Tiger Team Scope
@@ -73,11 +75,11 @@ export function OrganizationSidebar({ node }: { node: Node }) {
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <span className="text-[10px] text-slate-400 uppercase tracking-wide block mb-0.5">Duration</span>
-                                <span className="text-sm font-medium text-slate-200">{org.properties.duration || 'Indefinite'}</span>
+                                <span className="text-sm font-medium text-slate-200">{props.duration || 'Indefinite'}</span>
                             </div>
                             <div>
                                 <span className="text-[10px] text-slate-400 uppercase tracking-wide block mb-0.5">Sponsor</span>
-                                <span className="text-sm font-medium text-slate-200">{org.properties.sponsorOrgId || 'Command'}</span>
+                                <span className="text-sm font-medium text-slate-200">{props.sponsorOrgId || 'Command'}</span>
                             </div>
                         </div>
                     </section>
@@ -89,7 +91,7 @@ export function OrganizationSidebar({ node }: { node: Node }) {
                         Mission
                     </h3>
                     <p className="text-sm text-slate-300 leading-relaxed border-l-2 border-slate-700 pl-3">
-                        {org.properties.missionStatement || 'No mission statement available.'}
+                        {props.missionStatement || 'No mission statement available.'}
                     </p>
                 </section>
 
@@ -153,14 +155,14 @@ export function OrganizationSidebar({ node }: { node: Node }) {
                 isOpen={isCreateModalOpen}
                 onClose={() => setIsCreateModalOpen(false)}
                 onSubmit={(name, uic) => addOrganization(node.id, name, uic)}
-                parentName={org.properties.name}
+                parentName={props.name}
             />
 
             <CreatePositionModal
                 isOpen={isCreatePosModalOpen}
                 onClose={() => setIsCreatePosModalOpen(false)}
                 onSubmit={(title, roleCode) => addPosition(node.id, title, roleCode)}
-                parentName={org.properties.name}
+                parentName={props.name}
             />
         </div>
     );
