@@ -20,6 +20,7 @@ function OrgChartContent() {
   const [layoutedNodes, setLayoutedNodes] = useState<Node[]>([]);
   const [layoutedEdges, setLayoutedEdges] = useState<Edge[]>([]);
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
+  const [viewMode, setViewMode] = useState<'reporting' | 'mission'>('reporting');
 
   // Navigation Hook (MUST be inside ReactFlowProvider)
   const { focusNode } = useGraphNavigation();
@@ -103,7 +104,12 @@ function OrgChartContent() {
         {/* Top Center Overlay */}
         <div className="absolute top-4 left-0 right-0 pointer-events-none flex justify-center z-10 px-4">
           <div className="pointer-events-auto flex flex-col items-center gap-2 w-full max-w-2xl">
-            <DiscoveryBar nodes={layoutedNodes} onResultSelect={handleSearchResult} />
+            <DiscoveryBar
+              nodes={layoutedNodes}
+              onResultSelect={handleSearchResult}
+              viewMode={viewMode}
+              onViewModeChange={setViewMode}
+            />
             {/* Breadcrumb below search */}
             {breadcrumbPath.length > 1 && (
               <Breadcrumb

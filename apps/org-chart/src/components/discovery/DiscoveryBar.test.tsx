@@ -23,12 +23,12 @@ const mockNodes = [
 
 describe('DiscoveryBar', () => {
     it('renders search input', () => {
-        render(<DiscoveryBar nodes={mockNodes} onResultSelect={() => { }} />);
+        render(<DiscoveryBar nodes={mockNodes} onResultSelect={() => { }} viewMode="reporting" onViewModeChange={() => { }} />);
         expect(screen.getByPlaceholderText(/search/i)).toBeInTheDocument();
     });
 
     it('expands on focus', () => {
-        render(<DiscoveryBar nodes={mockNodes} onResultSelect={() => { }} />);
+        render(<DiscoveryBar nodes={mockNodes} onResultSelect={() => { }} viewMode="reporting" onViewModeChange={() => { }} />);
         const input = screen.getByPlaceholderText(/search/i);
         const container = input.parentElement?.parentElement; // The div wrapping everything
 
@@ -37,7 +37,7 @@ describe('DiscoveryBar', () => {
     });
 
     it('shows results when typing', async () => {
-        render(<DiscoveryBar nodes={mockNodes} onResultSelect={() => { }} />);
+        render(<DiscoveryBar nodes={mockNodes} onResultSelect={() => { }} viewMode="reporting" onViewModeChange={() => { }} />);
         const input = screen.getByPlaceholderText(/search/i);
 
         fireEvent.focus(input);
@@ -49,7 +49,7 @@ describe('DiscoveryBar', () => {
 
     it('clears query when result selected', () => {
         const onSelect = vi.fn();
-        render(<DiscoveryBar nodes={mockNodes} onResultSelect={onSelect} />);
+        render(<DiscoveryBar nodes={mockNodes} onResultSelect={onSelect} viewMode="reporting" onViewModeChange={() => { }} />);
         const input = screen.getByPlaceholderText(/search/i);
 
         fireEvent.focus(input);
