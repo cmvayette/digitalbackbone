@@ -199,7 +199,8 @@ export class SOMClient {
     filters?: HolonFilters,
     pagination?: PaginationOptions
   ): Promise<APIResponse<Holon[]>> {
-    return this.request<Holon[]>('POST', `/holons/${type}`, {
+    return this.request<Holon[]>('POST', '/holons/query', {
+      type,
       filters,
       pagination,
     });

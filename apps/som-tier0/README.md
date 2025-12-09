@@ -316,14 +316,24 @@ const orgStructure = queryLayer.getOrganizationStructureAsOf(
 
 ```bash
 # API Server
-PORT=3000
-MAX_REQUESTS_PER_MINUTE=100
-
-# Database (if using persistent storage)
-DATABASE_URL=postgresql://localhost:5432/som
-
-# Logging
+PORT=3333
 LOG_LEVEL=info
+
+# Database (SQLite)
+# Defaults to "./som.db" if not set
+DB_PATH=./som.db
+```
+
+### Local Development
+
+When running locally (`npm run dev`), the server automatically:
+1.  Initializes a SQLite database at `som.db`.
+2.  Registers a **Development API Key**: `dev-token-123`.
+3.  Assigns `Administrator` role to this key.
+
+You can use this key in your client applications or `curl` requests:
+```bash
+curl -H "X-API-Key: dev-token-123" http://localhost:3333/api/v1/holons/query
 ```
 
 ### Access Control

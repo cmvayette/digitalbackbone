@@ -29,4 +29,4 @@ yarn-error.log*
 .env
 .env.local
 .env.*.local
-semantic-operating-model/
+semantic-operating-model/*.db

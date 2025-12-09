@@ -102,6 +102,18 @@ npm test
 npm run test:integration
 ```
 
+### Running the Backend (SOM Tier-0)
+The backend is the heart of the system. You must run it for the apps to work.
+```bash
+# Run the Backend Service
+npm run dev -w apps/som-tier0
+```
+*   **URL**: `http://localhost:3333`
+*   **Database**: `apps/som-tier0/som.db` (SQLite, auto-created)
+*   **Dev Key**: `dev-token-123` (Auto-registered with Admin privileges)
+
+For deep details, see [apps/som-tier0/README.md](file:///Users/baxter/devProject/digital_backbone/apps/som-tier0/README.md).
+
 ### Running Frontend Apps
 Each frontend application is a separate workspace. You can run them individually:
 ```bash
@@ -115,10 +127,9 @@ npm run dev -w apps/how-do
 npm run dev -w apps/policy-governance
 ```
 
-
 ### Key Directories
-*   `apps/som-tier0/src/core`: The brain. Interfaces for Repositories and base types.
-*   `apps/som-tier0/src/api`: The face. REST API endpoints.
+*   `apps/som-tier0`: **The Backend**. Hono server, Event Store, Graph Engine.
+*   `packages/api-client`: **The Client**. Typed library for connecting apps to the backend. [Read the Docs](file:///Users/baxter/devProject/digital_backbone/packages/api-client/README.md).
 *   `apps/how-do`, `apps/policy-governance`, etc.: Tier-1 Frontend Applications (React/Vite).
 *   `packages/som-shared-types`: The contract. Shared interfaces between Frontend/Backend.
 
