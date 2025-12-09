@@ -1,10 +1,11 @@
 import type { Node } from '@xyflow/react';
-import { Briefcase, Building, Activity, Users } from 'lucide-react';
+import { Building } from 'lucide-react';
 import { useState } from 'react';
 import { useOrgStore } from '../../store/orgStore';
 import type { Organization } from '../../types/domain';
 import { CreateOrgModal } from '../modals/CreateOrgModal';
 import { CreatePositionModal } from '../modals/CreatePositionModal';
+import { ServiceTile } from './ServiceTile';
 
 export function OrganizationSidebar({ node }: { node: Node }) {
     const org = node.data.properties as Organization;
@@ -21,101 +22,129 @@ export function OrganizationSidebar({ node }: { node: Node }) {
     const totalPositions = positions.length;
 
     return (
-        <div className="flex flex-col h-full bg-bg-panel text-text-primary">
-            {/* Header */}
+        <div className="flex flex-col h-full bg-bg-panel border-l border-border-color shadow-[-10px_0_30px_rgba(0,0,0,0.5)] z-20">
+            {/* Header: Max Density Unit Identity */}
             <div className="p-6 border-b border-border-color bg-gradient-to-b from-bg-surface to-bg-panel">
-                <div className="flex items-center gap-4 mb-2">
-                    <div className="w-12 h-12 rounded border border-border-color bg-bg-canvas flex items-center justify-center font-bold text-text-secondary">
-                        <Building size={24} />
+                <div className="flex items-center gap-4">
+                    {/* Unit Logo */}
+                    <div className="h-16 w-16 flex-shrink-0 rounded-full border border-border-color bg-bg-canvas flex items-center justify-center text-text-secondary font-bold shadow-sm">
+                        <Building size={32} />
                     </div>
-                    <div>
-                        <h2 className="text-xl font-bold leading-tight">{org.properties.name}</h2>
-                        <span className="text-sm text-text-secondary uppercase tracking-wider">{org.properties.type}</span>
+                    {/* Unit Title Block */}
+                    <div className="flex flex-col justify-center">
+                        <span className="font-mono text-[10px] text-orange-500 uppercase tracking-widest mb-0.5">
+                            {org.properties.type}
+                        </span>
+                        <h2 className="text-2xl font-bold text-slate-50 leading-none mb-1 tracking-tight">
+                            {org.properties.name}
+                        </h2>
+                        {org.properties.uics && (
+                            <span className="text-xs text-slate-400 font-mono opacity-80">
+                                {org.properties.uics.join(' • ') || 'NO UIC'}
+                            </span>
+                        )}
                     </div>
                 </div>
             </div>
 
             {/* Content */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-8">
+            <div className="flex-1 overflow-y-auto p-6 space-y-8 bg-slate-900">
+
+                {/* Services Grid - Issue 1.2 Integration */}
+                {org.properties.services.length > 0 && (
+                    <section>
+                        <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3 flex items-center gap-2 font-mono">
+                            Available Services & POCs
+                        </h3>
+                        <div className="flex flex-col gap-2">
+                            {org.properties.services.map((svc) => (
+                                <ServiceTile key={svc.id} service={svc} />
+                            ))}
+                        </div>
+                    </section>
+                )}
+
+                {/* Tiger Team Details - Issue 3.1 */}
+                {org.properties.isTigerTeam && (
+                    <section className="bg-amber-500/10 border border-amber-500/30 rounded p-3">
+                        <h3 className="text-[10px] font-bold text-amber-500 uppercase tracking-widest mb-2 flex items-center gap-2 font-mono">
+                            Tiger Team Scope
+                        </h3>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <span className="text-[10px] text-slate-400 uppercase tracking-wide block mb-0.5">Duration</span>
+                                <span className="text-sm font-medium text-slate-200">{org.properties.duration || 'Indefinite'}</span>
+                            </div>
+                            <div>
+                                <span className="text-[10px] text-slate-400 uppercase tracking-wide block mb-0.5">Sponsor</span>
+                                <span className="text-sm font-medium text-slate-200">{org.properties.sponsorOrgId || 'Command'}</span>
+                            </div>
+                        </div>
+                    </section>
+                )}
 
                 {/* Mission */}
                 <section>
-                    <h3 className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-3 flex items-center gap-2">
+                    <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 flex items-center gap-2 font-mono">
                         Mission
                     </h3>
-                    <p className="text-sm text-text-primary leading-relaxed opacity-90">
+                    <p className="text-sm text-slate-300 leading-relaxed border-l-2 border-slate-700 pl-3">
                         {org.properties.missionStatement || 'No mission statement available.'}
                     </p>
                 </section>
 
                 {/* Health & Stats */}
                 <section className="grid grid-cols-2 gap-4">
-                    <div className="bg-bg-surface p-3 rounded border border-border-color">
-                        <span className="text-xs text-text-secondary block mb-1">Manning</span>
+                    <div className="bg-slate-800 p-3 rounded border border-slate-700">
+                        <span className="text-[10px] text-slate-400 uppercase tracking-wide block mb-1">Manning</span>
                         <div className="flex items-end gap-1">
-                            <span className="text-2xl font-bold">{Math.round((filledPositions / (totalPositions || 1)) * 100)}%</span>
-                            <span className="text-xs text-text-secondary mb-1">filled</span>
+                            <span className="text-2xl font-bold text-slate-50">{Math.round((filledPositions / (totalPositions || 1)) * 100)}%</span>
+                            <span className="text-xs text-slate-500 mb-1">filled</span>
                         </div>
                     </div>
-                    <div className="bg-bg-surface p-3 rounded border border-border-color">
-                        <span className="text-xs text-text-secondary block mb-1">Vacancies</span>
+                    <div className="bg-slate-800 p-3 rounded border border-slate-700">
+                        <span className="text-[10px] text-slate-400 uppercase tracking-wide block mb-1">Vacancies</span>
                         <div className="flex items-end gap-1">
-                            <span className={`text-2xl font-bold ${vacancyCount > 0 ? 'text-accent-orange' : 'text-text-primary'}`}>
+                            <span className={`text-2xl font-bold ${vacancyCount > 0 ? 'text-amber-500' : 'text-slate-50'}`}>
                                 {vacancyCount}
                             </span>
-                            <span className="text-xs text-text-secondary mb-1">open</span>
+                            <span className="text-xs text-slate-500 mb-1">open</span>
+                        </div>
+                    </div>
+                </section>
+
+                {/* Sub-Organizations Preview */}
+                <section>
+                    <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3 flex items-center gap-2 font-mono">
+                        Structure
+                    </h3>
+                    <div className="bg-slate-800/50 rounded border border-slate-700 p-4">
+                        <div className="flex justify-between text-sm mb-2 pb-2 border-b border-slate-700/50">
+                            <span className="text-slate-400">Direct Units</span>
+                            <span className="font-mono text-slate-200">{children.length}</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                            <span className="text-slate-400">Direct Billets</span>
+                            <span className="font-mono text-slate-200">{totalPositions}</span>
                         </div>
                     </div>
                 </section>
 
                 {/* Actions */}
-                <section>
-                    <h3 className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-3">Management</h3>
-                    <button
-                        onClick={() => setIsCreateModalOpen(true)}
-                        className="w-full py-2 bg-accent-orange text-bg-panel rounded font-bold text-sm hover:bg-orange-400 transition-colors flex items-center justify-center gap-2 mb-2"
-                    >
-                        <span>Add Sub-Unit</span>
-                    </button>
-                    <button
-                        onClick={() => setIsCreatePosModalOpen(true)}
-                        className="w-full py-2 bg-bg-surface text-text-primary border border-border-color rounded font-bold text-sm hover:bg-bg-canvas transition-colors flex items-center justify-center gap-2"
-                    >
-                        <span>Add Position</span>
-                    </button>
-                </section>
-
-                {/* Services */}
-                {org.properties.services.length > 0 && (
-                    <section>
-                        <h3 className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-3 flex items-center gap-2">
-                            <Briefcase size={12} /> Functional Services
-                        </h3>
-                        <div className="space-y-2">
-                            {org.properties.services.map((svc) => (
-                                <div key={svc.id} className="flex items-center justify-between p-3 bg-bg-surface border border-border-color rounded hover:bg-slate-700 cursor-pointer transition-colors group">
-                                    <span className="text-sm font-medium text-text-primary">{svc.name}</span>
-                                    <Activity size={14} className="text-text-secondary group-hover:text-accent-green transition-colors" />
-                                </div>
-                            ))}
-                        </div>
-                    </section>
-                )}
-
-                {/* Sub-Organizations Preview */}
-                <section>
-                    <h3 className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-3 flex items-center gap-2">
-                        <Users size={12} /> Structure
-                    </h3>
-                    <div className="bg-bg-surface rounded border border-border-color p-4 bg-opacity-40">
-                        <div className="flex justify-between text-sm mb-2 pb-2 border-b border-border-color">
-                            <span className="text-text-secondary">Direct Units</span>
-                            <span className="font-mono">{children.length}</span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                            <span className="text-text-secondary">Direct Billets</span>
-                            <span className="font-mono">{totalPositions}</span>
-                        </div>
+                <section className="pt-4 border-t border-slate-800">
+                    <div className="grid grid-cols-1 gap-2">
+                        <button
+                            onClick={() => setIsCreateModalOpen(true)}
+                            className="w-full py-2 bg-slate-800 border border-slate-700 text-slate-300 rounded font-medium text-xs hover:bg-slate-700 hover:text-white transition-colors uppercase tracking-wide"
+                        >
+                            + Sub-Unit
+                        </button>
+                        <button
+                            onClick={() => setIsCreatePosModalOpen(true)}
+                            className="w-full py-2 bg-slate-800 border border-slate-700 text-slate-300 rounded font-medium text-xs hover:bg-slate-700 hover:text-white transition-colors uppercase tracking-wide"
+                        >
+                            + Position
+                        </button>
                     </div>
                 </section>
             </div>

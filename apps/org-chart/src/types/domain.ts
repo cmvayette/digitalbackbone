@@ -1,11 +1,21 @@
 import type { Organization as SharedOrganization, Position as SharedPosition, Person as SharedPerson } from '@som/shared-types';
 
 // Helper to match legacy Service
+export interface ServiceOwnerMetadata {
+    avatarUrl?: string; // For people
+    iconName?: string; // For teams
+    name: string;
+    role?: string; // e.g. "LPO", "Clerk"
+}
+
 export interface Service {
     id: string;
     name: string;
-    icon: string;
+    icon: string; // Lucide icon name or URL
     url: string;
+    ownerType: 'person' | 'team';
+    ownerId: string; // ID of Person OR Organization/TigerTeam
+    ownerMetadata?: ServiceOwnerMetadata; // Snapshot for UI convenience
 }
 
 export type BilletStatus = 'funded' | 'unfunded';

@@ -2,22 +2,30 @@ import { Handle, Position } from '@xyflow/react';
 import type { NodeProps } from '@xyflow/react';
 import type { GraphNode } from '../../types/graph';
 import clsx from 'clsx';
+import { ChevronDown, ChevronRight } from 'lucide-react';
 
 import { useTooltip, HolonTooltip } from '../tooltip/HolonTooltip';
 
 
 
-export function OrganizationNode({ data }: NodeProps<GraphNode>) {
+export function OrganizationNode({ id, data }: NodeProps<GraphNode>) {
     const { tooltipState, showTooltip, hideTooltip } = useTooltip();
 
-    // Use data.properties to populate fields if available, fallbacks otherwise
+    // Data Properties
     const orgName = data.label || 'Unknown Organization';
     const uic = data.properties?.uic || data.subtitle || 'N/A';
     const commanderName = data.properties?.commanderName || 'Vacant';
     const parentOrg = data.properties?.parentOrg || 'Higher HQ';
     const isTigerTeam = data.properties?.isTigerTeam || false;
+    const isCollapsed = data.collapsed || false;
+    const onToggle = data.onToggle;
+    const echelon = data.properties?.echelonLevel || 'Directorate';
 
-    // Resource Metrics (Mocked for now if real data not present)
+    // Tier Logic
+    const isCompact = echelon === 'Division'; // Tier 3
+    const isCommand = echelon === 'Command';  // Tier 1
+
+    // Metrics
     const totalSeats = data.properties?.stats?.totalSeats ?? 0;
     const vacancies = data.properties?.stats?.vacancies ?? 0;
 
@@ -30,91 +38,111 @@ export function OrganizationNode({ data }: NodeProps<GraphNode>) {
         ));
     };
 
+    const handleToggle = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (onToggle) onToggle(id);
+    };
+
     return (
         <div
             className={clsx(
-                "w-[350px] bg-bg-panel border rounded shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 flex flex-col overflow-hidden group",
-                isTigerTeam ? "border-accent-purple border-dashed border-2" : "border-border-color"
+                "w-full h-full bg-bg-panel border rounded flex flex-col overflow-hidden group relative transition-all duration-200",
+                isCompact ? "p-2" : "p-3 shadow-sm hover:shadow-md",
+                isTigerTeam ? "border-amber-500/50 border-dashed" : "border-slate-700", // Subtler border
+                // Command: Slightly lighter background header effect? Or just clean.
             )}
             onMouseEnter={onMouseEnter}
             onMouseLeave={hideTooltip}
         >
             <HolonTooltip {...tooltipState} />
-            {/* Input Handle (Top) */}
-            <Handle type="target" position={Position.Top} className="!bg-border-color !w-3 !h-3" />
+            <Handle type="target" position={Position.Top} className="!bg-slate-600 !w-2 !h-2" />
 
             {/* Header */}
-            <div className="flex justify-between items-start p-3 pb-2 relative">
+            <div className={clsx("flex justify-between items-start", isCompact ? "mb-1" : "mb-3")}>
                 <div>
                     <span className={clsx(
-                        "text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded font-semibold",
-                        isTigerTeam ? "bg-accent-purple text-text-primary" : "bg-bg-surface text-text-secondary"
+                        "uppercase tracking-wider rounded font-semibold",
+                        isCompact ? "text-[9px] text-text-secondary" : "text-[10px] px-1.5 py-0.5 bg-bg-surface text-text-secondary",
+                        isTigerTeam && "text-amber-500 bg-transparent"
                     )}>
-                        {isTigerTeam ? 'TIGER TEAM' : uic}
+                        {uic}
                     </span>
-                    <h3 className="font-bold text-base text-text-primary mt-1 leading-tight">
+                    <h3 className={clsx(
+                        "font-semibold text-text-primary leading-tight mt-0.5",
+                        isCompact ? "text-[13px]" : "text-base",
+                        isCommand && "text-lg"
+                    )}>
                         {orgName}
                     </h3>
                 </div>
-                {/* Health Dot */}
-                {vacancies > 0 && (
-                    <div
-                        className={clsx(
-                            "w-3 h-3 rounded-full absolute top-3 right-3 shadow-sm",
-                            (vacancies / (totalSeats || 1)) > 0.15 ? "bg-red-500" : (vacancies / (totalSeats || 1)) > 0.05 ? "bg-yellow-500" : "bg-green-500" // Simple logic for demo
-                        )}
-                        title={`${vacancies} Vacancies`}
-                    />
-                )}
             </div>
 
-            {/* Context Links */}
-            <div className="border-t border-border-color pt-2 px-3 pb-2 mb-2">
-                <div className="flex justify-between text-xs text-text-secondary mb-1">
-                    <span>Commander:</span>
-                    <span className="text-accent-orange font-medium cursor-pointer hover:underline">
+            {/* Context */}
+            <div className={clsx("mb-auto", isCompact ? "text-[10px]" : "text-xs text-text-secondary")}>
+                <div className="flex items-center gap-1 mb-0.5">
+                    <span className="text-text-secondary">Cmdr:</span>
+                    <span className="text-accent-orange font-medium cursor-pointer hover:underline truncate">
                         {commanderName}
                     </span>
                 </div>
-                <div className="flex justify-between text-xs text-text-secondary">
-                    <span>Parent Org:</span>
-                    <span className="text-accent-orange font-medium cursor-pointer hover:underline">
-                        {parentOrg}
-                    </span>
-                </div>
-            </div>
-
-            {/* Stats Block (Resource View) */}
-            <div className="mx-3 mb-3 bg-bg-surface p-2 rounded border-none">
-                <span className="text-[10px] font-bold text-text-secondary uppercase block mb-2">
-                    Manning Snapshot
-                </span>
-                <div className="flex justify-between">
-                    <div className="flex items-baseline gap-1.5">
-                        <span className="font-bold text-sm text-text-primary">{totalSeats}</span>
-                        <span className="text-xs text-text-secondary">Total Seats</span>
-                    </div>
-                    <div className="flex items-baseline gap-1.5">
-                        <span className={clsx("font-bold text-sm", vacancies > 0 ? "text-accent-orange" : "text-text-primary")}>
-                            {vacancies}
+                {!isCompact && (
+                    <div className="flex items-center gap-1">
+                        <span className="text-text-secondary">Parent:</span>
+                        <span className="text-accent-orange font-medium cursor-pointer hover:underline">
+                            {parentOrg}
                         </span>
-                        <span className="text-xs text-text-secondary">Vacancies</span>
+                    </div>
+                )}
+            </div>
+
+            {/* Stats (Inline for Compact, Block for Standard) */}
+            {isCompact ? (
+                <div className="flex items-center gap-3 mt-1 text-[10px] text-text-secondary border-t border-slate-700/50 pt-1.5">
+                    <span><b>{totalSeats}</b> Seats</span>
+                    <span className={vacancies > 0 ? "text-accent-orange font-bold" : ""}><b>{vacancies}</b> Vacant</span>
+                </div>
+            ) : (
+                <div className="bg-bg-surface/50 p-2.5 rounded border border-transparent mb-3 mt-2">
+                    <div className="flex justify-between items-center">
+                        <div className="flex items-baseline gap-1.5">
+                            <span className="font-bold text-sm text-text-primary">{totalSeats}</span>
+                            <span className="text-xs text-text-secondary">Total Seats</span>
+                        </div>
+                        <div className="flex items-baseline gap-1.5">
+                            <span className={clsx("font-bold text-sm", vacancies > 0 ? "text-accent-orange" : "text-text-primary")}>
+                                {vacancies}
+                            </span>
+                            <span className="text-xs text-text-secondary">Vacancies</span>
+                        </div>
                     </div>
                 </div>
-            </div>
+            )}
 
-            {/* Actions */}
-            <div className="flex gap-2 px-3 pb-3 mt-auto">
-                <button className="flex-1 py-1.5 rounded bg-accent-orange text-bg-panel text-xs font-semibold hover:bg-orange-400 transition-colors border-none cursor-pointer">
-                    View Services
-                </button>
-                <button className="flex-1 py-1.5 rounded bg-bg-surface border border-border-color text-text-secondary text-xs font-semibold hover:bg-border-color hover:text-text-primary transition-colors cursor-pointer">
-                    View Org Chart
-                </button>
-            </div>
+            {/* Actions (Standard Only) */}
+            {!isCompact && (
+                <div className="flex gap-2 mt-auto">
+                    <button className="flex-1 py-1 px-2 rounded bg-bg-surface border border-slate-700 text-text-secondary text-xs font-medium hover:bg-slate-700 hover:text-text-primary transition-colors">
+                        View Details
+                    </button>
+                    <button className="flex-1 py-1 px-2 rounded bg-bg-surface border border-slate-700 text-text-secondary text-xs font-medium hover:bg-slate-700 hover:text-text-primary transition-colors">
+                        Org Chart
+                    </button>
+                </div>
+            )}
 
-            {/* Output Handle (Bottom) */}
-            <Handle type="source" position={Position.Bottom} className="!bg-border-color !w-3 !h-3" />
+            <Handle type="source" position={Position.Bottom} className="!bg-slate-600 !w-2 !h-2" />
+
+            {/* Collapse Toggle */}
+            <button
+                onClick={handleToggle}
+                className={clsx(
+                    "absolute left-1/2 -translate-x-1/2 rounded-full bg-bg-panel border border-slate-600 flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-slate-700 transition-colors z-50 cursor-pointer shadow-sm",
+                    isCompact ? "w-5 h-5 -bottom-2.5" : "w-6 h-6 -bottom-3"
+                )}
+                title={isCollapsed ? "Expand" : "Collapse"}
+            >
+                {isCollapsed ? <ChevronRight size={12} /> : <ChevronDown size={12} />}
+            </button>
         </div>
     );
 }

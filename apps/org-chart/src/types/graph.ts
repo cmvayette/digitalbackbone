@@ -8,6 +8,8 @@ export type GraphNodeData = {
     isBillet?: boolean;
     billetIDs?: string;
     properties?: Record<string, any>;
+    collapsed?: boolean;
+    onToggle?: (id: string) => void; // Callback for collapse/expand
 };
 
 export type GraphNode = Node<GraphNodeData>;

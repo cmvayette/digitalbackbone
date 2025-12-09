@@ -52,7 +52,18 @@ const generateMockData = () => {
                 missionStatement: `Responsible for all ${dirName.toLowerCase()} activities.`,
                 parentId: rootId,
                 uics: [],
-                services: [{ id: `svc-${idx}`, name: `${dirName} Portal`, icon: 'Globe', url: '#' }],
+                services: [{
+                    id: `svc-${idx}`,
+                    name: `${dirName} Portal`,
+                    icon: 'Globe',
+                    url: '#',
+                    ownerType: 'team',
+                    ownerId: dirId,
+                    ownerMetadata: {
+                        name: `${dirName} Team`,
+                        iconName: 'Users'
+                    }
+                }],
                 health: Math.random() > 0.8 ? 'warning' : 'healthy',
                 type: 'Directorate',
                 echelonLevel: 'Directorate',
@@ -143,10 +154,11 @@ interface OrgState {
     people: Person[];
 
     // Actions
-    addOrganization: (parentId: string, name: string, uic: string) => void;
-    addPosition: (orgId: string, title: string, billetCode: string) => void;
-    updatePosition: (id: string, updates: Partial<Position['properties']>) => void;
-    assignPerson: (positionId: string, name: string, rank: string) => void;
+    // TODO: These must emit SOM Events in production:
+    addOrganization: (parentId: string, name: string, uic: string) => void; // -> OrganizationCreated
+    addPosition: (orgId: string, title: string, billetCode: string) => void; // -> PositionCreated
+    updatePosition: (id: string, updates: Partial<Position['properties']>) => void; // -> PositionModified
+    assignPerson: (positionId: string, name: string, rank: string) => void; // -> AssignmentStarted
 
     // Selectors helpers
     getOrgChildren: (orgId: string) => Organization[];

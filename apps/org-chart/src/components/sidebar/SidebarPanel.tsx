@@ -10,14 +10,7 @@ interface SidebarPanelProps {
 
 export function SidebarPanel({ selectedNode, onClose }: SidebarPanelProps) {
     if (!selectedNode) {
-        return (
-            <aside className="w-[400px] h-full bg-bg-panel border-l border-border-color p-8 flex items-center justify-center text-center hidden lg:flex flex-col">
-                <div className="text-text-secondary">
-                    <h2 className="text-lg font-bold text-text-primary mb-2">Inspector</h2>
-                    <p className="text-sm">Select an organization, position, or person to view details.</p>
-                </div>
-            </aside>
-        );
+        return null;
     }
 
     const type = selectedNode.type;
