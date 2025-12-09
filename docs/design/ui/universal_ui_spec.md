@@ -1,6 +1,6 @@
 # Universal UI Design System: "Operational Fidelity"
 
-**Version:** 1.0
+**Version:** 1.1 (Industrial Flat)
 **Scope:** All Tier-1 Applications (`apps/org-chart`, `apps/how-do`, `apps/policy-governance`)
 
 ---
@@ -9,9 +9,9 @@
 The Digital Backbone is not a "website"; it is a **Mission Operating System**.
 The User Interface must feel like a **precision instrument**.
 
-*   **Aesthetic**: "Blueprint Dark". High-contrast, monoline geometry, minimal "chrome".
-*   **Interaction**: "Immediate & Tactile". Hover states are reactive. Transitions are instant (150-200ms).
-*   **Information Density**: High but breathable. Use hierarchy (Typography/Color) rather than whitespace to separate groups.
+*   **Aesthetic**: "Industrial Flat". Muted contrast, schematic feel, no "Sci-Fi" glows.
+*   **Interaction**: "Immediate & Tactile". Hover states are subtle value shifts. Transitions are instant (150-200ms).
+*   **Information Density**: Maximum. Use hierarchy (Typography/Variable Sizing) to organize complex data.
 
 ---
 
@@ -24,8 +24,8 @@ We use a semantic token system mapped to Tailwind defaults (Slate).
 | :--- | :--- | :--- |
 | **Canvas** | `slate-950` (`#020617`) | The deep background. The "Void" where content lives. |
 | **Panel** | `slate-900` (`#0f172a`) | Sidebars, Modals, Cards. |
-| **Surface** | `slate-800` (`#1e293b`) | Input fields, Hover states, Secondary backgrounds. |
-| **Border** | `slate-700` (`#334155`) | Hairline borders, dividers. |
+| **Surface** | `slate-800` (`#1e293b`) | **Subtle**: Input fields, Secondary backgrounds. |
+| **Border** | `slate-700` (`#334155`) | **Muted**: Structural dividers, Card borders. |
 | **Text Primary** | `slate-50` (`#f8fafc`) | Headings, Body text. |
 | **Text Secondary** | `slate-400` (`#94a3b8`) | Metadata, Labels, Descriptions. |
 | **Accent Primary** | `orange-500` (`#f97316`) | **Action**: Buttons, Links, Active States. |
@@ -36,14 +36,15 @@ We use a semantic token system mapped to Tailwind defaults (Slate).
 ### 2.2 Typography
 We use a dual-font stack to differentiate "Interface" from "Data".
 
-*   **UI Font**: `Inter` (or System Sans). Used for Headings, Buttons, Body Copy.
-*   **Data Font**: `JetBrains Mono` (or System Mono). Used for IDs, Codes (UIC, BIN), Dates, Section Labels, Badge Text.
+*   **UI Font**: `Inter`. Headings, Buttons.
+*   **Data Font**: `JetBrains Mono`. IDs, UICs, Codes, Badge Text.
 
 **Scale:**
-*   `text-xs` (10-11px): Uppercase Labels, Metadata.
-*   `text-sm` (13-14px): Standard Body, Inputs.
-*   `text-base` (16px): Card Titles, Important Data.
-*   `text-lg/xl` (18-24px): Page Headers, Modal Titles.
+*   `text-[10px]` (Caps): High-density labels, Compact Mode stats.
+*   `text-xs` (12px): Metadata, Standard Labels.
+*   `text-sm` (14px): Body, Inputs.
+*   `text-base` (16px): Card Titles.
+*   `text-lg` (18px): Command Headers.
 
 ---
 
@@ -52,87 +53,65 @@ We use a dual-font stack to differentiate "Interface" from "Data".
 ### 3.1 The "Holon Card"
 The fundamental unit of content.
 *   **Bg**: `bg-panel`
-*   **Border**: `1px solid border-color`
-*   **Radius**: `rounded-md` (4px-6px)
-*   **Shadow**: `shadow-md`
-*   **Interact**: Hover `translate-y-[-2px]`, `shadow-lg`, `border-slate-600`.
+*   **Border**: `1px solid slate-700` (Muted).
+*   **Radius**: `rounded-md` (4px).
+*   **Shadow**: `shadow-sm` (Subtle depth, no heavy drop shadows).
+*   **Interact**: Hover `border-slate-600`, `shadow-md`.
 
 ### 3.2 Buttons
 *   **Primary**: `bg-accent-primary` text `slate-950` font-bold hover:brightness-110.
 *   **Secondary**: `bg-surface` border `border-color` text `text-primary` hover:bg-slate-700.
-*   **Ghost**: Transparent bg, text `text-secondary` hover:text-primary hover:bg-white/5.
+*   **Ghost**: Transparent, text `text-secondary` hover:text-primary.
 
 ### 3.3 Badges & Chips
-Used for State (Active, Vacant) or Type (Person, Org).
 *   **Shape**: `rounded` (not full pill).
 *   **Text**: `text-[10px]` uppercase tracking-wider font-mono font-bold.
 *   **Style**:
-    *   *Solid*: `bg-accent-primary` text `white` (for High Priority).
-    *   *Subtle*: `bg-slate-800` text `text-secondary` border `border-slate-700`.
+    *   *Solid*: `bg-accent-primary` text `white` (High Priority).
+    *   *Subtle*: `bg-slate-800` text `text-secondary`.
+    *   *Tiger Team*: `text-amber-500` transparent/border-dashed.
 
-### 3.4 Inputs (The "Surface" Input)
-*   **Bg**: `bg-canvas` or `bg-surface` (darker than panel).
-*   **Border**: `1px solid border-color`. Focus: `border-accent-primary`.
-*   **Text**: `text-sm`.
-*   **Discovery Bar Variant**: Large, floating, backdrop-blur.
+### 3.4 Ghost States (Vacant/Placeholder)
+Used for empty slots or potential resources.
+*   **Opacity**: 90%.
+*   **Border**: `border-dashed border-slate-700`.
+*   **Bg**: `bg-surface/50`.
+*   **Indicator**: "?" avatar or "VACANT" label.
 
 ---
 
 ## 4. Layout Patterns
 
-### 4.1 The Inspector Panel
-A right-aligned drawer that provides details for the selected object.
-*   **Width**: Fixed (e.g., 400px).
-*   **Header**: High density. "Identity" block (Icon + Title + Subtitle).
-*   **Sections**: Divided by strict hairlines.
-*   **Labels**: Mono, Uppercase, Tiny (`text-xs text-secondary`).
+### 4.1 Hierarchical Sizing (Tiered heights)
+Components adapt their physical size to their organizational importance.
+*   **Tier 1 (Command)**: **Height 200px**. Prominent headers, full details, accent borders.
+*   **Tier 2 (Standard)**: **Height 180px**. Standard density.
+*   **Tier 3 (Compact)**: **Height 120px**. 
+    *   **Stripped**: No internal containers.
+    *   **Inline Stats**: Data displayed in a single row (`Seats: X | Vac: Y`).
+    *   **Visuals**: Reduced padding (`p-2`).
 
-### 4.2 The Discovery Bar
-A centered "Command Palette" for navigation.
-*   **Position**: Top-Center (floating).
-*   **Behavior**: Expands on focus. Supports natural language.
-*   **Glass**: `bg-panel/90 backdrop-blur-md`.
+### 4.2 The Inspector Panel
+A right-aligned drawer for details.
+*   **Header**: Max-density "Identity" block.
+*   **Service Tiles**: Fixed height (56px), flex layout (Trigger | Owner).
+
+### 4.3 The Discovery Bar
+*   **Position**: Floating Top-Center.
+*   **Style**: Glassmorphism (`backdrop-blur-md`).
+*   **Features**: Natural Language filtering ("Vacancies").
 
 ---
 
-## 5. CSS Implementation (Tailwind Config Reference)
-
-To adopt this system, applications should extend their `tailwind.config.js`:
+## 5. CSS Implementation (Tailwind Config)
 
 ```js
 module.exports = {
   theme: {
     extend: {
-      colors: {
-        bg: {
-          canvas: '#020617', // slate-950
-          panel: '#0f172a',  // slate-900
-          surface: '#1e293b', // slate-800
-        },
-        border: {
-          DEFAULT: '#334155', // slate-700
-        },
-        accent: {
-          orange: '#f97316',
-          green: '#10b981',
-          red: '#e11d48',
-        }
-      },
-      fontFamily: {
-        mono: ['"JetBrains Mono"', 'monospace'],
-        sans: ['"Inter"', 'sans-serif'],
+{{ ... }}
       }
     }
   }
 }
 ```
-
----
-
-## 6. Iconography
-*   **Library**: `lucide-react`
-*   **Style**: Stroke 1.5px or 2px.
-*   **Size**:
-    *   Small: 14px (Metadata)
-    *   Standard: 16-18px (Buttons)
-    *   Large: 24px (Section Headers)
