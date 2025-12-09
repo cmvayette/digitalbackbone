@@ -273,8 +273,8 @@ export class StateProjectionEngine {
         break;
 
       default:
-        // Unknown event type - log but don't fail
-        console.warn(`Unknown event type: ${event.type}`);
+      // Unknown event type - log but don't fail
+      // console.warn(`Unknown event type: ${event.type}`);
     }
   }
 
@@ -285,11 +285,13 @@ export class StateProjectionEngine {
     const holonId = event.subjects[0];
     if (!holonId) return;
 
-    // Extract holon data from event payload
+    // Cast payload for loose access, as we handle multiple event types here
+    const payload = event.payload as any;
+
     const holon: Holon = {
       id: holonId,
-      type: event.payload.holonType || this.inferHolonTypeFromEvent(event),
-      properties: event.payload.properties || {},
+      type: payload.holonType || payload.type || this.inferHolonTypeFromEvent(event),
+      properties: payload.properties || {},
       createdAt: event.occurredAt,
       createdBy: event.id,
       status: 'active',
@@ -313,11 +315,13 @@ export class StateProjectionEngine {
     const holonState = state.holons.get(holonId);
     if (!holonState) return;
 
+    const payload = event.payload as any;
+
     // Update properties from event payload
-    if (event.payload.properties) {
+    if (payload.properties || payload.updates || payload.diff) {
       holonState.holon.properties = {
         ...holonState.holon.properties,
-        ...event.payload.properties,
+        ...(payload.properties || payload.updates || payload.diff),
       };
     }
 
@@ -346,21 +350,22 @@ export class StateProjectionEngine {
    * Handle relationship creation events
    */
   private handleRelationshipCreation(event: Event, state: ProjectedState): void {
-    const relationshipId = event.payload.relationshipId;
+    const payload = event.payload as any;
+    const relationshipId = payload.relationshipId;
     if (!relationshipId) return;
 
     const relationship: Relationship = {
       id: relationshipId,
-      type: event.payload.relationshipType,
+      type: payload.relationshipType || 'Unknown',
       sourceHolonID: event.subjects[0],
       targetHolonID: event.subjects[1],
-      properties: event.payload.properties || {},
+      properties: payload.properties || {},
       effectiveStart: event.occurredAt,
       sourceSystem: event.sourceSystem,
       sourceDocuments: event.sourceDocument ? [event.sourceDocument] : [],
       createdBy: event.id,
-      authorityLevel: event.payload.authorityLevel || 'authoritative',
-      confidenceScore: event.payload.confidenceScore,
+      authorityLevel: payload.authorityLevel || 'authoritative',
+      confidenceScore: payload.confidenceScore,
     };
 
     state.relationships.set(relationshipId, {
@@ -374,14 +379,15 @@ export class StateProjectionEngine {
    * Handle relationship end events
    */
   private handleRelationshipEnd(event: Event, state: ProjectedState): void {
-    const relationshipId = event.payload.relationshipId;
+    const payload = event.payload as any;
+    const relationshipId = payload.relationshipId;
     if (!relationshipId) return;
 
     const relationshipState = state.relationships.get(relationshipId);
     if (!relationshipState) return;
 
     // Set end date
-    relationshipState.relationship.effectiveEnd = event.payload.endDate || event.occurredAt;
+    relationshipState.relationship.effectiveEnd = payload.endDate || event.occurredAt;
     relationshipState.lastModified = event.occurredAt;
     relationshipState.modificationEvents.push(event.id);
   }
@@ -390,15 +396,16 @@ export class StateProjectionEngine {
    * Handle relationship correction events
    */
   private handleRelationshipCorrection(event: Event, state: ProjectedState): void {
-    const relationshipId = event.payload.relationshipId;
+    const payload = event.payload as any;
+    const relationshipId = payload.relationshipId;
     if (!relationshipId) return;
 
     const relationshipState = state.relationships.get(relationshipId);
     if (!relationshipState) return;
 
-    // Apply corrections from payload
-    if (event.payload.corrections) {
-      Object.assign(relationshipState.relationship.properties, event.payload.corrections);
+    // Apply corrections
+    if (payload.corrections) {
+      Object.assign(relationshipState.relationship.properties, payload.corrections);
     }
 
     relationshipState.lastModified = event.occurredAt;
@@ -415,12 +422,13 @@ export class StateProjectionEngine {
     const holonState = state.holons.get(holonId);
     if (!holonState) return;
 
-    // Update qualification status in properties
+    const payload = event.payload as any;
+
     if (!holonState.holon.properties.qualifications) {
       holonState.holon.properties.qualifications = {};
     }
 
-    const qualificationId = event.payload.qualificationId;
+    const qualificationId = payload.qualificationId;
     if (qualificationId) {
       holonState.holon.properties.qualifications[qualificationId] = {
         status,
@@ -440,15 +448,15 @@ export class StateProjectionEngine {
     if (!holonId) return;
 
     const holonState = state.holons.get(holonId);
+    const payload = event.payload as any;
+
     if (holonState) {
-      // Update existing mission
-      if (event.payload.missionState) {
-        holonState.holon.properties.missionState = event.payload.missionState;
+      if (payload.missionState) {
+        holonState.holon.properties.missionState = payload.missionState;
       }
       holonState.lastModified = event.occurredAt;
       holonState.modificationEvents.push(event.id);
     } else {
-      // Create new mission holon
       this.handleHolonCreation(event, state);
     }
   }
@@ -463,9 +471,10 @@ export class StateProjectionEngine {
     const holonState = state.holons.get(holonId);
     if (!holonState) return;
 
-    // Update mission phase
-    if (event.payload.phase) {
-      holonState.holon.properties.currentPhase = event.payload.phase;
+    const payload = event.payload as any;
+
+    if (payload.phase || payload.toPhase) {
+      holonState.holon.properties.currentPhase = payload.phase || payload.toPhase;
       holonState.holon.properties.phaseTransitionTime = event.occurredAt;
     }
 
@@ -483,7 +492,6 @@ export class StateProjectionEngine {
     const holonState = state.holons.get(holonId);
     if (!holonState) return;
 
-    // Mark mission as completed
     holonState.holon.properties.completionStatus = event.type === EventType.MissionCompleted ? 'completed' : 'debriefed';
     holonState.holon.properties.completionTime = event.occurredAt;
 
@@ -499,18 +507,18 @@ export class StateProjectionEngine {
     if (!holonId) return;
 
     const holonState = state.holons.get(holonId);
+    const payload = event.payload as any;
+
     if (holonState) {
-      // Update existing system/asset
-      if (event.payload.status) {
-        holonState.holon.properties.status = event.payload.status;
+      if (payload.status) {
+        holonState.holon.properties.status = payload.status;
       }
-      if (event.payload.configuration) {
-        holonState.holon.properties.configuration = event.payload.configuration;
+      if (payload.configuration) {
+        holonState.holon.properties.configuration = payload.configuration;
       }
       holonState.lastModified = event.occurredAt;
       holonState.modificationEvents.push(event.id);
     } else {
-      // Create new system/asset holon
       this.handleHolonCreation(event, state);
     }
   }
@@ -523,18 +531,18 @@ export class StateProjectionEngine {
     if (!holonId) return;
 
     const holonState = state.holons.get(holonId);
+    const payload = event.payload as any;
+
     if (holonState) {
-      // Update existing task/initiative
-      if (event.payload.status) {
-        holonState.holon.properties.status = event.payload.status;
+      if (payload.status) {
+        holonState.holon.properties.status = payload.status;
       }
-      if (event.payload.stage) {
-        holonState.holon.properties.stage = event.payload.stage;
+      if (payload.stage) {
+        holonState.holon.properties.stage = payload.stage;
       }
       holonState.lastModified = event.occurredAt;
       holonState.modificationEvents.push(event.id);
     } else {
-      // Create new task/initiative holon
       this.handleHolonCreation(event, state);
     }
   }
@@ -549,16 +557,17 @@ export class StateProjectionEngine {
     const holonState = state.holons.get(holonId);
     if (!holonState) return;
 
-    // Store measurement in holon properties
+    const payload = event.payload as any;
+
     if (!holonState.holon.properties.measurements) {
       holonState.holon.properties.measurements = [];
     }
 
     holonState.holon.properties.measurements.push({
       type: event.type,
-      value: event.payload.value,
+      value: payload.value,
       timestamp: event.occurredAt,
-      measureId: event.payload.measureId,
+      measureId: payload.measureId || payload.measureDefinitionID,
     });
 
     holonState.lastModified = event.occurredAt;

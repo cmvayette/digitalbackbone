@@ -307,12 +307,12 @@ export class APIRoutes {
       recordedAt: new Date(),
       actor: request.user.userId,
       subjects,
-      payload,
+      payload: payload as any, // Cast generic payload that will be validated by runtime
       sourceSystem,
       sourceDocument,
       validityWindow: validityWindowDates,
       causalLinks: causalLinks || {},
-    };
+    } as Event;
 
     // Validate event
     const validationResult = await this.constraintEngine.validateEvent(event);
@@ -373,12 +373,12 @@ export class APIRoutes {
           recordedAt: new Date(),
           actor: request.user.userId,
           subjects: eventReq.subjects,
-          payload: eventReq.payload,
+          payload: eventReq.payload as any,
           sourceSystem: eventReq.sourceSystem,
           sourceDocument: eventReq.sourceDocument,
           validityWindow: validityWindowDates,
           causalLinks: eventReq.causalLinks || {},
-        };
+        } as Event;
 
         // Validate event
         const validationResult = await this.constraintEngine.validateEvent(event);

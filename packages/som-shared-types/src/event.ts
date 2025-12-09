@@ -3,88 +3,18 @@
  */
 
 import { HolonID, DocumentID, Timestamp, EventID } from './holon';
+import { EventType } from './event-enums';
+import { PayloadFor } from './event-payloads';
+
 export { EventID };
+export { EventType } from './event-enums';
 
-export enum EventType {
-  // Structural
-  OrganizationCreated = 'OrganizationCreated',
-  OrganizationRealigned = 'OrganizationRealigned',
-  OrganizationDeactivated = 'OrganizationDeactivated',
-  PositionCreated = 'PositionCreated',
-  PositionModified = 'PositionModified',
-  PositionDeactivated = 'PositionDeactivated',
-  PersonCreated = 'PersonCreated',
-  PersonModified = 'PersonModified',
-
-  // Assignment
-  AssignmentStarted = 'AssignmentStarted',
-  AssignmentEnded = 'AssignmentEnded',
-  AssignmentCorrected = 'AssignmentCorrected',
-
-  // Qualification
-  QualificationAwarded = 'QualificationAwarded',
-  QualificationRenewed = 'QualificationRenewed',
-  QualificationExpired = 'QualificationExpired',
-  QualificationRevoked = 'QualificationRevoked',
-  QualificationDefined = 'QualificationDefined',
-
-  // Mission
-  MissionPlanned = 'MissionPlanned',
-  MissionApproved = 'MissionApproved',
-  MissionLaunched = 'MissionLaunched',
-  MissionPhaseTransition = 'MissionPhaseTransition',
-  MissionCompleted = 'MissionCompleted',
-  MissionDebriefed = 'MissionDebriefed',
-
-  // System/Asset
-  SystemDeployed = 'SystemDeployed',
-  SystemUpdated = 'SystemUpdated',
-  SystemOutage = 'SystemOutage',
-  SystemDeprecated = 'SystemDeprecated',
-  AssetMaintenance = 'AssetMaintenance',
-  AssetFailure = 'AssetFailure',
-  AssetUpgrade = 'AssetUpgrade',
-
-  // Objective/LOE
-  ObjectiveCreated = 'ObjectiveCreated',
-  ObjectiveRescoped = 'ObjectiveRescoped',
-  ObjectiveClosed = 'ObjectiveClosed',
-  LOECreated = 'LOECreated',
-  LOEReframed = 'LOEReframed',
-
-  // Initiative/Task
-  InitiativeStageChange = 'InitiativeStageChange',
-  TaskCreated = 'TaskCreated',
-  TaskAssigned = 'TaskAssigned',
-  TaskStarted = 'TaskStarted',
-  TaskBlocked = 'TaskBlocked',
-  TaskCompleted = 'TaskCompleted',
-  TaskCancelled = 'TaskCancelled',
-
-  // Governance
-  DocumentIssued = 'DocumentIssued',
-  DocumentUpdated = 'DocumentUpdated',
-  DocumentRescinded = 'DocumentRescinded',
-  ConstraintViolation = 'ConstraintViolation',
-
-  // Measurement
-  MeasureEmitted = 'MeasureEmitted',
-  LensEvaluated = 'LensEvaluated',
-
-  // Process
-  ProcessDefined = 'ProcessDefined',
-  ProcessUpdated = 'ProcessUpdated',
-  ProcessArchived = 'ProcessArchived'
-}
-
-export interface Event {
+export interface EventBase {
   id: EventID;
-  type: EventType;
   occurredAt: Timestamp;
   recordedAt: Timestamp;
   actor: HolonID; // Person, Position, or System
   subjects: HolonID[]; // Holons or Relationships affected
-  payload: Record<string, any>;
   sourceSystem: string;
   sourceDocument?: DocumentID;
   validityWindow?: { start: Timestamp; end: Timestamp };
@@ -94,3 +24,62 @@ export interface Event {
     groupedWith?: EventID[];
   };
 }
+
+// Discriminated Union Factory
+export type TypedEvent<T extends EventType> = EventBase & {
+  type: T;
+  payload: PayloadFor<T>;
+};
+
+// The Master Union Type
+export type Event =
+  | TypedEvent<EventType.OrganizationCreated>
+  | TypedEvent<EventType.OrganizationRealigned>
+  | TypedEvent<EventType.OrganizationDeactivated>
+  | TypedEvent<EventType.PositionCreated>
+  | TypedEvent<EventType.PositionModified>
+  | TypedEvent<EventType.PositionDeactivated>
+  | TypedEvent<EventType.PersonCreated>
+  | TypedEvent<EventType.PersonModified>
+  | TypedEvent<EventType.AssignmentStarted>
+  | TypedEvent<EventType.AssignmentEnded>
+  | TypedEvent<EventType.AssignmentCorrected>
+  | TypedEvent<EventType.QualificationAwarded>
+  | TypedEvent<EventType.QualificationRenewed>
+  | TypedEvent<EventType.QualificationExpired>
+  | TypedEvent<EventType.QualificationRevoked>
+  | TypedEvent<EventType.QualificationDefined>
+  | TypedEvent<EventType.MissionPlanned>
+  | TypedEvent<EventType.MissionApproved>
+  | TypedEvent<EventType.MissionLaunched>
+  | TypedEvent<EventType.MissionPhaseTransition>
+  | TypedEvent<EventType.MissionCompleted>
+  | TypedEvent<EventType.MissionDebriefed>
+  | TypedEvent<EventType.SystemDeployed>
+  | TypedEvent<EventType.SystemUpdated>
+  | TypedEvent<EventType.SystemOutage>
+  | TypedEvent<EventType.SystemDeprecated>
+  | TypedEvent<EventType.AssetMaintenance>
+  | TypedEvent<EventType.AssetFailure>
+  | TypedEvent<EventType.AssetUpgrade>
+  | TypedEvent<EventType.ObjectiveCreated>
+  | TypedEvent<EventType.ObjectiveRescoped>
+  | TypedEvent<EventType.ObjectiveClosed>
+  | TypedEvent<EventType.LOECreated>
+  | TypedEvent<EventType.LOEReframed>
+  | TypedEvent<EventType.TaskCreated>
+  | TypedEvent<EventType.TaskAssigned>
+  | TypedEvent<EventType.TaskStarted>
+  | TypedEvent<EventType.TaskBlocked>
+  | TypedEvent<EventType.TaskCompleted>
+  | TypedEvent<EventType.TaskCancelled>
+  | TypedEvent<EventType.InitiativeStageChange>
+  | TypedEvent<EventType.DocumentIssued>
+  | TypedEvent<EventType.DocumentUpdated>
+  | TypedEvent<EventType.DocumentRescinded>
+  | TypedEvent<EventType.ConstraintViolation>
+  | TypedEvent<EventType.MeasureEmitted>
+  | TypedEvent<EventType.LensEvaluated>
+  | TypedEvent<EventType.ProcessDefined>
+  | TypedEvent<EventType.ProcessUpdated>
+  | TypedEvent<EventType.ProcessArchived>;

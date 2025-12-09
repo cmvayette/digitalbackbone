@@ -3,7 +3,8 @@
  * Manages measure definitions, lens definitions, measure emission, and lens evaluation
  */
 
-import { HolonID, DocumentID, Timestamp, EventID, MeasureDefinition, LensDefinition, HolonType } from '@som/shared-types';
+import { HolonID, DocumentID, Timestamp, EventID, MeasureDefinition, LensDefinition, HolonType, Event, TypedEvent } from '@som/shared-types';
+import { DocumentRegistry } from '../document-registry';
 import { IHolonRepository as HolonRegistry } from '../core/interfaces/holon-repository';
 import { IEventStore as EventStore } from '../event-store';
 import { EventType } from '@som/shared-types';
@@ -398,11 +399,11 @@ export class MeasureLensEngine {
 
         inputValues.push({
           measureDefinitionID: measureId,
-          value: latestEvent.payload.value,
+          value: (latestEvent as TypedEvent<EventType.MeasureEmitted>).payload.value,
           holonID,
           eventID: latestEvent.id,
           timestamp: latestEvent.occurredAt,
-          confidence: latestEvent.payload.confidence,
+          confidence: (latestEvent as TypedEvent<EventType.MeasureEmitted>).payload.confidence as number | undefined,
         });
       }
     }
@@ -458,7 +459,7 @@ export class MeasureLensEngine {
       return measureDef ? (measureDef.properties as any).name : v.measureDefinitionID;
     }));
 
-    return `Lens "${lensDef.properties.name}" evaluated to "${output}" based on ${inputValues.length} input measure(s): ${measureNames.join(', ')}`;
+    return `Lens "${lensDef.properties.name}" evaluated to "${output}" based on ${inputValues.length} input measure(s): ${measureNames.join(', ')} `;
   }
 }
 
