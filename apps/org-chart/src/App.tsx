@@ -22,7 +22,7 @@ function OrgChartContent() {
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
   const [viewMode, setViewMode] = useState<'reporting' | 'mission'>('reporting');
 
-  const [viewMode, setViewMode] = useState<'reporting' | 'mission'>('reporting');
+
 
   // Navigation Hook (MUST be inside ReactFlowProvider)
   const { focusNode } = useGraphNavigation();

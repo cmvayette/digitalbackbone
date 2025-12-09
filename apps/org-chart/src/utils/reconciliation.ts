@@ -11,7 +11,7 @@ export interface SatisfactionDetail {
     qualificationName: string;
     isSatisfied: boolean;
     satisfiedBy?: string; // Certificate name
-    satisfiedBy?: string; // Certificate name
+
     source: string; // Policy/SOP
     strictness: 'mandatory' | 'desired';
 }
