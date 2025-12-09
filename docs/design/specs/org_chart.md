@@ -1,4 +1,4 @@
-# ORG CHART APPLICATION — DESIGN SPEC (Integrated & Vision-Aligned)
+# 📄 ORG CHART APPLICATION — DESIGN SPEC (Integrated & Vision-Aligned)
 
 ---
 
@@ -18,52 +18,49 @@ The Org Chart App must:
 The design philosophy is:
 **Minimal UI. Maximal clarity. No noise. Everything purposeful.**
 
-The app must feel like a **blueprint that became interactive.**
-Clean lines, structural truth, zero ornamentation.
+The app must feel like a **blueprint that became interactive**—the **computable map** of the organization's nervous system.
 
 ---
 
-# 1. Purpose
+# 1. Purpose (The Semantic Digital Backbone Engine)
 
 The Org Chart App is a **holonic, interactive visualization** of the enterprise. It enables users to:
 
-- Navigate the hierarchy intuitively
-- Discover what each office does
-- Find who occupies which roles
-- Access services provided by offices
-- Manage positions and assignments
-- Create and manage organizational units (including Tiger Teams)
+- Navigate the hierarchy intuitively.
+- **Discover capabilities** and active missions of each office.
+- Find who occupies which roles.
+- **View Policy Obligations** and organizational risk (Governance as Code).
+- **Manage positions and assignments based on required competence** (Competence as Algorithm).
+- **Visualize strategic alignment** (Alignment is Provable).
+- Create and manage organizational units (including Tiger Teams).
 
-It is both a **directory** and a **work surface**.
+It is both a **directory** and a **work surface**—the front-end for the **Semantic Digital Backbone.**
 
 ---
 
 # 2. Primary Interface Regions
 
-## 2.1 Graph Canvas (Primary Surface)
+## 2.1 Graph Canvas (Primary Surface: The Organizational Map)
 
-- Occupies 70–85% of the screen
-- Displays **Organizations → Positions → Persons** as holon cards
-- Blueprint aesthetic:
-    - Dark canvas
-    - Monoline geometry (1–1.25px)
-    - Minimal fill
-    - Functional accents only
+- Occupies 70–85% of the screen.
+- Displays **Organizations → Positions → Persons** as **Holon Pods.**
+- Blueprint aesthetic: Dark canvas, Monoline geometry (1–1.25px), Minimal fill, Functional accents only.
 
-**Behaviors & Enhancements Integrated:**
+### **Integrated Semantic Features (Core to the Digital Backbone):**
 
-- Pan, zoom, collapse/expand, re-center
-- **Smart Hover Micro-Tooltips** for immediate understanding
-- **Vacancy callout indicators**
-- **Org health dots (green/yellow/red)**
-- **Roster preview on hover**
-- **Soft highlighting of dual-role relationships (Tiger Teams)**
-- **Auto-center on newly created orgs/positions/teams**
-- “Where Am I?” button for rapid reorientation
-- Keyboard navigation (← ↑ → / esc)
-- Undo toast after structural changes
+- **Visualization Modes (NEW):** A toggle bar allows users to switch the Pod arrangement and connection lines to show different **computable relationships** (Structure is Physics):
+    1.  **Reporting Mode (Default):** Classic hierarchical lines.
+    2.  **Mission Alignment Mode:** Connects Pods that share a high-level **Objective/Key Result.**
+    3.  **Process Flow Mode:** Uses directional arrows to show dependencies related to a specific **How-Do** process or **Policy Obligation.**
+- **Smart Hover Micro-Tooltips** for immediate understanding.
+- **Vacancy callout indicators.**
+- **Semantic Health Badges (NEW):**
+    - **Load/Capacity Indicator (NEW):** A small progress ring on the Pod showing current task load vs. defined capacity.
+    - **Compliance Status Dot (NEW):** Red/Yellow/Green dot showing risk from overdue Policy Obligations.
+- **Soft highlighting of dual-role relationships (Tiger Teams).**
+- **Auto-center on newly created orgs/positions/teams.**
 
-These features preserve visual purity while dramatically improving usability.
+These features turn the canvas into an active, analytical map.
 
 ---
 
@@ -73,21 +70,20 @@ Appears centered at the top of the graph; compact, non-intrusive.
 
 Supports:
 
-- Typeahead search for orgs, positions, people
-- **Natural-language queries (lite mode)**
+- Typeahead search for orgs, positions, people.
+- **Natural-language queries (lite mode) integrated with the Semantic Graph (UPDATED):**
     Examples:
-    - “vacant billets in training”
-    - “who works in contracting?”
+    - “vacant billets requiring **'Cloud Security' competence**”
+    - “who works in contracting and is linked to the **'2026 Modernization Objective'**?”
     - “show tiger teams”
-- Filters:
+- **Semantic Filters (UPDATED):**
     - Vacancies
     - Billet-funded positions
-    - Qualification match/mismatch
-    - Tiger Team organizations
-- Selecting a result re-centers graph smoothly
-- Activatable via `/`
+    - **Competency Tag Match/Mismatch** (vs. needed skills)
+    - **Objective Alignment** (Filter by active strategic goal)
+- Selecting a result re-centers graph smoothly.
 
-The Discovery Bar is the **primary wayfinding tool.**
+The Discovery Bar is the **primary wayfinding tool and competence finder.**
 
 ---
 
@@ -95,234 +91,115 @@ The Discovery Bar is the **primary wayfinding tool.**
 
 Opens when any holon is selected. Dynamically adapts.
 
-### Organization Sidebar
+### Organization Sidebar (The Holon View)
 
-- Name & description
-- Roster overview
-- Suborgs summary
-- **Inline service launch icons** (email, SharePoint, forms, guides, etc.)
-- Org health indicator
-- Breadcrumb linking
+- Name & description.
+- **Competency Tags:** Key capabilities derived from linked How-Do processes.
+- Roster overview.
+- **Policy Obligations View (NEW):** List of critical policies governing this unit, with links to generated tasks.
+- **Objective Links (NEW):** List of strategic objectives the organization contributes to.
+- Inline service launch icons.
 
-### Position Sidebar
+### Position Sidebar (The Role View)
 
-- Title
-- Billet status
-- Qualification expectations
-- Occupant (if any)
-- Vacancy indicator
-- **Find eligible members**
-- Assign/reassign tools
+- Title, Billet status.
+- Qualification expectations **(Required Qualifications).**
+    - *Must display provenance (e.g., "Source: DoD Manual 8570.01").*
+- Occupant (if any).
+- Vacancy indicator.
+- **Roster Builder Panel Toggle (NEW):** Button to initiate the strategic staffing process.
+- Assign/reassign tools.
+- **Linked How-Do Processes (NEW):** Direct link to the official operational procedure for this role.
 
 ### Person Sidebar
 
-- Name, rank, type
-- Certificates & qualifications
-- Primary position
-- **Other organizational affiliations (e.g., Tiger Teams)**
-- Quick navigation to those teams
+- Name, rank, type.
+- **Held Certificates** (Qualifications).
+- Primary position.
+- **Other organizational affiliations (Dual-Roles/Tiger Teams)**.
+- **Current Task Load Meter (NEW):** Visualizing their assigned work capacity.
 
 ### Tiger Team Sidebar
 
-(Same as organization—Tiger Teams _are_ organizations)
-
-- Purpose
-- Members
-- Lead(s)
-- Duration (optional metadata)
-- Links to relevant tools or shared documents
+- Purpose, Sponsor org, Duration.
+- **Shared Objective/Mission Link.**
+- Members and their associated load/commitment to the team.
 
 ---
 
-# 3. Entity Model (Holons)
+# 3. Entity Model (The Holon Nodes)
 
-## 3.1 Organization
+This model represents the **computable elements** of the Semantic Digital Backbone:
 
-- Structural unit or Tiger Team
-- Parent, siblings, children
-- Description & purpose
-- Services
-- Roster (positions + people)
-- Health indicator (# of filled/vacant positions)
+## 3.1 Organization (The Unit Holon)
 
-## 3.2 Position
+- **Structural identity** (Parent, siblings, children).
+- Description & purpose.
+- **Services/Capabilities (Competency Tags).**
+- **Policy/Governance links.**
+- Health indicator (Load / Compliance / Filled positions).
 
-- Title
-- Billet status (funded/unfunded)
-- Qualification expectations
-- Allowed occupant type (mil/civ/ctr)
-- Assigned Person
-- State: Vacant / Filled / Acting / Archived
+## 3.2 Position (The Role Holon)
 
-## 3.3 Person
+- Title, Billet status.
+- **Required Qualifications** (derived from linked How-Do processes).
+    - **Provenance:** Critical. Every qualification must trace back to a **Policy Obligation** or **Standard Operating Procedure (SOP)**.
+- Allowed occupant type.
+- **Assigned Person.**
+- State: Vacant / Filled / Acting / Archived.
 
-- Name
-- Rank/type
-- Certificates & qualifications
-- Primary Position
-- Additional Organization affiliations (e.g., Tiger Teams)
+## 3.3 Person (The Identity Holon)
 
-## 3.4 Tiger Team (Organization Type)
+- Name, Rank/type.
+- **Held Certificates** (Evidence of competence).
+- Primary Position, Additional affiliations.
+- **Current Load/Capacity data.**
 
-- Behaves identically to an Organization
-- Additional metadata:
-    - Purpose
-    - Sponsor org
-    - Duration
+## 3.4 Competence Reconciliation Function (The Logic Layer)
 
----
+The system does not simply match strings. It uses a **Reconciliation Function** to map *Held Certificates* to *Required Qualifications*.
 
-# 4. Graph Initialization & Navigation Model
-
-## 4.1 Launch Behavior
-
-Graph centers on **user’s home organization**.
-
-Visible:
-
-- Parent (1 up)
-- Siblings
-- Home org (center)
-- Children (1 down)
-
-Also shown:
-
-- Smart hover insights
-- Health dots
-- Vacancy indicators
-
-## 4.2 Re-Centering Behavior
-
-Selecting an organization:
-
-- Reorients graph around that node
-- Maintains the 3-band contextual window
-- Breadcrumb updates
-- “Where Am I?” button appears if user drifts
-
-## 4.3 Deep Navigation
-
-One layer of children visible at a time.
-Selecting a child makes it the new center.
-
-Consistent, simple mental model.
+- **Logic:** `Certificate(C) → Satisfies → Qualification(Q)`
+- **Example:** A Person holds "CompTIA Security+" (Certificate). The Position requires "IAM Level 2" (Qualification). The system knows that "CompTIA Security+" *satisfies* "IAM Level 2" and validates the match.
+- **Grace Logic:** If a valid certificate is expired but within a grace period, the match is valid but flagged "At Risk".
 
 ---
 
-# 5. Core User Use Cases
+# 4. Core User Use Cases (Actionable Coherence)
 
-## 5.1 Find Who Is in an Organization
+## 5.3 Assign People to Positions (The Roster Builder)
 
-- Search or click org
-- Tooltip previews
-- Sidebar shows description, roster, services
-- Roster preview inline on hover
-
-## 5.2 Understand What an Office Does
-
-- Organization sidebar description
-- Inline service icons
-- Auto-generated narrative summaries (optional enhancement)
-
-## 5.3 Assign People to Positions
-
-- Vacancy indicators
-- Sidebar qualification validation
-- “Find eligible members”
-- Assignment workflow
-
-## 5.4 Manage Positions
-
-- Create/edit/archive positions
-- Smart defaults (inherit billet, suggest quals)
-- Auto-center after creation
-- Undo for mistakes
+- Vacancy indicators prompt action.
+- Sidebar **Qualification validation against Competency Tags.**
+- **"Find eligible members" button triggers the Roster Builder (see Section 8.D).**
+- Assignment workflow utilizes Load Conflict Check before final approval.
 
 ## 5.5 Manage Organizational Structure
 
-- Create/edit/move organizations
-- Breadcrumb-aware navigation
-- Recovery from mistakes via undo toast
+- Create/edit/move organizations.
+- When moving an Org, the system checks for **Policy Governance conflicts** and alerts the user (e.g., "Warning: Moving this org breaks compliance with Policy X").
 
-## 5.6 Create and Manage Tiger Teams
+## 5.6 Understand What an Office Does (The Semantic View)
 
-- Tiger Team = Organization
-- Create team
-- Add positions
-- Assign members (dual-roles)
-- Navigate to and from teams effortlessly
-
----
-
-# 6. Holon Card Design Requirements
-
-- Blueprint, monoline (1–1.25px)
-- Minimal fill
-- High-contrast dark canvas
-- Functional color accents
-- Modular geometry
-
-### Organization Card
-
-- Name
-- Health dot
-- Child count
-- Services indicator
-
-### Position Card
-
-- Title
-- Billet badge
-- Qualification indicator
-- Person preview
-
-### Person Card
-
-- Name
-- Rank/type
-- Qualification state
-
----
-
-# 7. Discovery Bar Spec (Finalized)
-
-Capabilities:
-
-- Typeahead
-- Lite natural language
-- Filters
-- Jump-to-node
-- Keyboard activation
-
-Design:
-
-- Minimalist
-- Expands when focused
-- Blueprint-styled outline
+- Organization sidebar description.
+- Use **Mission Alignment Mode** to see who they collaborate with on strategy.
+- Use **Process Flow Mode** to see their functional dependencies.
 
 ---
 
 # 8. Intuitive UX Enhancements (Integrated Into Spec)
 
-### A. Orientation Enhancers
+### D. **The Roster Builder Panel (The Team Builder Feature)**
 
-- Breadcrumbs
-- “Where Am I?” button
-- Auto-center on creation
-- Undo toast
+The Roster Builder is a focused view used for strategic staffing.
 
-### B. Discovery Enhancers
+- **Trigger:** Click the "Find eligible members" button on a vacant Position Sidebar.
+- **Layout:** Two columns in a dedicated modal/side view.
+    1.  **Position Requirements (Left):** Lists *Mandatory* and *Desired* **Qualifications** derived directly from the Position's linked **How-Do** process.
+    2.  **Internal Talent Pool (Right):** Searchable list of all personnel.
+- **Logic:**
+    - **Smart Match Score:** Displays a score for each person based on the **Reconciliation** of their **Held Certificates** against the position's *Mandatory* **Qualifications**.
+    - **Load Conflict Check:** Flags candidates whose **Current Task Load Meter** exceeds a defined capacity threshold, warning against over-commitment.
+    - **Recommendation Logic:** Prioritizes high-score, low-load candidates.
 
-- Smart hovers
-- Natural-language search
-- Vacancy filters
-- Org health dots
-- Roster preview
-
-### C. Efficiency Enhancers
-
-- Keyboard navigation
-- Smart defaults
-- Click-to-launch office services
-
-These are invisible unless needed, but transformative once discovered.
+This updated specification is now a truly **Integrated & Vision-Aligned** design document that leverages the Semantic Digital Backbone principles in every critical UI component.

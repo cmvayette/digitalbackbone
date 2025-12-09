@@ -65,6 +65,9 @@ export interface Person extends Holon {
     serviceBranch: string;
     designatorRating: string;
     category: 'active_duty' | 'reserve' | 'civilian' | 'contractor';
+    certificates: string[]; // Held qualifications (e.g. "CompTIA Security+")
+    workLoad: number; // Current load (0-100)
+    capacity: number; // Max load (0-100)
   };
 }
 
@@ -77,7 +80,15 @@ export interface Position extends Holon {
     designatorExpectations: string[];
     criticality: 'critical' | 'important' | 'standard';
     billetType: 'command' | 'staff' | 'support';
+    qualifications: RequiredQualification[];
   };
+}
+
+export interface RequiredQualification {
+  id: string;
+  name: string; // e.g. "IAM Level 2"
+  source: string; // e.g. "DoD Manual 8570.01"
+  strictness: 'mandatory' | 'desired';
 }
 
 export interface Organization extends Holon {

@@ -1,5 +1,6 @@
 import React from 'react';
-import { Editor, BubbleMenu } from '@tiptap/react';
+import { Editor } from '@tiptap/react';
+import { BubbleMenu } from '@tiptap/react/menus';
 import { ShieldCheck } from 'lucide-react';
 
 interface ClauseHighlighterProps {
@@ -11,10 +12,10 @@ export const ClauseHighlighter: React.FC<ClauseHighlighterProps> = ({ editor, on
     if (!editor) return null;
 
     return (
-        // @ts-ignore
+
         <BubbleMenu
             editor={editor}
-            tippyOptions={{ duration: 100 }}
+
             shouldShow={({ from, to }: { from: number; to: number }) => {
                 // Only show if selection is non-empty
                 return from !== to;

@@ -72,7 +72,9 @@ export enum EventType {
   LensEvaluated = 'LensEvaluated',
 
   // Process
-  ProcessDefined = 'ProcessDefined'
+  ProcessDefined = 'ProcessDefined',
+  ProcessUpdated = 'ProcessUpdated',
+  ProcessArchived = 'ProcessArchived'
 }
 
 export interface Event {

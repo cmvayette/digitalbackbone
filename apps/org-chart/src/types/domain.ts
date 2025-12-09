@@ -1,4 +1,4 @@
-import type { Organization as SharedOrganization, Position as SharedPosition, Person as SharedPerson } from '@som/shared-types';
+import type { Organization as SharedOrganization, Position as SharedPosition, Person as SharedPerson, RequiredQualification } from '@som/shared-types';
 
 // Helper to match legacy Service
 export interface ServiceOwnerMetadata {
@@ -41,7 +41,7 @@ export interface Position extends SharedPosition {
         billetStatus: BilletStatus;
         state: PositionState;
         assignedPersonId: string | null;
-        qualifications: string[];
+        qualifications: RequiredQualification[];
         isLeadership: boolean;
     };
 }
@@ -52,5 +52,7 @@ export interface Person extends SharedPerson {
         certificates: string[];
         primaryPositionId: string | null;
         tigerTeamIds: string[];
+        workLoad: number;
+        capacity: number;
     };
 }

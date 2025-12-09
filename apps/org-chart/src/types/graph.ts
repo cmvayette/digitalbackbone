@@ -10,6 +10,8 @@ export type GraphNodeData = {
     properties?: Record<string, any>;
     collapsed?: boolean;
     onToggle?: (id: string) => void; // Callback for collapse/expand
+    highlightStatus?: 'compatible' | 'incompatible' | 'neutral';
+    isDimmed?: boolean; // For Focus + Context (Ghosting)
 };
 
 export type GraphNode = Node<GraphNodeData>;

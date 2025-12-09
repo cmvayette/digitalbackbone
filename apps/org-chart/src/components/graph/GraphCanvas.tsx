@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { DiscoveryBar } from '../discovery/DiscoveryBar';
 import {
     ReactFlow,
     Controls,
@@ -17,6 +18,9 @@ import { PositionNode } from '../nodes/PositionNode';
 import { PersonNode } from '../nodes/PersonNode';
 import { TigerTeamEdge } from '../edges/TigerTeamEdge';
 import { getLayoutedElements } from '../../utils/layout';
+import { reconcileCompetence } from '../../utils/reconciliation';
+import { useOrgStore } from '../../store/orgStore';
+import type { Person, Position } from '../../types/domain';
 
 const nodeTypes = {
     organization: OrganizationNode,
@@ -38,6 +42,7 @@ export function GraphCanvas({ initialNodes, initialEdges, onNodeClick }: GraphCa
     const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
     const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
     const [rfInstance, setRfInstance] = useState<ReactFlowInstance | null>(null);
+    const [viewMode, setViewMode] = useState<'reporting' | 'mission'>('reporting');
 
     // Collapse Logic
     const onNodeToggle = useCallback((nodeId: string) => {
@@ -109,25 +114,28 @@ export function GraphCanvas({ initialNodes, initialEdges, onNodeClick }: GraphCa
         // Children (Outgoing)
         edges.filter((e) => e.source === node.id).forEach((e) => neighborhood.add(e.target));
 
-        // 3. Update Visibility & Layout
+        // 3. Update Visibility & Layout (Ghosting Pattern)
         setNodes((nds) => {
-            const focusedNodes = nds.map((n) => ({
-                ...n,
-                hidden: !neighborhood.has(n.id),
-            }));
-
-            // Re-layout focused subset to center them nicely
-            const visibleNodes = focusedNodes.filter((n) => !n.hidden);
-            const visibleEdges = edges.filter(
-                (e) => neighborhood.has(e.source) && neighborhood.has(e.target)
-            );
-
-            const layouted = getLayoutedElements(visibleNodes, visibleEdges);
-
-            return focusedNodes.map((n) => {
-                const layoutedNode = layouted.nodes.find((ln) => ln.id === n.id);
-                return layoutedNode ? { ...n, position: layoutedNode.position, style: layoutedNode.style } : n;
+            const focusedNodes = nds.map((n) => {
+                const isNeighbor = neighborhood.has(n.id);
+                return {
+                    ...n,
+                    // Don't hide, just dim. Ghosting!
+                    // hidden: !isNeighbor, 
+                    data: {
+                        ...n.data,
+                        isDimmed: !isNeighbor
+                    },
+                    // Push dimmed nodes to back, focused to front
+                    zIndex: isNeighbor ? 10 : 0,
+                };
             });
+
+            // NOTE: We used to re-layout here. With ghosting, we might want to KEEP the layout helpful?
+            // Or usually we usually just dim in place. Let's keep positions stable for now to avoid disorienting jumps.
+            // If the user wants to "Zoom In", the fitView below handles it.
+
+            return focusedNodes;
         });
 
         // 4. Animate Camera
@@ -142,18 +150,108 @@ export function GraphCanvas({ initialNodes, initialEdges, onNodeClick }: GraphCa
         }, 50);
     }, [edges, onNodeClick, rfInstance, setNodes]);
 
+    // DRAG & DROP ASSIGNMENT LOGIC
+    const { assignPerson } = useOrgStore();
+
+    const onNodeDragStart = useCallback(
+        (_: React.MouseEvent, node: Node) => {
+            if (node.type !== 'person') return;
+
+            const personData = node.data.properties as Person;
+
+            setNodes((nds) =>
+                nds.map((n) => {
+                    // Only highlight vacant positions
+                    if (n.type === 'position' && n.data.isVacant) {
+                        const positionData = n.data.properties as Position;
+                        const match = reconcileCompetence(personData, positionData);
+                        // Threshold for "Green Light" is 100% match of mandatory reqs, or high score
+                        // For now, let's use simple logic: Score > 60 is compatible, else incompatible
+                        // Ideally we check if 'mandatory' reqs are met
+                        const isCompatible = match.score >= 100 || match.details.every(d => d.strictness !== 'mandatory' || d.isSatisfied);
+
+                        return {
+                            ...n,
+                            data: {
+                                ...n.data,
+                                highlightStatus: isCompatible ? 'compatible' : 'incompatible'
+                            }
+                        };
+                    }
+                    return n;
+                })
+            );
+        },
+        [setNodes]
+    );
+
+    const onNodeDragStop = useCallback(
+        (_: React.MouseEvent, node: Node) => {
+            // Reset Highlights
+            setNodes((nds) =>
+                nds.map((n) => ({
+                    ...n,
+                    data: { ...n.data, highlightStatus: 'neutral' }
+                }))
+            );
+
+            if (node.type !== 'person' || !rfInstance) return;
+
+            // Check intersection with Positions
+            const intersections = rfInstance.getIntersectingNodes(node).filter((n) => n.type === 'position');
+
+            if (intersections.length > 0) {
+                // Find best match (closest or first)
+                const targetPositionNode = intersections[0]; // Simplification: take first
+                const personData = node.data.properties as Person;
+                const positionData = targetPositionNode.data.properties as Position;
+
+                // 1. Reconcile
+                const match = reconcileCompetence(personData, positionData);
+
+                // 2. Alert/Confirm (Mocking the Modal for Phase 1)
+                // 2. Alert/Confirm (Mocking the Modal for Phase 1)
+                const isPerfectMatch = match.score === 100;
+
+                let message = `Match Score: ${match.score}%\n\n` +
+                    match.details.map(d => `${d.isSatisfied ? '✅' : '⚠️'} ${d.qualificationName} (${d.source})`).join('\n');
+
+                if (!isPerfectMatch) {
+                    message += `\n\n⚠️ CAUTION: ${personData.properties.name} has skill gaps.\nProceeding will flag this assignment as "At Risk" (Waiver Required).`;
+                }
+
+                if (confirm(`Attempting to assign ${personData.properties.name} to ${positionData.properties.title}\n\n${message}\n\nProceed?`)) {
+                    // 3. Execute Assignment
+                    assignPerson(targetPositionNode.id, personData.properties.name, personData.properties.designatorRating);
+                    alert('Assignment Successful!');
+
+                    // Optional: Snap node back or re-layout
+                    // For now, let's just re-center layout to clean up
+                    setNodes(nds => {
+                        const layouted = getLayoutedElements(nds, edges);
+                        return nds.map(n => {
+                            const ln = layouted.nodes.find(l => l.id === n.id);
+                            return ln ? { ...n, position: ln.position } : n;
+                        });
+                    });
+                }
+            }
+        },
+        [rfInstance, assignPerson, setNodes, edges]
+    );
+
     const handlePaneClick = useCallback(() => {
-        // Reset Focus: Show all nodes and re-layout.
+        // Reset Focus: Undim all nodes
         setNodes((nds) => {
-            const allVisible = nds.map(n => ({ ...n, hidden: false }));
-            const layouted = getLayoutedElements(allVisible, edges);
-            return allVisible.map((n) => {
-                const layoutedNode = layouted.nodes.find((ln) => ln.id === n.id);
-                return layoutedNode ? { ...n, position: layoutedNode.position, style: layoutedNode.style } : n;
-            });
+            return nds.map((n) => ({
+                ...n,
+                hidden: false,
+                zIndex: 1,
+                data: { ...n.data, isDimmed: false }
+            }));
         });
         setTimeout(() => rfInstance?.fitView({ duration: 800 }), 50);
-    }, [edges, rfInstance, setNodes]);
+    }, [rfInstance, setNodes]);
 
     useEffect(() => {
         // Inject onToggle into initial nodes
@@ -162,11 +260,15 @@ export function GraphCanvas({ initialNodes, initialEdges, onNodeClick }: GraphCa
             data: { ...n.data, onToggle: onNodeToggle },
         }));
 
-        // Initial Layout (Safety)
-        const layouted = getLayoutedElements(nodesWithHandler, initialEdges);
+        // Layout calculation based on Mode
+        const layouted = getLayoutedElements(nodesWithHandler, initialEdges, 'TB', viewMode);
         setNodes(layouted.nodes);
         setEdges(layouted.edges);
-    }, [initialNodes, initialEdges, setNodes, setEdges, onNodeToggle]);
+
+        // Fit view after layout change
+        setTimeout(() => rfInstance?.fitView({ duration: 800 }), 50);
+
+    }, [initialNodes, initialEdges, setNodes, setEdges, onNodeToggle, viewMode, rfInstance]);
 
     const onConnect = useCallback(
         (params: Connection) => setEdges((eds) => addEdge(params, eds)),
@@ -182,6 +284,8 @@ export function GraphCanvas({ initialNodes, initialEdges, onNodeClick }: GraphCa
                 onEdgesChange={onEdgesChange}
                 onConnect={onConnect}
                 onNodeClick={handleNodeClick} // Use the new handler
+                onNodeDragStart={onNodeDragStart} // Start Smart Highlight
+                onNodeDragStop={onNodeDragStop} // Enable DND Assignment & Reset
                 onPaneClick={handlePaneClick} // Add pane click handler
                 onInit={setRfInstance} // Initialize rfInstance
                 className="bg-bg-canvas"
@@ -198,6 +302,18 @@ export function GraphCanvas({ initialNodes, initialEdges, onNodeClick }: GraphCa
                 }}
                 minZoom={0.1}
             >
+                <DiscoveryBar
+                    nodes={nodes}
+                    onResultSelect={(res) => {
+                        // Focus on selected node
+                        const node = nodes.find(n => n.id === res.id);
+                        if (node && rfInstance) {
+                            rfInstance.fitView({ nodes: [{ id: node.id }], padding: 0.5, duration: 800 });
+                        }
+                    }}
+                    viewMode={viewMode}
+                    onViewModeChange={setViewMode}
+                />
                 <Controls className="bg-bg-panel border-border-color fill-text-primary" />
                 <MiniMap
                     className="bg-bg-panel border border-border-color"

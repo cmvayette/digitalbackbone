@@ -1,30 +1,96 @@
-import { Handle, Position } from '@xyflow/react';
-import type { NodeProps } from '@xyflow/react';
+import { Handle, Position, useStore } from '@xyflow/react';
+import type { NodeProps, ReactFlowState } from '@xyflow/react';
 import type { GraphNode } from '../../types/graph';
 import clsx from 'clsx';
+import { CheckCircle2, AlertTriangle } from 'lucide-react';
 
-
+const zoomSelector = (s: ReactFlowState) => s.transform[2];
 
 export function PositionNode({ data }: NodeProps<GraphNode>) {
+    const zoom = useStore(zoomSelector);
+
+    // Zoom Levels
+    const showDetails = zoom >= 0.8;
+    const showBasic = zoom >= 0.4;
+    // < 0.4 shows only color block
+
     const roleTitle = data.label || 'Unknown Position';
     const personName = data.subtitle || 'Vacant';
     const isVacant = data.isVacant;
-    // Heuristic for "Functional" vs "Billet" - can be refined with data props
     const isFunctional = data.type === 'position' && (roleTitle.includes('Lead') || roleTitle.includes('Liaison') || data.label.includes('Lead'));
 
+    // Highlight Status
+    const highlight = data.highlightStatus;
+    const isCompatible = highlight === 'compatible';
+    const isIncompatible = highlight === 'incompatible';
+
+    // Base classes
+    const isDimmed = data.isDimmed;
+    const dimmingClass = isDimmed ? "opacity-20 grayscale blur-[1px] pointer-events-none" : "opacity-100 grayscale-0 shadow-lg";
+
+    const cardBase = clsx(
+        "border rounded flex flex-col overflow-hidden transition-all duration-500 relative",
+        dimmingClass
+    );
+
+    const mannedClasses = "bg-bg-panel border-slate-700";
+
+    // Vacant base classes - handle highlighting
+    const vacantDefault = "bg-bg-surface/50 border-dashed border-slate-700/50 opacity-90";
+    const vacantCompatible = "bg-green-900/40 border-dashed border-accent-green ring-2 ring-accent-green/50 shadow-[0_0_15px_rgba(16,185,129,0.3)] opacity-100 scale-105 z-10";
+
+    // "Risky" / Incompatible but Droppable style
+    const vacantIncompatible = "bg-orange-900/10 border-dashed border-orange-500/70 ring-2 ring-orange-500/20 opacity-100 z-10";
+
+    const vacantClasses = isCompatible ? vacantCompatible : (isIncompatible ? vacantIncompatible : vacantDefault);
+
+    // LOD 0: Minimal Block (Zoom < 0.4)
+    if (!showBasic) {
+        return (
+            <div className={clsx("w-4 h-4 rounded-sm", isVacant ? (isCompatible ? "bg-accent-green" : "bg-slate-700 border border-slate-600") : "bg-accent-blue border border-blue-500")}>
+                <Handle type="target" position={Position.Top} className="!bg-slate-600 !w-1 !h-1 opacity-0" />
+                <Handle type="source" position={Position.Bottom} className="!bg-slate-600 !w-1 !h-1 opacity-0" />
+            </div>
+        );
+    }
+
+    // LOD 1: Basic Info (Zoom 0.4 - 0.8)
+    if (!showDetails) {
+        return (
+            <div className={clsx("w-52 p-2 text-xs", cardBase, isVacant ? vacantClasses : mannedClasses)}>
+                <Handle type="target" position={Position.Top} className="!bg-slate-600 !w-2 !h-2" />
+                <div className="flex items-center justify-between">
+                    <div className="font-bold truncate max-w-[80%]">{roleTitle}</div>
+                    {isCompatible && <CheckCircle2 size={12} className="text-accent-green animate-pulse" />}
+                    {isIncompatible && <AlertTriangle size={12} className="text-orange-500" />}
+                </div>
+                <div className="text-text-secondary truncate">{personName}</div>
+                <Handle type="source" position={Position.Bottom} className="!bg-slate-600 !w-2 !h-2" />
+            </div>
+        );
+    }
+
+    // LOD 2: Full Detail (Zoom >= 0.8)
     // properties mapping
     const rank = data.properties?.rank || (isVacant ? 'Est. O-3 / GS-12' : 'Unknown Rank');
     const reportsTo = data.properties?.reportsTo || 'N/A';
     const location = data.properties?.location || 'Bldg 401, Coronado';
     const status = isVacant ? 'Open for 14 Days' : 'Active';
 
-    // Base classes
-    const cardBase = "w-[350px] border rounded flex flex-col overflow-hidden transition-colors duration-200 shadow-sm hover:shadow p-3";
-    const mannedClasses = "bg-bg-panel border-slate-700";
-    const vacantClasses = "bg-bg-surface/50 border-dashed border-slate-700/50 opacity-90"; // Ghost state softened
-
     return (
-        <div className={clsx(cardBase, isVacant ? vacantClasses : mannedClasses)}>
+        <div className={clsx("w-96 p-3", cardBase, isVacant ? vacantClasses : mannedClasses)}>
+            {/* Feedback Icon Overlay */}
+            {isCompatible && (
+                <div className="absolute top-2 right-2 text-accent-green animate-pulse bg-bg-panel/80 rounded-full p-1 border border-accent-green">
+                    <CheckCircle2 size={20} />
+                </div>
+            )}
+            {isIncompatible && (
+                <div className="absolute top-2 right-2 text-orange-500 bg-bg-panel/80 rounded-full p-1 border border-orange-500">
+                    <AlertTriangle size={20} />
+                </div>
+            )}
+
             <Handle type="target" position={Position.Top} className="!bg-slate-600 !w-2 !h-2" />
 
             {/* Header */}

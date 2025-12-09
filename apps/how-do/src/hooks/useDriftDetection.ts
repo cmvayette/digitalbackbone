@@ -1,11 +1,13 @@
 import { useMemo } from 'react';
 import type { Process } from '../types/process';
-import mockPolicy from '../mocks/mock-policy.json';
+import { useExternalPolicyData } from '@som/api-client';
+import { useExternalOrgData } from '@som/api-client';
 
 export enum DriftType {
     PolicyUpdate = 'POLICY_UPDATE',
     MissingObligation = 'MISSING_OBLIGATION',
-    Deprecated = 'DEPRECATED'
+    Deprecated = 'DEPRECATED',
+    OrphanedOwner = 'ORPHANED_OWNER'
 }
 
 export interface DriftIssue {
@@ -17,12 +19,30 @@ export interface DriftIssue {
 }
 
 export const useDriftDetection = (process: Process) => {
+    // Hooks for external context
+    const { obligations: policyObligations } = useExternalPolicyData();
+    const { getCandidates, isLoading: isOrgLoading } = useExternalOrgData();
+
     const issues = useMemo(() => {
         const detectedIssues: DriftIssue[] = [];
-        const policyObligations = mockPolicy.policies.obligations;
+
+        // Avoid drift checks if context is still loading
+        if (isOrgLoading) return [];
+
+        const validOwners = getCandidates().map(c => c.id);
 
         // 1. Check for linked obligations that don't exist anymore or have changed
         process.properties.steps.forEach(step => {
+            // A. Check for Structural Drift (Orphaned Steps)
+            if (step.owner && !validOwners.includes(step.owner) && !step.owner.startsWith('agent-')) {
+                detectedIssues.push({
+                    type: DriftType.OrphanedOwner,
+                    stepId: step.id,
+                    message: `Step "${step.title}" is owned by "${step.owner}", which no longer exists in the Org Chart.`,
+                    severity: 'high'
+                });
+            }
+
             if (!step.obligations) return;
 
             step.obligations.forEach(link => {
@@ -37,9 +57,6 @@ export const useDriftDetection = (process: Process) => {
                         severity: 'high'
                     });
                 }
-                // In a real app, we'd check versions or hash of content. 
-                // For mock, we simply check if criticality changed as a proxy for "update"
-                // or if we had stored the original text and it differs.
             });
         });
 
@@ -69,7 +86,7 @@ export const useDriftDetection = (process: Process) => {
         });
 
         return detectedIssues;
-    }, [process]);
+    }, [process, policyObligations, getCandidates, isOrgLoading]);
 
     return { issues, hasDrift: issues.length > 0 };
 };

@@ -3,15 +3,19 @@ import { User, Shield, Award } from 'lucide-react';
 import { useState } from 'react';
 import { useOrgStore } from '../../store/orgStore';
 import type { Position } from '../../types/domain';
-import { AssignPersonModal } from '../modals/AssignPersonModal';
+import { RosterBuilderPanel } from './RosterBuilderPanel';
 
 export function PositionSidebar({ node }: { node: Node }) {
     const position = node.data.properties as Position;
-    const { people, assignPerson } = useOrgStore();
-    const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
+    const { people } = useOrgStore();
+    const [isRosterBuilderOpen, setIsRosterBuilderOpen] = useState(false);
 
     const occupant = position.properties.assignedPersonId ? people.find(p => p.id === position.properties.assignedPersonId) : null;
     const isVacant = position.properties.state === 'vacant';
+
+    if (isRosterBuilderOpen) {
+        return <RosterBuilderPanel position={position} onClose={() => setIsRosterBuilderOpen(false)} />;
+    }
 
     return (
         <div className="flex flex-col h-full bg-bg-panel text-text-primary">
@@ -57,13 +61,18 @@ export function PositionSidebar({ node }: { node: Node }) {
                         <Shield size={12} /> Requirements
                     </h3>
                     <ul className="text-sm space-y-3">
-                        {position.properties.qualifications.map((qual, idx) => (
-                            <li key={idx} className="flex items-center gap-2 text-text-primary">
-                                <div className="w-1.5 h-1.5 rounded-full bg-accent-blue" />
-                                {qual}
+                        {position.properties.qualifications?.map((qual, idx) => (
+                            <li key={idx} className="flex flex-col gap-1 text-text-primary">
+                                <div className="flex items-center gap-2">
+                                    <div className={`w-1.5 h-1.5 rounded-full ${qual.strictness === 'mandatory' ? 'bg-red-400' : 'bg-accent-blue'}`} />
+                                    <span>{qual.name}</span>
+                                </div>
+                                <span className="text-[10px] text-text-secondary ml-3.5 block">
+                                    Source: {qual.source}
+                                </span>
                             </li>
                         ))}
-                        {position.properties.qualifications.length === 0 && (
+                        {(!position.properties.qualifications || position.properties.qualifications.length === 0) && (
                             <li className="text-text-secondary italic">No specific qualifications listed.</li>
                         )}
                     </ul>
@@ -74,7 +83,7 @@ export function PositionSidebar({ node }: { node: Node }) {
                     <section className="mt-6 border-t border-border-color pt-6">
                         <h3 className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-3">Management</h3>
                         <button
-                            onClick={() => setIsAssignModalOpen(true)}
+                            onClick={() => setIsRosterBuilderOpen(true)}
                             className="w-full py-2 bg-accent-blue text-bg-panel rounded font-bold text-sm hover:bg-blue-400 transition-colors flex items-center justify-center gap-2 shadow-lg shadow-blue-900/20"
                         >
                             <Award size={16} />
@@ -83,13 +92,6 @@ export function PositionSidebar({ node }: { node: Node }) {
                     </section>
                 )}
             </div>
-
-            <AssignPersonModal
-                isOpen={isAssignModalOpen}
-                onClose={() => setIsAssignModalOpen(false)}
-                onSubmit={(name, rank) => assignPerson(node.id, name, rank)}
-                positionTitle={position.properties.title}
-            />
         </div>
     );
 }

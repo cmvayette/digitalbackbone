@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { Shield, Check, Search, Plus, X } from 'lucide-react';
-import mockPolicy from '../../mocks/mock-policy.json';
+import { useExternalPolicyData } from '@som/api-client';
 
 // Define types based on mock-policy.json structure
 interface Obligation {
     id: string;
     statement: string;
     assignedTo: string;
-    sourceDocId: string;
+    // sourceDocId: string; // Not in shared type currently?
     criticality: 'high' | 'medium' | 'low';
 }
 
@@ -27,7 +27,7 @@ export const ObligationLinker: React.FC<ObligationLinkerProps> = ({
     const [searchTerm, setSearchTerm] = useState('');
     const [isOpen, setIsOpen] = useState(false);
 
-    const obligations = mockPolicy.policies.obligations as Obligation[];
+    const { obligations } = useExternalPolicyData();
 
     const filteredObligations = obligations.filter(obl =>
         obl.statement.toLowerCase().includes(searchTerm.toLowerCase()) ||

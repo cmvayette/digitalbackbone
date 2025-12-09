@@ -43,17 +43,22 @@ async function startServer() {
     console.log(`Event Store initialized at ${dbPath}`);
 
     // 2. Core Engines (Base)
-    const documentRegistry = new DocumentRegistry(eventStore);
+    const documentRegistry = new DocumentRegistry();
     const projectionEngine = new StateProjectionEngine(eventStore);
     const graphStore = new GraphStore(projectionEngine);
     const constraintEngine = new ConstraintEngine(documentRegistry);
+
+    // Load Default Constraints
+    const { loadDefaultConstraints } = await import('./constraint-engine/default-constraints');
+    loadDefaultConstraints(constraintEngine);
+
     const schemaVersioning = new SchemaVersioningEngine(); // No args
-    const monitoring = new MonitoringService(eventStore);
+    const monitoring = new MonitoringService();
 
     // 3. Registries
     // Use InMemoryHolonRepository as the concrete implementation
     const holonRegistry = new InMemoryHolonRepository();
-    const relationshipRegistry = new RelationshipRegistry(eventStore, constraintEngine, graphStore);
+    const relationshipRegistry = new RelationshipRegistry(constraintEngine, eventStore);
 
     // 4. Logic Engines (Composite)
     const temporalQueryEngine = new TemporalQueryEngine(eventStore, projectionEngine, holonRegistry, relationshipRegistry);
@@ -61,8 +66,8 @@ async function startServer() {
 
     // 5. Access Layers (Aggregation)
     const queryLayer = new QueryLayer(temporalQueryEngine, graphStore, accessControl, eventStore);
-    const semanticAccessLayer = new SemanticAccessLayer(eventStore, holonRegistry, relationshipRegistry);
-    const governance = new GovernanceEngine(eventStore, documentRegistry);
+    const semanticAccessLayer = new SemanticAccessLayer(eventStore, constraintEngine, holonRegistry, documentRegistry);
+    const governance = new GovernanceEngine(documentRegistry, schemaVersioning);
 
     // 3. API Server (The "Brain")
     const apiServer = new APIServer(

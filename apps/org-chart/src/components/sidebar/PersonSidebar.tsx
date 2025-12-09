@@ -41,7 +41,7 @@ export function PersonSidebar({ node }: { node: Node }) {
                     </div>
                 </section>
 
-                {/* Affiliations */}
+                {/* Content */}
                 <section>
                     <h3 className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-3 flex items-center gap-2">
                         <Shield size={12} /> Assignments
@@ -53,6 +53,23 @@ export function PersonSidebar({ node }: { node: Node }) {
                                 {person.properties.primaryPositionId ? 'Assigned' : 'Unassigned'}
                             </span>
                         </div>
+
+                        {/* Current Task Load Meter */}
+                        <div className="p-3 bg-bg-surface border border-border-color rounded">
+                            <div className="flex justify-between items-end mb-1">
+                                <span className="text-xs text-text-secondary">Current Task Load</span>
+                                <span className={`text-sm font-bold ${person.properties.workLoad > 90 ? 'text-red-400' : 'text-text-primary'}`}>
+                                    {person.properties.workLoad}%
+                                </span>
+                            </div>
+                            <div className="w-full h-2 bg-bg-canvas rounded-full overflow-hidden">
+                                <div
+                                    className={`h-full rounded-full ${person.properties.workLoad > 90 ? 'bg-red-500' : person.properties.workLoad > 70 ? 'bg-yellow-500' : 'bg-green-500'}`}
+                                    style={{ width: `${Math.min(person.properties.workLoad, 100)}%` }}
+                                />
+                            </div>
+                        </div>
+
                         {person.properties.tigerTeamIds.length > 0 && (
                             <div className="p-3 bg-bg-surface border border-border-color rounded">
                                 <span className="text-xs text-text-secondary block mb-1">Tiger Teams</span>

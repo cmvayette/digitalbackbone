@@ -35,13 +35,36 @@ const ProcessListItem: React.FC<{ process: Process; onSelect: (p: Process) => vo
 };
 
 export const ProcessSearch: React.FC<ProcessSearchProps> = ({ onSelectProcess }) => {
-    const { processes } = useExternalProcessData();
+    const { processes, searchProcesses, isLoading } = useExternalProcessData();
     const [searchTerm, setSearchTerm] = useState('');
+    const [searchResults, setSearchResults] = useState<Process[] | null>(null);
+    const [isSearching, setIsSearching] = useState(false);
 
-    const filteredProcesses = processes.filter(p =>
-        p.properties.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        p.properties.description?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    // Initial load
+    React.useEffect(() => {
+        setSearchResults(processes);
+    }, [processes]);
+
+    // Debounced search
+    React.useEffect(() => {
+        const timer = setTimeout(async () => {
+            if (searchTerm.trim()) {
+                setIsSearching(true);
+                try {
+                    const results = await searchProcesses(searchTerm);
+                    setSearchResults(results);
+                } finally {
+                    setIsSearching(false);
+                }
+            } else {
+                setSearchResults(processes);
+            }
+        }, 300); // 300ms debounce
+
+        return () => clearTimeout(timer);
+    }, [searchTerm, processes, searchProcesses]);
+
+    const displayProcesses = searchResults || processes;
 
     return (
         <div className="process-search p-4">
@@ -55,9 +78,15 @@ export const ProcessSearch: React.FC<ProcessSearchProps> = ({ onSelectProcess })
                 autoFocus
             />
 
+            {(isLoading || isSearching) && (
+                <div className="flex justify-center mb-4"><span className="text-slate-400 text-sm">Searching...</span></div>
+            )}
+
             <div className="results-list">
-                {filteredProcesses.length === 0 && <p className="text-slate-500">No processes found.</p>}
-                {filteredProcesses.map(process => (
+                {displayProcesses.length === 0 && !isLoading && !isSearching && (
+                    <p className="text-slate-500">No processes found.</p>
+                )}
+                {displayProcesses.map(process => (
                     <ProcessListItem key={process.id} process={process} onSelect={onSelectProcess} />
                 ))}
             </div>

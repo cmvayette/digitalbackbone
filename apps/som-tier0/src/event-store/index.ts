@@ -13,7 +13,7 @@ import { randomUUID } from 'crypto';
 import { IEventStore, EventFilter } from '../core/interfaces/event-store';
 
 export { IEventStore, EventFilter };
-export { InMemoryEventStore } from './index'; // Keep old one just in case
+// export { InMemoryEventStore } from './index'; // Removed duplicate
 export { SQLiteEventStore } from './sqlite-store';
 
 

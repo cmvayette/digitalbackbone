@@ -6,9 +6,11 @@ import type { Node } from '@xyflow/react';
 interface DiscoveryBarProps {
     nodes: Node[];
     onResultSelect: (result: SearchResult) => void;
+    viewMode: 'reporting' | 'mission';
+    onViewModeChange: (mode: 'reporting' | 'mission') => void;
 }
 
-export function DiscoveryBar({ nodes, onResultSelect }: DiscoveryBarProps) {
+export function DiscoveryBar({ nodes, onResultSelect, viewMode, onViewModeChange }: DiscoveryBarProps) {
     const [query, setQuery] = useState('');
     const [isFocused, setIsFocused] = useState(false);
     const [filters, setFilters] = useState<SearchFilters>({ vacant: false, tigerTeams: false });
@@ -70,7 +72,6 @@ export function DiscoveryBar({ nodes, onResultSelect }: DiscoveryBarProps) {
                     className="flex-1 bg-transparent border-none outline-none text-slate-50 placeholder:text-slate-500 text-sm h-full"
                 />
 
-                {/* Clear / Filter Actions */}
                 <div className="flex items-center gap-2">
                     {query && (
                         <button onClick={() => setQuery('')} className="text-slate-500 hover:text-white transition-colors">
@@ -79,6 +80,24 @@ export function DiscoveryBar({ nodes, onResultSelect }: DiscoveryBarProps) {
                     )}
                 </div>
             </div>
+
+            {/* View Mode Toggles */}
+            {!isFocused && !query && (
+                <div className="absolute -bottom-10 flex gap-2">
+                    <button
+                        onClick={() => onViewModeChange('reporting')}
+                        className={`text-[10px] uppercase font-bold tracking-wider px-3 py-1 rounded-full border transition-colors ${viewMode === 'reporting' ? 'bg-accent-blue text-white border-blue-400' : 'bg-bg-surface text-text-secondary border-border-color hover:border-slate-500'}`}
+                    >
+                        Reporting
+                    </button>
+                    <button
+                        onClick={() => onViewModeChange('mission')}
+                        className={`text-[10px] uppercase font-bold tracking-wider px-3 py-1 rounded-full border transition-colors ${viewMode === 'mission' ? 'bg-accent-orange text-white border-orange-400' : 'bg-bg-surface text-text-secondary border-border-color hover:border-slate-500'}`}
+                    >
+                        Mission
+                    </button>
+                </div>
+            )}
 
             {/* Filter Chips (Visible when focused or filtering) */}
             {(isFocused || filters.vacant || filters.tigerTeams) && (

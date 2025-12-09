@@ -15,33 +15,51 @@
 
 :root {
   /* Background colors */
-  --bg-canvas: #0f172a;      /* slate-900 - main dark background */
-  --bg-panel: #1e293b;       /* slate-800 - sidebar/card background */
-  --bg-surface: #334155;     /* slate-700 - elevated surfaces */
-  --bg-hover: #475569;       /* slate-600 - hover states */
+  --bg-canvas: #0f172a;
+  /* slate-900 - main dark background */
+  --bg-panel: #1e293b;
+  /* slate-800 - sidebar/card background */
+  --bg-surface: #334155;
+  /* slate-700 - elevated surfaces */
+  --bg-hover: #475569;
+  /* slate-600 - hover states */
 
   /* Border colors */
-  --border-color: #475569;   /* slate-600 - default borders */
-  --border-subtle: #334155;  /* slate-700 - subtle borders */
-  --border-focus: #3b82f6;   /* blue-500 - focus rings */
+  --border-color: #475569;
+  /* slate-600 - default borders */
+  --border-subtle: #334155;
+  /* slate-700 - subtle borders */
+  --border-focus: #3b82f6;
+  /* blue-500 - focus rings */
 
   /* Text colors */
-  --text-primary: #f8fafc;   /* slate-50 - primary text */
-  --text-secondary: #94a3b8; /* slate-400 - secondary text */
-  --text-muted: #64748b;     /* slate-500 - muted text */
-  --text-inverse: #0f172a;   /* slate-900 - text on light backgrounds */
+  --text-primary: #f8fafc;
+  /* slate-50 - primary text */
+  --text-secondary: #94a3b8;
+  /* slate-400 - secondary text */
+  --text-muted: #64748b;
+  /* slate-500 - muted text */
+  --text-inverse: #0f172a;
+  /* slate-900 - text on light backgrounds */
 
   /* Accent colors (functional only) */
-  --accent-green: #10b981;   /* emerald-500 - healthy/success */
-  --accent-yellow: #f59e0b;  /* amber-500 - warning/at-risk */
-  --accent-red: #ef4444;     /* red-500 - error/critical */
-  --accent-blue: #3b82f6;    /* blue-500 - info/links */
-  --accent-orange: #f97316;  /* orange-500 - positions */
-  --accent-purple: #a855f7;  /* purple-500 - special/tiger teams */
+  --accent-green: #10b981;
+  /* emerald-500 - healthy/success */
+  --accent-yellow: #f59e0b;
+  /* amber-500 - warning/at-risk */
+  --accent-red: #ef4444;
+  /* red-500 - error/critical */
+  --accent-blue: #3b82f6;
+  /* blue-500 - info/links */
+  --accent-orange: #f97316;
+  /* orange-500 - positions */
+  --accent-purple: #a855f7;
+  /* purple-500 - special/tiger teams */
 
-  /* Typography */
-  --font-sans: ui-sans-serif, system-ui, sans-serif;
-  --font-mono: ui-monospace, 'Cascadia Code', 'Source Code Pro', monospace;
+  --font-ui: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-sans: var(--font-ui);
+  /* Alias for backward compatibility */
+  --font-mono: "JetBrains Mono", ui-monospace, 'Cascadia Code', 'Source Code Pro', monospace;
 
   /* Sizing */
   --radius-sm: 4px;
@@ -67,6 +85,15 @@
   background-color: var(--bg-canvas);
   color: var(--text-primary);
   min-height: 100vh;
+}
+
+/* High-DPI Scaling Mitigation */
+/* Reduces root size to prevent cramping on 125%+ scaled displays */
+@media (-webkit-min-device-pixel-ratio: 1.25),
+(min-resolution: 120dpi) {
+  html {
+    font-size: 90%;
+  }
 }
 
 /* ================================
@@ -172,10 +199,21 @@
   flex-shrink: 0;
 }
 
-.som-health-dot--healthy { background-color: var(--accent-green); }
-.som-health-dot--at-risk { background-color: var(--accent-yellow); }
-.som-health-dot--critical { background-color: var(--accent-red); }
-.som-health-dot--unknown { background-color: var(--text-muted); }
+.som-health-dot--healthy {
+  background-color: var(--accent-green);
+}
+
+.som-health-dot--at-risk {
+  background-color: var(--accent-yellow);
+}
+
+.som-health-dot--critical {
+  background-color: var(--accent-red);
+}
+
+.som-health-dot--unknown {
+  background-color: var(--text-muted);
+}
 
 /* ================================
    Component: Search Bar
@@ -336,7 +374,9 @@
 }
 
 @keyframes som-spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* ================================
@@ -366,20 +406,54 @@
    Utility Classes
    ================================ */
 
-.som-text-primary { color: var(--text-primary); }
-.som-text-secondary { color: var(--text-secondary); }
-.som-text-muted { color: var(--text-muted); }
+.som-text-primary {
+  color: var(--text-primary);
+}
 
-.som-bg-canvas { background-color: var(--bg-canvas); }
-.som-bg-panel { background-color: var(--bg-panel); }
-.som-bg-surface { background-color: var(--bg-surface); }
+.som-text-secondary {
+  color: var(--text-secondary);
+}
 
-.som-border { border: var(--line-width) solid var(--border-color); }
-.som-border-subtle { border: var(--line-width) solid var(--border-subtle); }
+.som-text-muted {
+  color: var(--text-muted);
+}
 
-.som-rounded { border-radius: var(--radius-md); }
-.som-rounded-sm { border-radius: var(--radius-sm); }
-.som-rounded-lg { border-radius: var(--radius-lg); }
+.som-bg-canvas {
+  background-color: var(--bg-canvas);
+}
 
-.som-shadow { box-shadow: var(--shadow-md); }
-.som-shadow-lg { box-shadow: var(--shadow-lg); }
+.som-bg-panel {
+  background-color: var(--bg-panel);
+}
+
+.som-bg-surface {
+  background-color: var(--bg-surface);
+}
+
+.som-border {
+  border: var(--line-width) solid var(--border-color);
+}
+
+.som-border-subtle {
+  border: var(--line-width) solid var(--border-subtle);
+}
+
+.som-rounded {
+  border-radius: var(--radius-md);
+}
+
+.som-rounded-sm {
+  border-radius: var(--radius-sm);
+}
+
+.som-rounded-lg {
+  border-radius: var(--radius-lg);
+}
+
+.som-shadow {
+  box-shadow: var(--shadow-md);
+}
+
+.som-shadow-lg {
+  box-shadow: var(--shadow-lg);
+}

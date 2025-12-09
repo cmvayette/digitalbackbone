@@ -13,6 +13,8 @@ import { validateProcess, ValidationIssue } from '../utils/ProcessValidator';
 import { AlertTriangle, AlertCircle } from 'lucide-react';
 import { DriftAlert } from './alerts/DriftAlert';
 import { useDriftDetection } from '../hooks/useDriftDetection';
+import { EditStepModal } from './editor/EditStepModal';
+import { Edit2 } from 'lucide-react';
 
 interface SwimlaneEditorProps {
     initialProcess?: Process;
@@ -46,7 +48,8 @@ export const SwimlaneEditor: React.FC<SwimlaneEditorProps> = ({ initialProcess, 
         }
     });
 
-    const [editingStepId, setEditingStepId] = useState<string | null>(null);
+    const [editingStepId, setEditingStepId] = useState<string | null>(null); // For Owner Picker
+    const [detailsEditingStepId, setDetailsEditingStepId] = useState<string | null>(null); // For Modal
     const [validationIssues, setValidationIssues] = useState<ValidationIssue[]>([]);
 
     const sensors = useSensors(
@@ -109,6 +112,30 @@ export const SwimlaneEditor: React.FC<SwimlaneEditorProps> = ({ initialProcess, 
                 steps: [...prev.properties.steps, newStep]
             }
         }));
+    };
+
+    const updateStepDetails = (updatedStep: ProcessStep) => {
+        setProcess((prev: Process) => ({
+            ...prev,
+            properties: {
+                ...prev.properties,
+                steps: prev.properties.steps.map(step =>
+                    step.id === updatedStep.id ? updatedStep : step
+                )
+            }
+        }));
+        setDetailsEditingStepId(null);
+    };
+
+    const deleteStep = (stepId: string) => {
+        setProcess((prev: Process) => ({
+            ...prev,
+            properties: {
+                ...prev.properties,
+                steps: prev.properties.steps.filter(step => step.id !== stepId)
+            }
+        }));
+        setDetailsEditingStepId(null);
     };
 
     // Drift Detection
@@ -216,7 +243,7 @@ export const SwimlaneEditor: React.FC<SwimlaneEditorProps> = ({ initialProcess, 
 
                             return (
                                 <SortableStep key={step.id} id={step.id}>
-                                    <div className={`swimlane-column min-w-[320px] p-2 rounded ${hasError ? 'bg-red-900/10 border border-red-900/50' : ''}`}>
+                                    <div className={`swimlane-column min-w-[320px] p-2 rounded relative group ${hasError ? 'bg-red-900/10 border border-red-900/50' : ''}`}>
                                         <div className="swimlane-header flex justify-between items-center mb-2">
                                             <div className={`role-badge ${isAgent ? 'agent-badge' : ''} text-xs font-mono bg-slate-800 px-2 py-1 rounded`}>
                                                 {ownerName}
@@ -239,6 +266,16 @@ export const SwimlaneEditor: React.FC<SwimlaneEditorProps> = ({ initialProcess, 
                                                     </button>
                                                 )}
                                             </div>
+                                        </div>
+
+                                        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <button
+                                                onClick={() => setDetailsEditingStepId(step.id)}
+                                                className="bg-slate-800 p-1.5 rounded-full text-slate-400 hover:text-white hover:bg-slate-700 border border-slate-600"
+                                                title="Edit Details"
+                                            >
+                                                <Edit2 size={12} />
+                                            </button>
                                         </div>
 
                                         <StepCard
@@ -269,6 +306,15 @@ export const SwimlaneEditor: React.FC<SwimlaneEditorProps> = ({ initialProcess, 
                     </SortableContext>
                 </div>
             </DndContext>
+
+            {detailsEditingStepId && (
+                <EditStepModal
+                    step={process.properties.steps.find(s => s.id === detailsEditingStepId)!}
+                    onSave={updateStepDetails}
+                    onCancel={() => setDetailsEditingStepId(null)}
+                    onDelete={deleteStep}
+                />
+            )}
         </div>
     );
 };

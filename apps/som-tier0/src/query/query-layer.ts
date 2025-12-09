@@ -272,6 +272,17 @@ export class QueryLayer {
             label = holon.properties.name || 'Unknown Process';
             subtitle = holon.properties.description?.substring(0, 50);
             if (label.toLowerCase().includes(term)) matchScore += 10;
+            if (holon.properties.description?.toLowerCase().includes(term)) matchScore += 5;
+
+            // Search Steps
+            if (holon.properties.steps && Array.isArray(holon.properties.steps)) {
+              for (const step of holon.properties.steps) {
+                if (step.title?.toLowerCase().includes(term) || step.description?.toLowerCase().includes(term)) {
+                  matchScore += 3; // Lower score for step match vs title match
+                  if (!subtitle) subtitle = `Matches step: ${step.title}`;
+                }
+              }
+            }
             break;
           default:
             // Generic fallback

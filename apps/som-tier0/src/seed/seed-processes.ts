@@ -40,7 +40,7 @@ async function seedProcesses() {
 
     const store = new SQLiteEventStore(dbPath);
     // Initialize to ensure tables/indices exist (though we assume bootstrap ran)
-    await store.initialize();
+    // await store.initialize(); // private method, handled by constructor/lazy init
 
     let count = 0;
 

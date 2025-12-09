@@ -17,23 +17,21 @@ export const SwimlaneViewer: React.FC<SwimlaneViewerProps> = ({ process, onEdit,
 
     // Helper to resolve owner names (Agents or Positions)
     const resolveOwnerName = (ownerId: string): { name: string; isAgent: boolean } => {
-        // In this MVP, we assume Org/Position IDs are distinct.
-        // Also, we don't have a direct "Agent" types in the Org hook yet,
-        // so we'll check if the ownerId is an "Agent" ID pattern or rely on getCandidates()
-        // For now, let's just search the candidates list.
         const candidates = getCandidates();
         const found = candidates.find(c => c.id === ownerId);
-
-        // Simulating "Agent" detection by ID convention or type if we had it.
-        // Real app would have a dedicated separate "Agents" hook or merged directory.
-        // For MVP, if it starts with 'agent-', it's an agent.
-        const isAgent = ownerId.startsWith('agent-');
+        const isAgent = ownerId.startsWith('agent-'); // Simple heuristic
 
         return {
             name: found ? found.name : ownerId,
             isAgent
         };
     };
+
+    // 1. Identify Unique Owners (Rows)
+    const uniqueOwners = Array.from(new Set(process.properties.steps.map(s => s.owner)));
+
+    // Sort owners? Maybe Agents first, or just appearance order. Appearance order preserves flow logic better usually.
+    // uniqueOwners.sort(); 
 
     return (
         <div className="swimlane-editor">
@@ -45,35 +43,66 @@ export const SwimlaneViewer: React.FC<SwimlaneViewerProps> = ({ process, onEdit,
                 </div>
             </div>
 
-            <div className="canvas">
-                {process.properties.steps.map((step, index) => {
-                    const obligations = getObligationsForOwner(step.owner);
-                    const { name: ownerName, isAgent } = resolveOwnerName(step.owner);
-
-                    return (
-                        <div key={step.id} className="swimlane-column">
-                            <div className="swimlane-header">
-                                <div className={`role-badge ${isAgent ? 'agent-badge' : ''}`}>
-                                    {ownerName}
-                                    {isAgent && " 🤖"}
+            <div className="swimlane-container">
+                <div
+                    className="swimlane-grid"
+                    style={{
+                        gridTemplateColumns: `250px repeat(${process.properties.steps.length}, 320px)`, // Header + 1 col per step
+                        gridTemplateRows: `repeat(${uniqueOwners.length}, auto)`
+                    }}
+                >
+                    {/* Render Lane Headers */}
+                    {uniqueOwners.map((ownerId, rowIndex) => {
+                        const { name, isAgent } = resolveOwnerName(ownerId);
+                        return (
+                            <div
+                                key={`lane-${ownerId}`}
+                                className="lane-header"
+                                style={{ gridRow: rowIndex + 1, gridColumn: 1 }}
+                            >
+                                <div className={`lane-title ${isAgent ? 'agent-badge' : ''}`}>
+                                    {isAgent ? "🤖 " : "👤 "}
+                                    {name}
                                 </div>
                             </div>
+                        );
+                    })}
 
-                            <StepCard
-                                step={step}
-                                index={index}
-                                ownerName={ownerName}
-                                isAgent={isAgent}
-                                obligations={obligations as any}
-                                viewMode="swimlane"
-                            />
+                    {/* Render Steps */}
+                    {process.properties.steps.map((step, index) => {
+                        const ownerIndex = uniqueOwners.indexOf(step.owner);
+                        const obligations = getObligationsForOwner(step.owner);
+                        const { name: ownerName, isAgent } = resolveOwnerName(step.owner);
 
-                            {index < process.properties.steps.length - 1 && (
-                                <div className="connector-arrow">→</div>
-                            )}
-                        </div>
-                    );
-                })}
+                        // Step Column = index + 2 (1 for header, then 1-based index)
+                        const colStart = index + 2;
+
+                        return (
+                            <div
+                                key={step.id}
+                                className="step-wrapper"
+                                style={{
+                                    gridRow: ownerIndex + 1,
+                                    gridColumn: colStart
+                                }}
+                            >
+                                <StepCard
+                                    step={step}
+                                    index={index}
+                                    ownerName={ownerName}
+                                    isAgent={isAgent}
+                                    obligations={obligations as any}
+                                    viewMode="swimlane"
+                                />
+
+                                {/* Simple connector to next step if there is one */}
+                                {index < process.properties.steps.length - 1 && (
+                                    <div className="connector-line"></div>
+                                )}
+                            </div>
+                        );
+                    })}
+                </div>
             </div>
         </div>
     );

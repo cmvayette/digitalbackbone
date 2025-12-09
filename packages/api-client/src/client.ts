@@ -58,6 +58,7 @@ export interface SearchResult {
   name: string;
   description?: string;
   score: number;
+  properties?: any;
 }
 
 /**
