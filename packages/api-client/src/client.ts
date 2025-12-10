@@ -12,6 +12,7 @@ import {
   Event,
   EventType,
   TypedEvent,
+  GovernanceConfig,
 } from '@som/shared-types';
 
 /**
@@ -137,6 +138,10 @@ export interface ISOMClient {
   getTasksForPosition(positionId: HolonID, status?: string): Promise<APIResponse<Holon[]>>;
   getObjectivesForLOE(loeId: HolonID): Promise<APIResponse<Holon[]>>;
   getPolicies(filters?: HolonFilters): Promise<APIResponse<Holon[]>>;
+
+  // Governance Configuration
+  getGovernanceConfig(): Promise<APIResponse<GovernanceConfig>>;
+  updateGovernanceConfig(config: Partial<GovernanceConfig['properties']>): Promise<APIResponse<GovernanceConfig>>;
 
   // Health
   healthCheck(): Promise<{ healthy: boolean; latencyMs: number }>;
@@ -362,6 +367,16 @@ export class RealSOMClient implements ISOMClient {
     });
   }
 
+  // ==================== Governance Configuration ====================
+
+  async getGovernanceConfig(): Promise<APIResponse<GovernanceConfig>> {
+    return this.request<GovernanceConfig>('GET', '/governance/config');
+  }
+
+  async updateGovernanceConfig(config: Partial<GovernanceConfig['properties']>): Promise<APIResponse<GovernanceConfig>> {
+    return this.request<GovernanceConfig>('PATCH', '/governance/config', config);
+  }
+
   // ==================== Health Check ====================
 
   async healthCheck(): Promise<{ healthy: boolean; latencyMs: number }> {
@@ -414,6 +429,8 @@ export class SOMClient implements ISOMClient {
   getTasksForPosition(positionId: HolonID, status?: string): Promise<APIResponse<Holon[]>> { return this.delegate.getTasksForPosition(positionId, status); }
   getObjectivesForLOE(loeId: HolonID): Promise<APIResponse<Holon[]>> { return this.delegate.getObjectivesForLOE(loeId); }
   getPolicies(filters?: HolonFilters): Promise<APIResponse<Holon[]>> { return this.delegate.getPolicies(filters); }
+  getGovernanceConfig(): Promise<APIResponse<GovernanceConfig>> { return this.delegate.getGovernanceConfig(); }
+  updateGovernanceConfig(config: Partial<GovernanceConfig['properties']>): Promise<APIResponse<GovernanceConfig>> { return this.delegate.updateGovernanceConfig(config); }
   healthCheck(): Promise<{ healthy: boolean; latencyMs: number }> { return this.delegate.healthCheck(); }
 }
 

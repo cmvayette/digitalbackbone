@@ -6,9 +6,10 @@ import { ProcessSearch } from './components/ProcessSearch';
 import { ProcessHealthDashboard } from './components/health/ProcessHealthDashboard';
 import type { Process } from './types/process';
 import { LayoutList, GitCommitHorizontal } from 'lucide-react';
+import { GovernanceTuner } from './components/admin/GovernanceTuner';
 import { Header } from './components/Header';
 
-export type ViewMode = 'search' | 'viewer' | 'editor' | 'health';
+export type ViewMode = 'search' | 'viewer' | 'editor' | 'health' | 'admin';
 type ViewerType = 'swimlane' | 'timeline';
 
 function App() {
@@ -46,6 +47,12 @@ function App() {
 
         {view === 'health' && (
           <ProcessHealthDashboard />
+        )}
+
+        {view === 'admin' && (
+          <div className="h-full bg-bg-canvas">
+            <GovernanceTuner />
+          </div>
         )}
 
         {view === 'viewer' && selectedProcess && (

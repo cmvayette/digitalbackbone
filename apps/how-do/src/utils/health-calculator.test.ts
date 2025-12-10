@@ -17,6 +17,7 @@ describe('calculateProcessHealth', () => {
             inputs: [],
             outputs: [],
             estimatedDuration: 0,
+            tags: [],
             steps: [
                 { id: 's1', title: 'S1', description: 'Desc', owner: 'pos-1', obligations: [{ id: 'obl-1' }] },
                 { id: 's2', title: 'S2', description: 'Desc', owner: 'pos-1', obligations: [{ id: 'obl-2' }] }
@@ -27,7 +28,8 @@ describe('calculateProcessHealth', () => {
     it('returns perfect score for perfect process', () => {
         const result = calculateProcessHealth(baseProcess);
         expect(result.score).toBe(100);
-        expect(result.status).toBe('healthy');
+        expect(result.level).toBe(5);
+        expect(result.label).toBe('Optimized');
     });
 
     it('penalizes for lack of obligations', () => {
@@ -35,6 +37,7 @@ describe('calculateProcessHealth', () => {
             ...baseProcess,
             properties: {
                 ...baseProcess.properties,
+                tags: [],
                 steps: [
                     { id: 's1', title: 'S1', description: 'Desc', owner: 'pos-1', obligations: [] }, // No obligations
                     { id: 's2', title: 'S2', description: 'Desc', owner: 'pos-1', obligations: [] }
@@ -47,7 +50,9 @@ describe('calculateProcessHealth', () => {
         // Total 60
         const result = calculateProcessHealth(poorComplianceProcess);
         expect(result.score).toBe(60);
-        expect(result.status).toBe('at-risk');
+        // Level logic: Owned (2) -> Governed (3) FAILS. So Level 2.
+        expect(result.level).toBe(2);
+        expect(result.label).toBe('Owned');
     });
 
     it('penalizes for stale processes', () => {
@@ -65,11 +70,20 @@ describe('calculateProcessHealth', () => {
         // Total 82
         const result = calculateProcessHealth(staleProcess);
         expect(result.score).toBe(82);
+        // Level logic: Owned (2) -> Governed (3) [Yes] -> Compliant (4) [Yes] -> Optimized (5) [No, Freshness < 80]
+        // Actually freshnessScore is 50. 
+        // Level 5 requires freshnessScore >= 80.
+        expect(result.level).toBe(4);
     });
 
     it('applies drift penalty', () => {
         // Base 100 - 20 = 80
         const result = calculateProcessHealth(baseProcess, true); // hasDrift = true
         expect(result.score).toBe(80);
+
+        // Level logic: Compliant (4) checks !hasDrift.
+        // So with drift, it fails Level 4 check. Drops to Level 3.
+        expect(result.level).toBe(3);
+        expect(result.label).toBe('Governed');
     });
 });
