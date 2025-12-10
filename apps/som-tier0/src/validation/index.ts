@@ -97,7 +97,7 @@ export class ValidationEngine {
    */
   validateEventWithDetails(event: Event): EnhancedValidationResult {
     const timestamp = event.occurredAt;
-    
+
     // Get documents in force at event timestamp
     const documentsInForce = this.documentRegistry.getDocumentsInForce(timestamp);
     const documentIds = documentsInForce.map(doc => doc.id);
@@ -113,7 +113,7 @@ export class ValidationEngine {
 
     // Enhance errors with categorization and context
     const enhancedErrors: DetailedValidationError[] = [];
-    
+
     if (baseResult.errors) {
       for (const error of baseResult.errors) {
         enhancedErrors.push({
@@ -157,16 +157,16 @@ export class ValidationEngine {
     // Validate each event in the batch
     for (let i = 0; i < events.length; i++) {
       const eventData = events[i];
-      
+
       // Create temporary event for validation
       const tempEvent: Event = {
         ...eventData,
         id: `temp-${i}`,
         recordedAt: timestamp,
-      };
+      } as Event;
 
       const result = this.validateEventWithDetails(tempEvent);
-      
+
       if (!result.valid && result.errors) {
         errors.set(i, result.errors);
         allValid = false;
@@ -190,7 +190,7 @@ export class ValidationEngine {
     correctionPayload: Record<string, any>
   ): Omit<Event, 'id' | 'recordedAt'> {
     const originalEvent = this.eventStore.getEvent(originalEventId);
-    
+
     if (!originalEvent) {
       throw new Error(`Original event ${originalEventId} not found`);
     }
@@ -232,14 +232,14 @@ export class ValidationEngine {
    */
   validateTemporalConstraints(event: Event): EnhancedValidationResult {
     const timestamp = event.occurredAt;
-    
+
     // Validate timestamp is within acceptable range
     const now = new Date();
     const maxPast = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000); // 1 year ago
     const maxFuture = new Date(now.getTime() + 60 * 60 * 1000); // 1 hour ahead
-    
+
     const errors: DetailedValidationError[] = [];
-    
+
     if (timestamp < maxPast) {
       errors.push({
         constraintID: 'TEMPORAL-001',
@@ -252,7 +252,7 @@ export class ValidationEngine {
         context: { occurredAt: timestamp, maxPast },
       });
     }
-    
+
     if (timestamp > maxFuture) {
       errors.push({
         constraintID: 'TEMPORAL-002',
@@ -279,7 +279,7 @@ export class ValidationEngine {
 
       for (const precedingId of precedingEventIds) {
         const precedingEvent = this.eventStore.getEvent(precedingId);
-        
+
         if (precedingEvent && precedingEvent.occurredAt > timestamp) {
           errors.push({
             constraintID: 'TEMPORAL-003',
@@ -415,7 +415,7 @@ export class ValidationEngine {
   ): EventType {
     // Map original event types to their compensating types
     // For now, we'll use a simple mapping - in production this would be more sophisticated
-    
+
     if (correctionType === 'cancellation') {
       // Most events can be cancelled with a generic cancellation event
       return EventType.TaskCancelled; // Using as a generic cancellation type

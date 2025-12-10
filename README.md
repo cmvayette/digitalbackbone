@@ -23,6 +23,8 @@ The project is organized into workspaces managed by npm:
 
 The Semantic Operating Model (SOM) is a graph-based semantic layer that provides a unified, computable representation of organizational structure, behavior, intent, and constraints. It serves as an interpretation layer above existing systems of record, mapping disparate data sources into a coherent semantic graph that enables causal reasoning, temporal queries, and constraint-based governance.
 
+**Status**: The system now implements a fully "Closed Loop" architecture where Tier-1 applications (`objectives-okr`, `how-do`, `task-management`, `policy-governance`) emit events that are synchronously projected into the Tier-0 graph and immediately available for query.
+
 ### Core Primitives
 
 The SOM is built on three fundamental primitives:

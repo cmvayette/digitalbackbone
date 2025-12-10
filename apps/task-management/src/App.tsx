@@ -1,11 +1,19 @@
 import React from 'react';
 import { TaskInbox } from './components/TaskInbox';
+import { useTaskStore } from './store/taskStore';
 import { ProjectList } from './components/ProjectList';
 import { MyTasksView } from './components/MyTasksView';
 import { CheckSquare, Folder, Layout, User } from 'lucide-react';
 
 function App() {
   const [view, setView] = React.useState<'inbox' | 'projects' | 'hub'>('hub');
+  const { loadData } = useTaskStore();
+
+  React.useEffect(() => {
+    loadData();
+    const interval = setInterval(() => loadData(), 5000);
+    return () => clearInterval(interval);
+  }, [loadData]);
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-200 font-sans flex text-sm">

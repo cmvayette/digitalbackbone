@@ -79,7 +79,7 @@ export class InMemoryEventStore implements IEventStore {
         causedBy: eventData.causalLinks.causedBy ? [...eventData.causalLinks.causedBy] : undefined,
         groupedWith: eventData.causalLinks.groupedWith ? [...eventData.causalLinks.groupedWith] : undefined,
       },
-    };
+    } as Event;
 
     // Store event (immutable)
     this.events.set(eventId, Object.freeze(event));

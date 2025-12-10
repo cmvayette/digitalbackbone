@@ -1,12 +1,14 @@
+import { ZodSchema } from 'zod';
 import { IngestionAdapter } from '../interfaces';
 
 /**
  * Simple Generic API Adapter
- * Fetches data from a URL
+ * Fetches data from a URL and validates it against a Zod schema
  */
 export class ApiIngestionAdapter<T = unknown> implements IngestionAdapter<T> {
     constructor(
         private url: string,
+        private schema: ZodSchema<T>,
         private headers: Record<string, string> = {},
         private dataPath?: string // Optional dot-notation path to array in response (e.g. "data.items")
     ) { }
@@ -26,6 +28,8 @@ export class ApiIngestionAdapter<T = unknown> implements IngestionAdapter<T> {
 
         const json: any = await response.json(); // Explicit any for raw API response
 
+        let dataToValidate: any = json;
+
         if (this.dataPath) {
             // Resolve path
             const parts = this.dataPath.split('.');
@@ -33,9 +37,18 @@ export class ApiIngestionAdapter<T = unknown> implements IngestionAdapter<T> {
             for (const part of parts) {
                 current = current?.[part];
             }
-            return (Array.isArray(current) ? current : [current]) as T[];
+            dataToValidate = current;
         }
 
-        return (Array.isArray(json) ? json : [json]) as T[];
+        const arrayData = Array.isArray(dataToValidate) ? dataToValidate : [dataToValidate];
+
+        // Validate each item
+        return arrayData.map((item: any, index: number) => {
+            try {
+                return this.schema.parse(item);
+            } catch (error) {
+                throw new Error(`Validation failed for item at index ${index}: ${error instanceof Error ? error.message : String(error)}`);
+            }
+        });
     }
 }

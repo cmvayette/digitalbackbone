@@ -335,7 +335,7 @@ export class SemanticAccessLayer {
         ...partialEvent,
         id: 'temp-validation-id',
         recordedAt: new Date(),
-      };
+      } as Event;
 
       // Validate event against constraints BEFORE submitting
       const validationResult = this.constraintEngine.validateEvent(tempEventForValidation, {

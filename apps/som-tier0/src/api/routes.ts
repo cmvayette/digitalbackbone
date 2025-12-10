@@ -13,6 +13,7 @@ import { IHolonRepository as HolonRegistry } from '../core/interfaces/holon-repo
 import { RelationshipRegistry } from '../relationship-registry';
 import { ConstraintEngine } from '../constraint-engine';
 import { DocumentRegistry } from '../document-registry';
+import { StateProjectionEngine } from '../state-projection';
 import { HolonType, HolonID } from '@som/shared-types';
 import { RelationshipType } from '@som/shared-types';
 import { Event } from '@som/shared-types';
@@ -51,6 +52,7 @@ export class APIRoutes {
   private relationshipRegistry: RelationshipRegistry;
   private constraintEngine: ConstraintEngine;
   private documentRegistry: DocumentRegistry;
+  private projectionEngine: StateProjectionEngine;
 
   constructor(
     queryLayer: QueryLayer,
@@ -62,7 +64,8 @@ export class APIRoutes {
     holonRegistry: HolonRegistry,
     relationshipRegistry: RelationshipRegistry,
     constraintEngine: ConstraintEngine,
-    documentRegistry: DocumentRegistry
+    documentRegistry: DocumentRegistry,
+    projectionEngine: StateProjectionEngine
   ) {
     this.queryLayer = queryLayer;
     this.eventStore = eventStore;
@@ -74,6 +77,7 @@ export class APIRoutes {
     this.relationshipRegistry = relationshipRegistry;
     this.constraintEngine = constraintEngine;
     this.documentRegistry = documentRegistry;
+    this.projectionEngine = projectionEngine;
   }
 
   // ==================== Holon Query Endpoints ====================
@@ -307,12 +311,12 @@ export class APIRoutes {
       recordedAt: new Date(),
       actor: request.user.userId,
       subjects,
-      payload,
+      payload: payload as any, // Cast generic payload that will be validated by runtime
       sourceSystem,
       sourceDocument,
       validityWindow: validityWindowDates,
       causalLinks: causalLinks || {},
-    };
+    } as Event;
 
     // Validate event
     const validationResult = await this.constraintEngine.validateEvent(event);
@@ -334,6 +338,9 @@ export class APIRoutes {
 
     // Submit event
     const eventId = this.eventStore.submitEvent(event);
+
+    // Provide real-time consistency for read-your-writes
+    this.projectionEngine.applyNewEvent(event);
 
     return {
       success: true,
@@ -373,12 +380,12 @@ export class APIRoutes {
           recordedAt: new Date(),
           actor: request.user.userId,
           subjects: eventReq.subjects,
-          payload: eventReq.payload,
+          payload: eventReq.payload as any,
           sourceSystem: eventReq.sourceSystem,
           sourceDocument: eventReq.sourceDocument,
           validityWindow: validityWindowDates,
           causalLinks: eventReq.causalLinks || {},
-        };
+        } as Event;
 
         // Validate event
         const validationResult = await this.constraintEngine.validateEvent(event);

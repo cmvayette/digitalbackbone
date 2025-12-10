@@ -8,64 +8,54 @@ export function useStrategyData() {
     const [krs, setKRs] = useState<KeyResult[]>([]);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const client = createSOMClient();
-                const [loeRes, objRes, krRes] = await Promise.all([
-                    client.queryHolons(HolonType.LOE),
-                    client.queryHolons(HolonType.Objective),
-                    client.queryHolons(HolonType.KeyResult)
-                ]);
+    const fetchData = useCallback(async () => {
+        try {
+            const client = createSOMClient();
+            const [loeRes, objRes, krRes] = await Promise.all([
+                client.queryHolons(HolonType.LOE),
+                client.queryHolons(HolonType.Objective),
+                client.queryHolons(HolonType.KeyResult)
+            ]);
 
-                if (loeRes.success && loeRes.data) {
-                    setLoes(loeRes.data.map((h: any) => ({ ...h, properties: h.properties } as LOE)));
-                }
-                if (objRes.success && objRes.data) {
-                    setObjectives(objRes.data.map((h: any) => ({ ...h, properties: h.properties } as Objective)));
-                }
-                if (krRes.success && krRes.data) {
-                    setKRs(krRes.data.map((h: any) => ({ ...h, properties: h.properties } as KeyResult)));
-                }
-            } catch (err) {
-                console.error("Failed to fetch strategy data", err);
-            } finally {
-                setLoading(false);
+            if (loeRes.success && loeRes.data) {
+                setLoes(loeRes.data.map((h: any) => ({ ...h, properties: h.properties } as LOE)));
             }
-        };
-
-        fetchData();
+            if (objRes.success && objRes.data) {
+                setObjectives(objRes.data.map((h: any) => ({ ...h, properties: h.properties } as Objective)));
+            }
+            if (krRes.success && krRes.data) {
+                setKRs(krRes.data.map((h: any) => ({ ...h, properties: h.properties } as KeyResult)));
+            }
+        } catch (err) {
+            console.error("Failed to fetch strategy data", err);
+        } finally {
+            setLoading(false);
+        }
     }, []);
 
+    useEffect(() => {
+        fetchData(); // Initial fetch
+
+        const intervalId = setInterval(fetchData, 5000); // Poll every 5 seconds
+
+        return () => clearInterval(intervalId); // Cleanup
+    }, [fetchData]);
+
+    // Deprecated: Write operations should use useStrategyComposer
     const addLOE = useCallback((loe: LOE) => {
-        // Optimistic update - Real write implementation requires Event Sourcing backend support
-        setLoes(prev => [...prev, loe]);
-        console.warn("Write to server not implemented yet for LOE");
-    }, []);
+        console.warn('useStrategyData.addLOE is deprecated. Use useStrategyComposer instead.');
+        fetchData();
+    }, [fetchData]);
 
     const addObjective = useCallback((obj: Objective) => {
-        setObjectives(prev => [...prev, obj]);
-        console.warn("Write to server not implemented yet for Objective");
-    }, []);
+        console.warn('useStrategyData.addObjective is deprecated. Use useStrategyComposer instead.');
+        fetchData();
+    }, [fetchData]);
 
     const addKR = useCallback((kr: KeyResult, parentObjectiveId: string) => {
-        setKRs(prev => [...prev, kr]);
-
-        // Optimistically update the parent objective's linkedKRs
-        setObjectives(prev => prev.map(o => {
-            if (o.id === parentObjectiveId) {
-                return {
-                    ...o,
-                    properties: {
-                        ...o.properties,
-                        linkedKRs: [...(o.properties.linkedKRs || []), kr.id]
-                    }
-                };
-            }
-            return o;
-        }));
-        console.warn("Write to server not implemented yet for KeyResult");
-    }, []);
+        console.warn('useStrategyData.addKR is deprecated. Use useStrategyComposer instead.');
+        fetchData();
+    }, [fetchData]);
 
     return {
         loes,
@@ -75,6 +65,7 @@ export function useStrategyData() {
         addLOE,
         addObjective,
         addKR,
+        refresh: fetchData,
         // Helper to get full tree for an LoE
         getTreeForLOE: useCallback((loeId: string) => {
             // In full implementation, verify hierarchy. For now/MVP return all.

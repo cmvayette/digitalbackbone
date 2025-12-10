@@ -1,25 +1,45 @@
 import { create } from 'zustand';
 import type { Organization, Position, Person } from '../types/domain';
 import { HolonType, EventType } from '@som/shared-types';
+import type { TypedEvent } from '@som/shared-types';
 import { createSOMClient } from '@som/api-client';
+import { v4 as uuidv4 } from 'uuid';
 
 // Initialize API Client
 // In a real app, this URL would come from env vars
 const client = createSOMClient();
 
+// Type for the current user context
+interface UserContext {
+    id: string;
+    name: string;
+    role: string;
+}
+
 interface OrgState {
     organizations: Organization[];
     positions: Position[];
     people: Person[];
+    items: any[]; // Placeholder for generic items if needed, or remove
+    currentUser: UserContext; // Dynamic user context
     isLoading: boolean;
     error: string | null;
 
     // Actions
     fetchInitialData: () => Promise<void>;
+    setCurrentUser: (user: UserContext) => void;
     addOrganization: (parentId: string, name: string, uic: string) => Promise<void>;
     addPosition: (orgId: string, title: string, billetCode: string) => Promise<void>;
     updatePosition: (id: string, updates: Partial<Position['properties']>) => Promise<void>;
     assignPerson: (positionId: string, name: string, rank: string) => Promise<void>;
+
+    // Helpers
+    // Centralized event submission to reduce boilerplate
+    submitEvent: <T extends EventType>(
+        type: T,
+        subjects: string[],
+        payload: TypedEvent<T>['payload']
+    ) => Promise<boolean>;
 
     // Selectors helpers
     getOrgChildren: (orgId: string) => Organization[];
@@ -32,8 +52,16 @@ export const useOrgStore = create<OrgState>((set, get) => {
         organizations: [],
         positions: [],
         people: [],
+        items: [],
+        currentUser: {
+            id: 'user-default-001', // Default until auth is hooked up
+            name: 'Default User',
+            role: 'admin'
+        },
         isLoading: false,
         error: null,
+
+        setCurrentUser: (user) => set({ currentUser: user }),
 
         fetchInitialData: async () => {
             set({ isLoading: true, error: null });
@@ -63,128 +91,127 @@ export const useOrgStore = create<OrgState>((set, get) => {
             }
         },
 
-        addOrganization: async (parentId, name, uic) => {
-            // Optimistic ID
-            const tempId = `org-${Date.now()}`;
-
+        // Helper to centralize event submission
+        submitEvent: async <T extends EventType>(
+            type: T,
+            subjects: string[],
+            payload: TypedEvent<T>['payload']
+        ): Promise<boolean> => {
             try {
                 const response = await client.submitEvent({
-                    type: EventType.OrganizationCreated,
+                    type,
                     occurredAt: new Date(),
-                    actor: 'system', // TODO: Real user ID
-                    subjects: [tempId],
+                    actor: get().currentUser.id,
+                    subjects,
                     sourceSystem: 'som-org-chart',
-                    payload: {
-                        name,
-                        parentId,
-                        uic,
-                        missionStatement: `Newly created unit: ${name}`,
-                        type: 'Division'
-                    }
-                });
+                    payload
+                } as any); // Cast because client.submitEvent might still expect the loose Event type depending on package version, but we are enforcing strictness here.
 
-                if (!response.success) throw new Error(response.error?.message);
+                if (!response.success) {
+                    throw new Error(response.error?.message || 'Event submission failed');
+                }
+                return true;
+            } catch (error) {
+                console.error(`Failed to submit event ${type}:`, error);
+                set({ error: error instanceof Error ? error.message : 'Unknown error' });
+                return false;
+            }
+        },
 
-                // Re-fetch to get cleaner state (or push optimistic update)
-                // For now, re-fetch is safer for data consistency
+        addOrganization: async (parentId, name, uic) => {
+            const newOrgId = uuidv4();
+
+            const success = await get().submitEvent(
+                EventType.OrganizationCreated,
+                [newOrgId],
+                {
+                    name,
+                    parentId,
+                    uic,
+                    missionStatement: `Newly created unit: ${name}`,
+                    type: 'Division'
+                }
+            );
+
+            if (success) {
                 await get().fetchInitialData();
-
-            } catch (err) {
-                console.error('Failed to add organization:', err);
-                set({ error: 'Failed to create organization' });
             }
         },
 
         addPosition: async (orgId, title, billetCode) => {
-            const tempId = `pos-${Date.now()}`;
+            const newPosId = uuidv4();
 
-            try {
-                const response = await client.submitEvent({
-                    type: EventType.PositionCreated,
-                    occurredAt: new Date(),
-                    actor: 'system',
-                    subjects: [tempId],
-                    sourceSystem: 'som-org-chart',
-                    payload: {
-                        orgId,
-                        title,
-                        billetIDs: [billetCode],
-                        billetType: 'staff',
-                        criticality: 'standard'
-                    }
-                });
+            const success = await get().submitEvent(
+                EventType.PositionCreated,
+                [newPosId],
+                {
+                    orgId,
+                    title,
+                    billetIDs: [billetCode],
+                    billetType: 'staff',
+                    criticality: 'standard'
+                }
+            );
 
-                if (!response.success) throw new Error(response.error?.message);
+            if (success) {
                 await get().fetchInitialData();
-
-            } catch (err) {
-                console.error('Failed to add position:', err);
-                set({ error: 'Failed to create position' });
             }
         },
 
         updatePosition: async (id, updates) => {
-            try {
-                // Note: PositionModified might not be a standard event type in the enum yet, 
-                // using a generic update or PositionCreated implies full state. 
-                // We'll use a generic event for now or assume PositionModified exists if checked.
-                // Re-checking shared-types is expensive. I'll stick to what I know exists or use generic.
-                // Assuming PositionDefined or similar.
-                // For safety in this strict refactor, I will assume 'PositionModified' exists or fallback.
+            // Using PositionModified which is now fully supported
+            const success = await get().submitEvent(
+                EventType.PositionModified,
+                [id],
+                {
+                    positionId: id,
+                    updates: updates as Record<string, unknown> // Ensure compatibility with Record<string, unknown>
+                }
+            );
 
-                const response = await client.submitEvent({
-                    type: EventType.PositionCreated, // Re-stating position state (Event Sourcing)
-                    occurredAt: new Date(),
-                    actor: 'system',
-                    subjects: [id],
-                    sourceSystem: 'som-org-chart',
-                    payload: {
-                        ...updates // Delta payload
-                    }
-                });
-
-                if (!response.success) throw new Error(response.error?.message);
+            if (success) {
                 await get().fetchInitialData();
-
-            } catch (err) {
-                console.error('Failed to update position:', err);
             }
         },
 
         assignPerson: async (positionId, name, rank) => {
-            const personId = `psn-${Date.now()}`;
+            // In a real flow, we might select an existing person or create a new one.
+            // Here we assume creating a new person for the assignment if they don't exist.
+            // For rigorous SOM compliance, we should probably emit PersonCreated then AssignmentStarted.
 
-            try {
-                // 1. Create Person
-                // We might need to do this in one transaction or two events?
-                // SOM usually handles multiple events.
+            const newPersonId = uuidv4();
+            const relationshipId = uuidv4(); // Explicit relationship ID if needed, or backend generates
 
-                // Event 1: Person Arrived/Created
-                // In SOM, maybe we just do AssignmentStarted with a new Person payload?
-                // Let's do explicit Person creation first.
+            // 1. Create Person
+            const personCreated = await get().submitEvent(
+                EventType.PersonCreated,
+                [newPersonId],
+                {
+                    name,
+                    rank,
+                    identifiers: {}
+                }
+            );
 
-                // Actually AssignmentStarted implies a person exists.
-                // Use 'AssignmentStarted' which usually links Person + Position.
+            if (!personCreated) return;
 
-                const response = await client.submitEvent({
-                    type: EventType.AssignmentStarted,
-                    occurredAt: new Date(),
-                    actor: 'system',
-                    subjects: [positionId, personId],
-                    sourceSystem: 'som-org-chart',
-                    payload: {
-                        personName: name,
-                        rank: rank,
-                        role: 'assigned'
-                    }
-                });
+            // 2. Assign to Position
+            const assigned = await get().submitEvent(
+                EventType.AssignmentStarted,
+                [positionId, newPersonId],
+                {
+                    personId: newPersonId,
+                    positionId: positionId,
+                    relationshipId,
+                    personName: name,
+                    rank: rank,
+                    role: 'assigned',
+                    authorityLevel: 'authoritative'
+                }
+            );
 
-                if (!response.success) throw new Error(response.error?.message);
+            if (assigned) {
                 await get().fetchInitialData();
-
-            } catch (err) {
-                console.error('Failed to assign person:', err);
-                set({ error: 'Failed to assign person' });
             }
         },
 

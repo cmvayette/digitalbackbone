@@ -36,9 +36,11 @@ export function useExternalProcessData() {
         }
     }, []);
 
-    // Initial fetch
+    // Initial fetch and polling
     useEffect(() => {
         fetchProcesses();
+        const interval = setInterval(fetchProcesses, 5000); // 5s polling
+        return () => clearInterval(interval);
     }, [fetchProcesses]);
 
     const addProcess = useCallback(async (process: Process) => {

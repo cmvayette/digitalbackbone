@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { HolonType, type KeyResult } from '@som/shared-types';
-import { useExternalOrgData, useStrategyData } from '@som/api-client';
+import { useExternalOrgData, useStrategyComposer } from '@som/api-client';
 
 interface KRComposerProps {
     objectiveId: string;
@@ -8,7 +8,8 @@ interface KRComposerProps {
 }
 
 export const KRComposer: React.FC<KRComposerProps> = ({ objectiveId, onClose }) => {
-    const { addKR } = useStrategyData();
+    // const { addKR } = useStrategyData(); // Deprecated
+    const { createKeyResult, isSubmitting } = useStrategyComposer();
     const { getCandidates } = useExternalOrgData();
 
     const [statement, setStatement] = useState('');
@@ -17,26 +18,9 @@ export const KRComposer: React.FC<KRComposerProps> = ({ objectiveId, onClose }) 
     const [ownerId, setOwnerId] = useState('');
     const [cadence, setCadence] = useState<'weekly' | 'monthly' | 'quarterly'>('monthly');
 
-    const handleSave = () => {
-        const newKR: KeyResult = {
-            id: `kr-${Date.now()}`,
-            type: HolonType.KeyResult,
-            createdAt: new Date(),
-            createdBy: 'user',
-            status: 'active',
-            sourceDocuments: [],
-            properties: {
-                statement,
-                baseline,
-                target,
-                currentValue: baseline, // Start at baseline
-                ownerId,
-                cadence,
-                health: 'on-track', // Default optimism
-                evidenceLogIds: [] // MVP
-            }
-        };
-        addKR(newKR, objectiveId);
+    const handleSave = async () => {
+        const actorId = 'user-123'; // Hardcoded for MVP
+        await createKeyResult(objectiveId, statement, target, baseline, ownerId, actorId);
         onClose();
     };
 

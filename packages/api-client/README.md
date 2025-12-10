@@ -54,23 +54,36 @@ try {
 *   **Error Handling**: Unified error parsing for 4xx/5xx responses.
 *   **Health Check**: `client.health()` to verify backend connectivity.
 
-## Hooks (React)
 
-While this package is framework-agnostic, you can easily wrap it in React hooks:
+## React Hooks & Real-time Data (Phase 3)
+
+The client package exports ready-to-use React hooks that implement **polling** for real-time updates.
+
+### Usage
 
 ```typescript
-// Example hook usage
-export function useOrgData() {
-  const [data, setData] = useState([]);
-  
-  useEffect(() => {
-    const client = createSOMClient({ baseUrl: '...' });
-    client.setAuthToken('dev-token-123');
-    
-    client.queryHolons({ type: HolonType.Organization })
-      .then(res => setData(res.data));
-  }, []);
-  
-  return data;
+import { useExternalProcessData, useStrategyData } from '@som/api-client';
+
+function MyComponent() {
+  // Automatically polls backend every 5 seconds
+  const { processes, isLoading } = useExternalProcessData();
+  const { objectives, krs } = useStrategyData();
+
+  if (isLoading) return <div>Loading...</div>;
+
+  return (
+    <ul>
+      {processes.map(p => <li key={p.id}>{p.name}</li>)}
+    </ul>
+  );
 }
 ```
+
+### Available Hooks
+
+- `useExternalProcessData()`: Manages Process Definition fetching
+- `useStrategyData()`: Manages Objectives, LOEs, Key Results
+- `useExternalPolicyData()`: Manages Policies and Obligations
+- `useTaskManagement()`: Provides mutation methods for Tasks (Create, Assign, Update)
+
+> **Note**: Polling interval defaults to 5000ms to balance freshness with load.

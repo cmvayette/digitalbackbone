@@ -276,6 +276,15 @@ Events are immutable records of state changes. Each event contains:
 - Validity window (optional)
 - Causal links (what led to this event)
 
+#### Supported Event Types (Phase 2)
+The State Projection Engine currently handles:
+- **Organization**: `OrganizationCreated`, `OrganizationRealigned`
+- **Governance**: `DocumentIssued`, `DocumentPublished`
+- **Strategy**: `InitiativeCreated`, `KeyResultDefined`
+- **Process**: `ProcessDefined`, `ProcessUpdated`, `ProcessArchived`
+
+These events are projected synchronously into the Graph Store for "Read-Your-Writes" consistency.
+
 ### Constraints
 
 Constraints are rules that govern validity. Types include:

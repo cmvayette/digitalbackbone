@@ -67,4 +67,13 @@ export class Analyzer {
         }
         return undefined;
     }
+
+    public getTypeAlias(name: string): any | undefined {
+        // returning any as TypeAliasDeclaration needs import from ts-morph
+        for (const file of this.project.getSourceFiles()) {
+            const t = file.getTypeAlias(name);
+            if (t) return t;
+        }
+        return undefined;
+    }
 }
