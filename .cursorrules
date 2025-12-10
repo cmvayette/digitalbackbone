@@ -59,13 +59,25 @@ This is **NOT** a standard CRUD application. It is a "Glacial" architecture:
 - **TypeScript**: No `any`. Explicit return types. match `HolonType` enums to Interfaces.
 - **Naming**: `kebab-case` files, `PascalCase` components, `camelCase` variables.
 
-## 7. UI & Design
+## 7. Documentation & Process Standards
+- **Strategy**: Follow the **[Documentation Strategy](file:///Users/baxter/devProject/digital_backbone/docs/notes/template.md)**.
+- **ADRs**: Key architectural decisions go in `docs/adr/` (Use template).
+- **Notes**: Drafts, scratchpads, and design thoughts go in `docs/notes/` (Use template).
+- **Roadmap**: Central task tracking is in `docs/ROADMAP.md`. Update this when completing milestones.
+- **Templates**: Always use the provided templates in `docs/adr/template.md` and `docs/notes/template.md`.
 
-- **Component Library**: ALWAYS check `@som/ui-components` before building custom UI.
-- **Icons**: `lucide-react`.
-- **Aesthetics**: "Premium", clean, modern.
+## 8. UI & Design System ("Deep Void")
 
-## 8. Testing
+You must strictly adhere to the **[UI Design Spec](file:///Users/baxter/devProject/digital_backbone/docs/design/specs/ui_design_system.md)**.
+- **Aesthetic**: "Operational High-Fidelity". Sci-Fi Realism.
+- **Backgrounds**: `bg-slate-950` (Canvas), `bg-slate-900` (Panels). Transparent Glass `bg-slate-950/50` for cards.
+- **Borders**: 1px `border-slate-700` is the primary structure. **NO SHADOWS for depth**.
+- **Accents**: `text-cyan-400` (Primary), `text-amber-500` (Warning), `text-red-600` (Critical).
+- **Typography**: `font-ui` (Inter) for humans, `font-mono` (JetBrains Mono) for data.
+- **Components**: Check `@som/ui-components` first. If building new, follow the "Glass Card" pattern detailed in the spec.
+- **Icons**: `lucide-react` (Stroke width 1.5px preferred).
+
+## 9. Testing
 
 - **Engine**: Vitest.
 - **Library**: `@testing-library/react`.
@@ -74,7 +86,7 @@ This is **NOT** a standard CRUD application. It is a "Glacial" architecture:
 - **Tests**: Run `npm run coverage` to ensure quality.
 - **Build**: Ensure `tsc -b` passes.
 
-## 9. Specific AI Behaviors
+## 10. Specific AI Behaviors
 
 - **Conciseness**: Don't explain standard React concepts. Focus on SOM-specific nuances.
 - **Safety**: Do not delete existing events or history (immutable log).
