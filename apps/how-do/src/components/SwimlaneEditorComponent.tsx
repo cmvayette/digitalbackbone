@@ -23,7 +23,7 @@ interface SwimlaneEditorProps {
 
 export const SwimlaneEditor: React.FC<SwimlaneEditorProps> = ({ initialProcess, onBack }) => {
     // Shared Data Hooks
-    const { getCandidates } = useExternalOrgData();
+    const { getCandidates } = useExternalOrgData({ mode: 'mock' });
     // (Note: Editor currently doesn't list obligations directly in the main view in the loop, 
     // mostly delegates to internal components, but we set it up anyway if needed later)
 

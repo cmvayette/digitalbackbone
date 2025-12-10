@@ -18,7 +18,7 @@ import { PersonNode } from '../nodes/PersonNode';
 import { TigerTeamEdge } from '../edges/TigerTeamEdge';
 import { getLayoutedElements } from '../../utils/layout';
 import { reconcileCompetence } from '../../utils/reconciliation';
-import { useOrgStore } from '../../store/orgStore';
+// import { useOrgStore } from '../../store/orgStore';
 import type { Person, Position } from '../../types/domain';
 
 const nodeTypes = {
@@ -105,7 +105,10 @@ export function GraphCanvas({ initialNodes, initialEdges, onNodeClick, viewMode 
     }, [onNodeClick]);
 
     // DRAG & DROP ASSIGNMENT LOGIC
-    const { assignPerson } = useOrgStore();
+    // const { assignPerson } = useOrgStore();
+    const assignPerson = (positionId: string, personName: string, designatorRating: string) => {
+        console.log(`[MOCK] Assigned ${personName} (${designatorRating}) to Position ${positionId}`);
+    };
 
     const onNodeDragStart = useCallback(
         (_: React.MouseEvent, node: Node) => {

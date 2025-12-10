@@ -93,7 +93,8 @@ describe('API Server Integration Tests', () => {
       holonRegistry,
       relationshipRegistry,
       constraintEngine,
-      documentRegistry
+      documentRegistry,
+      stateProjection
     );
   });
 
@@ -234,6 +235,7 @@ describe('API Server Integration Tests', () => {
           eventType: EventType.QualificationAwarded,
           subjects: [personId],
           payload: {
+            personId,
             qualificationId: 'qual-123',
             awardedDate: new Date().toISOString(),
           },

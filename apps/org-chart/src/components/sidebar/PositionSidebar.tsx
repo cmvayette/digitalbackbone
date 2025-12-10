@@ -1,16 +1,19 @@
 import type { Node } from '@xyflow/react';
 import { User, Shield, Award } from 'lucide-react';
 import { useState } from 'react';
-import { useOrgStore } from '../../store/orgStore';
+// import { useOrgStore } from '../../store/orgStore';
+import { useExternalOrgData } from '@som/api-client';
 import type { Position } from '../../types/domain';
 import { RosterBuilderPanel } from './RosterBuilderPanel';
+import { toDomainPerson } from '../../utils/mappers';
 
 export function PositionSidebar({ node }: { node: Node }) {
     const props = node.data.properties as Position['properties'];
-    const { people } = useOrgStore();
+    const { people } = useExternalOrgData({ mode: 'mock' });
     const [isRosterBuilderOpen, setIsRosterBuilderOpen] = useState(false);
 
-    const occupant = props.assignedPersonId ? people.find(p => p.id === props.assignedPersonId) : null;
+    const occupantExt = props.assignedPersonId ? people.find(p => p.id === props.assignedPersonId) : null;
+    const occupant = occupantExt ? toDomainPerson(occupantExt) : null;
     const isVacant = props.state === 'vacant';
 
     if (isRosterBuilderOpen) {

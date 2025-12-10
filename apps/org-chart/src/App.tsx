@@ -1,7 +1,8 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { GraphCanvas } from './components/graph/GraphCanvas';
 import type { Node, Edge } from '@xyflow/react';
-import { useOrgStore } from './store/orgStore';
+// import { useOrgStore } from './store/orgStore'; // Removed
+import { useExternalOrgData } from '@som/api-client';
 import { getLayoutedElements } from './utils/layout';
 import { useEffect, useState } from 'react';
 import { SidebarPanel } from './components/sidebar/SidebarPanel';
@@ -16,7 +17,7 @@ const queryClient = new QueryClient();
 
 // Inner component to access ReactFlow Context
 function OrgChartContent() {
-  const { organizations } = useOrgStore();
+  const { organizations } = useExternalOrgData({ mode: 'mock' });
   const [layoutedNodes, setLayoutedNodes] = useState<Node[]>([]);
   const [layoutedEdges, setLayoutedEdges] = useState<Edge[]>([]);
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
@@ -34,17 +35,17 @@ function OrgChartContent() {
         id: org.id,
         type: 'organization', // Matches GraphCanvas nodeTypes
         data: {
-          label: org.properties.name,
-          properties: org.properties
+          label: org.name,
+          properties: org.properties || {}
         },
         position: { x: 0, y: 0 }
       }));
 
       const edges: Edge[] = organizations
-        .filter(org => org.properties.parentId)
+        .filter(org => org.parentId)
         .map(org => ({
-          id: `e-${org.properties.parentId}-${org.id}`,
-          source: org.properties.parentId!,
+          id: `e-${org.parentId}-${org.id}`,
+          source: org.parentId!,
           target: org.id,
           type: 'smoothstep'
         }));

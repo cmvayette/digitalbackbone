@@ -1,4 +1,4 @@
-import { createSOMClient } from './client';
+import { createSOMClient } from './factory';
 import { HolonType } from '@som/shared-types';
 
 async function verify() {

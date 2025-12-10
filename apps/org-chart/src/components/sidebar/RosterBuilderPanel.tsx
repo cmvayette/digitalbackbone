@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { Shield, AlertTriangle, User, Award } from 'lucide-react';
 import type { Position } from '../../types/domain';
-import { useOrgStore } from '../../store/orgStore';
+// import { useOrgStore } from '../../store/orgStore';
+import { useExternalOrgData } from '@som/api-client';
 import { reconcileCompetence } from '../../utils/reconciliation';
+import { toDomainPerson } from '../../utils/mappers';
 
 interface RosterBuilderPanelProps {
     position: Position;
@@ -10,7 +12,11 @@ interface RosterBuilderPanelProps {
 }
 
 export function RosterBuilderPanel({ position, onClose }: RosterBuilderPanelProps) {
-    const { people, assignPerson } = useOrgStore();
+    const { people: extPeople } = useExternalOrgData({ mode: 'mock' });
+    const people = extPeople.map(toDomainPerson);
+
+    const assignPerson = (posId: string, name: string, _rating: string) => console.log('Mock assign', posId, name);
+
     const [searchTerm, setSearchTerm] = useState('');
 
     // Filter people and calculate scores
@@ -39,7 +45,7 @@ export function RosterBuilderPanel({ position, onClose }: RosterBuilderPanelProp
                     {position.properties.qualifications?.map((qual, idx) => (
                         <div key={idx} className="bg-bg-surface p-3 rounded border border-border-color">
                             <div className="flex items-center gap-2 mb-1">
-                                <div className={`w-1.5 h-1.5 rounded-full ${qual.strictness === 'mandatory' ? 'bg-red-500' : 'bg-blue-400'}`} />
+                                <div className={`w - 1.5 h - 1.5 rounded - full ${qual.strictness === 'mandatory' ? 'bg-red-500' : 'bg-blue-400'} `} />
                                 <span className="font-bold text-sm">{qual.name}</span>
                             </div>
                             <div className="text-[10px] text-text-secondary uppercase tracking-wider">
@@ -83,8 +89,8 @@ export function RosterBuilderPanel({ position, onClose }: RosterBuilderPanelProp
                                             </div>
                                             {/* Load Dot */}
                                             <div
-                                                className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-bg-surface flex items-center justify-center text-[8px] font-bold ${isHighLoad ? 'bg-red-500 text-white' : 'bg-green-500 text-black'}`}
-                                                title={`Load: ${person.properties.workLoad}%`}
+                                                className={`absolute - bottom - 1 - right - 1 w - 4 h - 4 rounded - full border - 2 border - bg - surface flex items - center justify - center text - [8px] font - bold ${isHighLoad ? 'bg-red-500 text-white' : 'bg-green-500 text-black'} `}
+                                                title={`Load: ${person.properties.workLoad}% `}
                                             >
                                                 {person.properties.workLoad > 0 ? person.properties.workLoad : ''}
                                             </div>
@@ -98,7 +104,7 @@ export function RosterBuilderPanel({ position, onClose }: RosterBuilderPanelProp
                                     <div className="flex items-center gap-4">
                                         {/* Score */}
                                         <div className="text-right">
-                                            <div className={`text-lg font-bold ${scoreColor}`}>{match.score}%</div>
+                                            <div className={`text - lg font - bold ${scoreColor} `}>{match.score}%</div>
                                             <div className="text-[10px] text-text-secondary uppercase">Match</div>
                                         </div>
 

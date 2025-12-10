@@ -35,7 +35,7 @@ const ProcessListItem: React.FC<{ process: Process; onSelect: (p: Process) => vo
 };
 
 export const ProcessSearch: React.FC<ProcessSearchProps> = ({ onSelectProcess }) => {
-    const { processes, searchProcesses, isLoading } = useExternalProcessData();
+    const { processes, searchProcesses, isLoading } = useExternalProcessData({ mode: 'mock' });
     const [searchTerm, setSearchTerm] = useState('');
     const [searchResults, setSearchResults] = useState<Process[] | null>(null);
     const [isSearching, setIsSearching] = useState(false);

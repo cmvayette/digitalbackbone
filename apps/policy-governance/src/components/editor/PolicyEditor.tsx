@@ -212,7 +212,7 @@ export const PolicyEditor: React.FC<PolicyEditorProps> = ({ onBack }) => {
 
                                 <div className="space-y-3">
                                     {currentPolicy.obligations.map(obl => {
-                                        const { getProcessById, addProcess } = useExternalProcessData();
+                                        const { getProcessById, addProcess } = useExternalProcessData({ mode: 'mock' });
                                         const linkedProcess = obl.suggestedProcessId ? getProcessById(obl.suggestedProcessId) : undefined;
 
                                         return (

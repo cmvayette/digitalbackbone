@@ -1,8 +1,8 @@
 import { useState, useCallback, useEffect } from 'react';
 import { HolonType, type Process, type Holon } from '@som/shared-types';
-import { createSOMClient } from './client';
+import { createSOMClient } from './factory';
 
-export function useExternalProcessData() {
+export function useExternalProcessData(options?: import('./factory').SOMClientOptions) {
     const [processes, setProcesses] = useState<Process[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -10,8 +10,13 @@ export function useExternalProcessData() {
     const fetchProcesses = useCallback(async () => {
         setIsLoading(true);
         try {
-            const client = createSOMClient();
-            client.setAuthToken('dev-token-123'); // Dev default
+            const client = createSOMClient(
+                options?.mode === 'mock' ? undefined : 'http://localhost:3333/api/v1',
+                options
+            );
+            if (!options || options.mode !== 'mock') {
+                client.setAuthToken('dev-token-123'); // Dev default for real helper
+            }
 
             const result = await client.queryHolons(
                 HolonType.Process,
@@ -34,7 +39,7 @@ export function useExternalProcessData() {
         } finally {
             setIsLoading(false);
         }
-    }, []);
+    }, [options]);
 
     // Initial fetch and polling
     useEffect(() => {
@@ -48,15 +53,20 @@ export function useExternalProcessData() {
         setProcesses(prev => [...prev, process]);
 
         try {
-            const client = createSOMClient();
-            client.setAuthToken('dev-token-123');
+            const client = createSOMClient(
+                options?.mode === 'mock' ? undefined : 'http://localhost:3333/api/v1',
+                options
+            );
+            if (!options || options.mode !== 'mock') {
+                client.setAuthToken('dev-token-123');
+            }
             // TODO: client.createHolon(process);
             console.warn("Write support not yet fully implemented in client hook");
         } catch (e) {
             console.error("Failed to persist process", e);
             // Revert?
         }
-    }, []);
+    }, [options]);
 
     const getProcessById = useCallback((id: string) => {
         return processes.find(p => p.id === id);
@@ -67,8 +77,13 @@ export function useExternalProcessData() {
 
         setIsLoading(true);
         try {
-            const client = createSOMClient();
-            client.setAuthToken('dev-token-123'); // Dev default
+            const client = createSOMClient(
+                options?.mode === 'mock' ? undefined : 'http://localhost:3333/api/v1',
+                options
+            );
+            if (!options || options.mode !== 'mock') {
+                client.setAuthToken('dev-token-123');
+            }
 
             // Assuming client.search exists and returns SearchResult[]
             const response = await client.search(query, [HolonType.Process]);
@@ -92,7 +107,7 @@ export function useExternalProcessData() {
         } finally {
             setIsLoading(false);
         }
-    }, [processes]);
+    }, [processes, options]);
 
     return {
         processes,

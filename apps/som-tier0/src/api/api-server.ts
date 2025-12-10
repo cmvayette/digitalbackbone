@@ -144,6 +144,13 @@ export class APIServer {
     });
 
     this.registerRoute({
+      method: 'POST',
+      path: '/api/v1/relationships', // Alias for Client Contract
+      handler: (req) => this.routes.queryRelationships(req),
+      requiresAuth: true,
+    });
+
+    this.registerRoute({
       method: 'GET',
       path: '/api/v1/holons/:id/relationships',
       handler: (req) => this.routes.getHolonRelationships(req),
@@ -229,6 +236,14 @@ export class APIServer {
       method: 'GET',
       path: '/api/v1/holons/:id/history',
       handler: (req) => this.routes.getHolonHistory(req),
+      requiresAuth: true,
+    });
+
+    // Unified Search Route (Client Contract)
+    this.registerRoute({
+      method: 'GET',
+      path: '/api/v1/search',
+      handler: (req) => this.routes.unifiedSearch(req),
       requiresAuth: true,
     });
 
