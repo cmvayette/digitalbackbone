@@ -8,132 +8,24 @@ interface TaskState {
     milestones: Milestone[];
 
     // Actions
-    loadData: () => Promise<void>;
+    // Actions
+    syncData: (tasks: Task[], projects: Project[]) => void;
     addProject: (project: Omit<Project, 'id' | 'progress'>) => void;
     addTask: (task: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>) => void;
     updateTaskStatus: (taskId: string, status: Task['state']) => void;
 
-    // Computed/Selectors (can be derived in components, but helpers here useful)
+    // Computed/Selectors
     getTasksByProject: (projectId: string) => Task[];
     getTasksByOwner: (ownerId: string) => Task[];
     getTasksForMember: (personId: string, positionIds: string[]) => Task[];
 }
-
-// Mock Data Generators
-const generateMockProjects = (): Project[] => [
-    {
-        id: 'proj-1',
-        name: 'Q3 Recruitment Drive',
-        description: 'Hire 5 new engineers and 2 designers.',
-        status: 'active',
-        ownerId: 'org-hr',
-        ownerType: 'Organization',
-        startDate: '2023-07-01',
-        targetEndDate: '2023-09-30',
-        progress: 45,
-        tags: ['HR', 'Growth']
-    },
-    {
-        id: 'proj-2',
-        name: 'Cloud Migration',
-        description: 'Move legacy services to AWS.',
-        status: 'planning',
-        ownerId: 'org-eng',
-        ownerType: 'Organization',
-        startDate: '2023-08-15',
-        targetEndDate: '2023-12-31',
-        progress: 10,
-        tags: ['Infra', 'Engineering']
-    }
-];
-
-const generateMockTasks = (): Task[] => [
-    {
-        id: 't-1',
-        title: 'Draft Job Descriptions',
-        state: 'done',
-        priority: 'high',
-        ownerId: 'pos-hr-mgr',
-        ownerType: 'Position',
-        projectId: 'proj-1',
-        source: 'Manual',
-        createdAt: '2023-07-01',
-        updatedAt: '2023-07-02',
-        tags: ['hiring']
-    },
-    {
-        id: 't-2',
-        title: 'Screen Candidates',
-        state: 'in-progress',
-        priority: 'high',
-        ownerId: 'pos-hr-recruiter',
-        ownerType: 'Position',
-        projectId: 'proj-1',
-        source: 'Manual',
-        createdAt: '2023-07-05',
-        updatedAt: '2023-07-10',
-        tags: ['hiring']
-    },
-    {
-        id: 't-3',
-        title: 'Review Legacy Codebase',
-        state: 'todo',
-        priority: 'medium',
-        ownerId: 'pos-eng-lead',
-        ownerType: 'Position',
-        projectId: 'proj-2',
-        source: 'OKR',
-        createdAt: '2023-08-01',
-        updatedAt: '2023-08-01',
-        tags: ['discovery']
-    }
-];
 
 export const useTaskStore = create<TaskState>((set, get) => ({
     projects: [],
     tasks: [],
     milestones: [],
 
-    loadData: async () => {
-        try {
-            const { createSOMClient } = await import('@som/api-client');
-            const client = createSOMClient();
-
-            // Using string literals matching the enum to avoid complex dynamic imports
-            const [tasksRes, initiativesRes] = await Promise.all([
-                client.queryHolons('Task' as any),
-                client.queryHolons('Initiative' as any)
-            ]);
-
-            if (tasksRes.success && tasksRes.data) {
-                const tasks = tasksRes.data.map((h: any) => ({
-                    id: h.id,
-                    ...h.properties,
-                    // Ensure defaults if missing
-                    state: h.properties.state || 'todo',
-                    priority: h.properties.priority || 'medium',
-                    ownerId: h.properties.assigneeId || h.properties.ownerId, // Map assignee to owner for Task
-                    projectId: h.subjects?.[1] || h.properties.projectId // Map subject linkage to Project ID
-                })) as Task[];
-                set({ tasks });
-            }
-
-            if (initiativesRes.success && initiativesRes.data) {
-                const projects = initiativesRes.data.map((h: any) => ({
-                    id: h.id,
-                    ...h.properties,
-                    status: h.properties.status || 'planning',
-                    progress: h.properties.progress || 0,
-                    ownerType: 'Organization' // Default or infer
-                })) as Project[];
-                set({ projects });
-            }
-        } catch (error) {
-            console.error("Failed to load task data", error);
-            // Fallback for demo if API fails
-            set({ projects: generateMockProjects(), tasks: generateMockTasks() });
-        }
-    },
+    syncData: (tasks, projects) => set({ tasks, projects }),
 
     addProject: async (project) => {
         const tempId = `proj-${Date.now()}`;

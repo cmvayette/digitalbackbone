@@ -93,6 +93,42 @@ export class MockSOMClient implements ISOMClient {
                     qualifications: [],
                 };
                 break;
+            case HolonType.Task:
+                base.properties = {
+                    name: faker.hacker.verb() + ' ' + faker.hacker.noun(),
+                    description: faker.lorem.sentence(),
+                    status: faker.helpers.arrayElement(['todo', 'in-progress', 'review', 'done']),
+                    priority: faker.helpers.arrayElement(['low', 'medium', 'high', 'critical']),
+                    dueDate: faker.date.future().toISOString(),
+                    ownerId: faker.string.uuid(),
+                    assigneeId: faker.string.uuid(),
+                };
+                break;
+            case HolonType.Objective:
+                base.properties = {
+                    statement: faker.company.catchPhrase(),
+                    description: faker.lorem.paragraph(),
+                    status: faker.helpers.arrayElement(['on-track', 'at-risk', 'off-track', 'completed']),
+                    progress: faker.number.int({ min: 0, max: 100 }),
+                    ownerId: faker.string.uuid(),
+                };
+                break;
+            case HolonType.KeyResult:
+                base.properties = {
+                    description: faker.company.buzzPhrase(),
+                    metric: faker.helpers.arrayElement(['%', '#', '$']),
+                    currentValue: faker.number.int({ min: 0, max: 80 }),
+                    targetValue: 100,
+                    status: faker.helpers.arrayElement(['on-track', 'at-risk']),
+                };
+                break;
+            case HolonType.LOE:
+                base.properties = {
+                    name: faker.commerce.department() + ' Modernization',
+                    description: faker.lorem.sentence(),
+                    status: 'active',
+                };
+                break;
             default:
                 base.properties = {
                     name: faker.word.noun(),

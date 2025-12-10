@@ -1,19 +1,22 @@
 import React from 'react';
-import { TaskInbox } from './components/TaskInbox';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { useExternalTaskData } from './hooks/useExternalTaskData';
 import { useTaskStore } from './store/taskStore';
+import { TaskInbox } from './components/TaskInbox';
 import { ProjectList } from './components/ProjectList';
 import { MyTasksView } from './components/MyTasksView';
 import { CheckSquare, Folder, Layout, User } from 'lucide-react';
 
-function App() {
+const queryClient = new QueryClient();
+
+function TaskAppContent() {
   const [view, setView] = React.useState<'inbox' | 'projects' | 'hub'>('hub');
-  const { loadData } = useTaskStore();
+  const { tasks, projects } = useExternalTaskData({ mode: 'mock' });
+  const { syncData } = useTaskStore();
 
   React.useEffect(() => {
-    loadData();
-    const interval = setInterval(() => loadData(), 5000);
-    return () => clearInterval(interval);
-  }, [loadData]);
+    syncData(tasks as any, projects as any);
+  }, [tasks, projects, syncData]);
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-200 font-sans flex text-sm">
@@ -54,6 +57,14 @@ function App() {
         {view === 'projects' && <ProjectList />}
       </main>
     </div>
+  );
+}
+
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TaskAppContent />
+    </QueryClientProvider>
   );
 }
 
