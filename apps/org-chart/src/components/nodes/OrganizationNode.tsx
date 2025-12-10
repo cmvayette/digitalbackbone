@@ -47,10 +47,11 @@ export function OrganizationNode({ id, data }: NodeProps<GraphNode>) {
     return (
         <div
             className={clsx(
-                "w-full h-full bg-bg-panel border rounded flex flex-col overflow-hidden group relative transition-all duration-200",
-                isCompact ? "p-2" : "p-3 shadow-sm hover:shadow-md",
-                isTigerTeam ? "border-amber-500/50 border-dashed" : "border-slate-700", // Subtler border
-                // Command: Slightly lighter background header effect? Or just clean.
+                "w-full h-full bg-slate-950/50 backdrop-blur-sm border rounded flex flex-col overflow-hidden group relative transition-all duration-200",
+                isCompact ? "p-2" : "p-3",
+                // Hover: brighter border, slight bg lift
+                "hover:border-slate-500 hover:bg-slate-900/40",
+                isTigerTeam ? "border-amber-500/50 border-dashed" : "border-slate-700",
             )}
             onMouseEnter={onMouseEnter}
             onMouseLeave={hideTooltip}
@@ -63,22 +64,22 @@ export function OrganizationNode({ id, data }: NodeProps<GraphNode>) {
                 <div>
                     <div className="flex gap-1 mb-0.5">
                         <span className={clsx(
-                            "uppercase tracking-wider rounded font-semibold",
-                            isCompact ? "text-[9px] text-text-secondary" : "text-[10px] px-1.5 py-0.5 bg-bg-surface text-text-secondary",
-                            isTigerTeam && "text-amber-500 bg-transparent"
+                            "uppercase tracking-wider rounded font-mono font-medium",
+                            isCompact ? "text-[9px] text-text-secondary" : "text-[10px] px-1.5 py-0.5 border border-slate-700 text-text-secondary",
+                            isTigerTeam && "text-amber-500 border-amber-500/30"
                         )}>
                             {uic}
                         </span>
                         {!isCompact && (
-                            <span className="text-[10px] px-1.5 py-0.5 bg-slate-700 text-blue-300 rounded uppercase font-bold tracking-wider">
+                            <span className="text-[10px] px-1.5 py-0.5 border border-slate-700 text-cyan-400 rounded uppercase font-bold tracking-wider font-mono">
                                 {echelon}
                             </span>
                         )}
                     </div>
                     <h3 className={clsx(
-                        "font-semibold text-text-primary leading-tight mt-0.5",
-                        isCompact ? "text-[13px]" : "text-base",
-                        isCommand && "text-lg"
+                        "font-semibold text-text-primary leading-tight mt-1 tracking-tight",
+                        isCompact ? "text-[13px]" : "text-sm",
+                        isCommand && "text-base"
                     )}>
                         {orgName}
                     </h3>
@@ -89,14 +90,14 @@ export function OrganizationNode({ id, data }: NodeProps<GraphNode>) {
             <div className={clsx("mb-auto", isCompact ? "text-[10px]" : "text-xs text-text-secondary")}>
                 <div className="flex items-center gap-1 mb-0.5">
                     <span className="text-text-secondary">Cmdr:</span>
-                    <span className="text-accent-orange font-medium cursor-pointer hover:underline truncate">
+                    <span className="text-white font-medium cursor-pointer hover:text-accent-cyan truncate">
                         {commanderName}
                     </span>
                 </div>
                 {!isCompact && (
                     <div className="flex items-center gap-1">
                         <span className="text-text-secondary">Parent:</span>
-                        <span className="text-accent-orange font-medium cursor-pointer hover:underline">
+                        <span className="text-white font-medium cursor-pointer hover:text-accent-cyan">
                             {parentOrg}
                         </span>
                     </div>
@@ -105,22 +106,22 @@ export function OrganizationNode({ id, data }: NodeProps<GraphNode>) {
 
             {/* Stats (Inline for Compact, Block for Standard) */}
             {isCompact ? (
-                <div className="flex items-center gap-3 mt-1 text-[10px] text-text-secondary border-t border-slate-700/50 pt-1.5">
-                    <span><b>{totalSeats}</b> Seats</span>
+                <div className="flex items-center gap-3 mt-1 text-[10px] text-text-secondary border-t border-slate-700/50 pt-1.5 font-mono">
+                    <span><b className="text-white">{totalSeats}</b> Seats</span>
                     <span className={vacancies > 0 ? "text-accent-orange font-bold" : ""}><b>{vacancies}</b> Vacant</span>
                 </div>
             ) : (
-                <div className="bg-bg-surface/50 p-2.5 rounded border border-transparent mb-3 mt-2">
+                <div className="bg-slate-900/50 p-2.5 rounded border border-slate-800 mb-3 mt-2">
                     <div className="flex justify-between items-center">
-                        <div className="flex items-baseline gap-1.5">
+                        <div className="flex items-baseline gap-1.5 font-mono">
                             <span className="font-bold text-sm text-text-primary">{totalSeats}</span>
-                            <span className="text-xs text-text-secondary">Total Seats</span>
+                            <span className="text-[10px] uppercase text-text-secondary">Total</span>
                         </div>
-                        <div className="flex items-baseline gap-1.5">
-                            <span className={clsx("font-bold text-sm", vacancies > 0 ? "text-accent-orange" : "text-text-primary")}>
+                        <div className="flex items-baseline gap-1.5 font-mono">
+                            <span className={clsx("font-bold text-sm", vacancies > 0 ? "text-accent-orange" : "text-emerald-400")}>
                                 {vacancies}
                             </span>
-                            <span className="text-xs text-text-secondary">Vacancies</span>
+                            <span className="text-[10px] uppercase text-text-secondary">Vacant</span>
                         </div>
                     </div>
                 </div>
@@ -129,11 +130,11 @@ export function OrganizationNode({ id, data }: NodeProps<GraphNode>) {
             {/* Actions (Standard Only) */}
             {!isCompact && (
                 <div className="flex gap-2 mt-auto">
-                    <button className="flex-1 py-1 px-2 rounded bg-bg-surface border border-slate-700 text-text-secondary text-xs font-medium hover:bg-slate-700 hover:text-text-primary transition-colors">
-                        View Details
+                    <button className="flex-1 py-1 px-2 rounded border border-slate-700 text-text-secondary text-[10px] uppercase tracking-wider font-medium hover:border-slate-500 hover:text-white transition-colors">
+                        Details
                     </button>
-                    <button className="flex-1 py-1 px-2 rounded bg-bg-surface border border-slate-700 text-text-secondary text-xs font-medium hover:bg-slate-700 hover:text-text-primary transition-colors">
-                        Org Chart
+                    <button className="flex-1 py-1 px-2 rounded border border-slate-700 text-text-secondary text-[10px] uppercase tracking-wider font-medium hover:border-slate-500 hover:text-white transition-colors">
+                        Graph
                     </button>
                 </div>
             )}
@@ -144,7 +145,7 @@ export function OrganizationNode({ id, data }: NodeProps<GraphNode>) {
             <button
                 onClick={handleToggle}
                 className={clsx(
-                    "absolute left-1/2 -translate-x-1/2 rounded-full bg-bg-panel border border-slate-600 flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-slate-700 transition-colors z-50 cursor-pointer shadow-sm",
+                    "absolute left-1/2 -translate-x-1/2 rounded-full bg-slate-900 border border-slate-600 flex items-center justify-center text-text-secondary hover:text-white hover:border-slate-400 transition-colors z-50 cursor-pointer",
                     isCompact ? "w-5 h-5 -bottom-2.5" : "w-6 h-6 -bottom-3"
                 )}
                 title={isCollapsed ? "Expand" : "Collapse"}

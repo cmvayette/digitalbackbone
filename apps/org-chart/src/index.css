@@ -10,8 +10,10 @@
   --color-border-color: var(--border-color);
   --color-text-primary: var(--text-primary);
   --color-text-secondary: var(--text-secondary);
+  --color-accent-cyan: var(--accent-cyan);
   --color-accent-orange: var(--accent-orange);
-  --color-accent-green: var(--accent-green);
+  --color-accent-critical: var(--accent-critical);
+  --color-accent-valid: var(--accent-valid);
 
   --font-ui: var(--font-ui);
   --font-mono: var(--font-mono);

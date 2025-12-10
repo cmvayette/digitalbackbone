@@ -7,28 +7,22 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Blueprint-inspired palette
-        slate: {
-          900: '#10161a', // Blueprint Dark Gray 1
-          800: '#182026', // Blueprint Dark Gray 2
-          700: '#202b33', // Blueprint Dark Gray 3
-          600: '#293742', // Blueprint Dark Gray 4
-          500: '#30404d', // Blueprint Dark Gray 5
-        },
-        primary: {
-          500: '#106ba3', // Blueprint Blue 3
-          400: '#137cbd', // Blueprint Blue 2
-          300: '#2b95d6', // Blueprint Blue 1
-        },
-        intent: {
-          success: '#0f9960', // Blueprint Green 3
-          warning: '#d9822b', // Blueprint Orange 3
-          danger: '#db3737', // Blueprint Red 3
-        }
+        // Deep Void Theme Mappings
+        'bg-canvas': '#020617', // slate-950
+        'bg-panel': '#0f172a',  // slate-900
+        'bg-surface': '#1e293b', // slate-800
+        'border-color': '#334155', // slate-700
+        'text-primary': '#ffffff', // white
+        'text-secondary': '#94a3b8', // slate-400
+        'accent-cyan': '#22d3ee', // cyan-400 (Electric Pulse)
+        'accent-orange': '#f59e0b', // amber-500 (Warning)
+        'accent-critical': '#dc2626', // red-600 (Critical)
+        'accent-valid': '#34d399', // emerald-400 (Valid)
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
-      }
+        'ui': ['Inter', 'sans-serif'],
+        'mono': ['JetBrains Mono', 'monospace'],
+      },
     },
   },
   plugins: [],

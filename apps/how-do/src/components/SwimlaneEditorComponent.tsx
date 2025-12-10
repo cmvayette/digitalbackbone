@@ -181,19 +181,19 @@ export const SwimlaneEditor: React.FC<SwimlaneEditorProps> = ({ initialProcess, 
 
 
     return (
-        <div className="swimlane-editor flex flex-col h-full bg-slate-900 text-slate-100 p-4">
-            <div className="toolbar flex justify-between items-center mb-6">
+        <div className="swimlane-editor flex flex-col h-full bg-transparent p-4 overflow-hidden">
+            <div className="toolbar flex justify-between items-center mb-6 bg-slate-900/50 p-3 rounded-sm border border-slate-800 backdrop-blur-sm">
                 <div className="flex items-center gap-4">
-                    {onBack && <button className="text-slate-400 hover:text-slate-200" onClick={onBack}>← Back</button>}
+                    {onBack && <button className="text-text-secondary hover:text-white font-mono text-xs uppercase tracking-wider flex items-center gap-1" onClick={onBack}>← Back</button>}
                     <div>
-                        <h1 className="text-xl font-bold">Process Designer</h1>
-                        <p className="text-xs text-slate-500">Edit and validate your workflow.</p>
+                        <h1 className="text-lg font-bold text-white tracking-tight">Process Designer</h1>
+                        <p className="text-[10px] text-text-secondary font-mono uppercase tracking-wide">Edit and validate your workflow</p>
                     </div>
                 </div>
                 <div className="actions flex gap-2">
-                    <button className="px-3 py-1 bg-slate-800 border border-slate-700 rounded text-sm hover:bg-slate-700" onClick={addStep}>+ Add Step</button>
+                    <button className="px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-sm text-xs font-bold uppercase tracking-wider text-text-secondary hover:text-white hover:border-slate-500 transition-all font-mono" onClick={addStep}>+ Add Step</button>
                     <button
-                        className={`px-3 py-1 rounded text-sm font-medium ${validationIssues.filter(i => i.type === 'error').length > 0 ? 'bg-red-600/50 cursor-not-allowed' : 'bg-green-600 hover:bg-green-500'}`}
+                        className={`px-3 py-1.5 rounded-sm text-xs font-bold uppercase tracking-wider transition-all font-mono border ${validationIssues.filter(i => i.type === 'error').length > 0 ? 'bg-red-900/20 text-accent-critical border-accent-critical/50 cursor-not-allowed' : 'bg-emerald-900/20 text-accent-valid border-accent-valid/50 hover:bg-emerald-900/30'}`}
                         onClick={runValidation}
                     >
                         Validate & Save
@@ -202,14 +202,14 @@ export const SwimlaneEditor: React.FC<SwimlaneEditorProps> = ({ initialProcess, 
             </div>
 
             {validationIssues.length > 0 && (
-                <div className="mb-4 bg-slate-800 border border-slate-700 rounded p-2">
-                    <h4 className="text-sm font-bold text-slate-300 mb-2 flex items-center gap-2">
-                        <AlertTriangle size={16} className="text-amber-400" /> Validation Issues
+                <div className="mb-4 bg-slate-900/80 border border-slate-700 rounded-sm p-3 backdrop-blur-md">
+                    <h4 className="text-xs font-bold text-white mb-2 flex items-center gap-2 uppercase tracking-wide font-mono">
+                        <AlertTriangle size={14} className="text-accent-orange" /> Validation Issues
                     </h4>
                     <div className="space-y-1">
                         {validationIssues.map((issue, idx) => (
-                            <div key={idx} className={`text-xs flex items-center gap-2 ${issue.type === 'error' ? 'text-red-400' : 'text-amber-400'}`}>
-                                {issue.type === 'error' ? <AlertCircle size={12} /> : <AlertTriangle size={12} />}
+                            <div key={idx} className={`text-[10px] font-mono flex items-center gap-2 ${issue.type === 'error' ? 'text-accent-critical' : 'text-accent-orange'}`}>
+                                {issue.type === 'error' ? <AlertCircle size={10} /> : <AlertTriangle size={10} />}
                                 {issue.message}
                             </div>
                         ))}

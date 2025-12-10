@@ -1,27 +1,50 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@import "@som/ui-components/styles";
 
-@layer base {
-  body {
-    @apply bg-slate-900 text-slate-100 font-sans antialiased;
-  }
+@theme {
+  --color-bg-canvas: var(--bg-canvas);
+  --color-bg-panel: var(--bg-panel);
+  --color-bg-surface: var(--bg-surface);
+  --color-border-color: var(--border-color);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
 }
 
-/* Custom Scrollbar for Blueprint feel */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
+:root {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
 
-::-webkit-scrollbar-track {
-  @apply bg-slate-800;
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #242424;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 ::-webkit-scrollbar-thumb {
   @apply bg-slate-600 rounded;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  @apply bg-slate-500;
+@layer base {
+  body {
+    @apply bg-bg-canvas text-text-primary font-ui antialiased overflow-hidden;
+  }
+}
+
+/* Custom Scrollbar for Deep Void feel */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-700 rounded-full hover:bg-slate-500;
 }

@@ -92,15 +92,8 @@ function OrgChartContent() {
   const breadcrumbPath = getBreadcrumbPath(selectedNode?.id || null);
 
   return (
-    <div className="flex h-screen w-screen bg-bg-canvas text-text-primary font-ui overflow-hidden relative">
-      <main className="flex-1 relative z-0">
-        <GraphCanvas
-          initialNodes={layoutedNodes}
-          initialEdges={layoutedEdges}
-          onNodeClick={onNodeClick}
-          viewMode={viewMode}
-        />
-
+    <div className="flex h-screen w-screen bg-bg-canvas text-text-primary font-ui overflow-hidden relative selection:bg-cyan-500/30 selection:text-cyan-200">
+      <main className="flex-1 relative z-0 flex flex-col">
         {/* Top Center Overlay */}
         <div className="absolute top-4 left-0 right-0 pointer-events-none flex justify-center z-10 px-4">
           <div className="pointer-events-auto flex flex-col items-center gap-2 w-full max-w-2xl">
@@ -122,10 +115,23 @@ function OrgChartContent() {
             )}
           </div>
         </div>
+
+        <div className="flex-1 relative">
+          <GraphCanvas
+            initialNodes={layoutedNodes}
+            initialEdges={layoutedEdges}
+            onNodeClick={onNodeClick}
+            viewMode={viewMode}
+          />
+        </div>
       </main>
 
-      {/* Side Panel */}
-      <SidebarPanel selectedNode={selectedNode} onClose={() => setSelectedNode(null)} />
+      {/* Side Panel Partition - separated by 1px border */}
+      {selectedNode && (
+        <div className="w-[400px] border-l border-slate-800 bg-bg-panel/95 backdrop-blur-md relative z-20 shadow-2xl shadow-slate-950/50">
+          <SidebarPanel selectedNode={selectedNode} onClose={() => setSelectedNode(null)} />
+        </div>
+      )}
 
       {/* Notifications */}
       <Toaster theme="dark" position="bottom-center" />

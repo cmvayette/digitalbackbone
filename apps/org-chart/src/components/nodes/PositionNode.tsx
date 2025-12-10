@@ -26,28 +26,29 @@ export function PositionNode({ data }: NodeProps<GraphNode>) {
 
     // Base classes
     const isDimmed = data.isDimmed;
-    const dimmingClass = isDimmed ? "opacity-20 grayscale blur-[1px] pointer-events-none" : "opacity-100 grayscale-0 shadow-lg";
+    const dimmingClass = isDimmed ? "opacity-20 grayscale blur-[1px] pointer-events-none" : "opacity-100 grayscale-0";
 
     const cardBase = clsx(
-        "border rounded flex flex-col overflow-hidden transition-all duration-500 relative",
+        "border rounded flex flex-col overflow-hidden transition-all duration-500 relative backdrop-blur-sm",
         dimmingClass
     );
 
-    const mannedClasses = "bg-bg-panel border-slate-700";
+    const mannedClasses = "bg-slate-950/50 border-slate-700 hover:border-slate-500 hover:bg-slate-900/40";
 
     // Vacant base classes - handle highlighting
-    const vacantDefault = "bg-bg-surface/50 border-dashed border-slate-700/50 opacity-90";
-    const vacantCompatible = "bg-green-900/40 border-dashed border-accent-green ring-2 ring-accent-green/50 shadow-[0_0_15px_rgba(16,185,129,0.3)] opacity-100 scale-105 z-10";
+    const vacantDefault = "bg-slate-900/30 border-dashed border-slate-700/50 opacity-90 hover:border-slate-500";
+    const vacantCompatible = "bg-emerald-900/20 border-dashed border-accent-valid ring-1 ring-accent-valid/30 opacity-100 scale-105 z-10 box-shadow-[0_0_15px_rgba(52,211,153,0.1)]";
 
     // "Risky" / Incompatible but Droppable style
-    const vacantIncompatible = "bg-orange-900/10 border-dashed border-orange-500/70 ring-2 ring-orange-500/20 opacity-100 z-10";
+    const vacantIncompatible = "bg-amber-900/10 border-dashed border-accent-orange/70 ring-1 ring-accent-orange/20 opacity-100 z-10";
 
     const vacantClasses = isCompatible ? vacantCompatible : (isIncompatible ? vacantIncompatible : vacantDefault);
 
     // LOD 0: Minimal Block (Zoom < 0.4)
     if (!showBasic) {
         return (
-            <div className={clsx("w-4 h-4 rounded-sm", isVacant ? (isCompatible ? "bg-accent-green" : "bg-slate-700 border border-slate-600") : "bg-accent-blue border border-blue-500")}>
+            <div className={clsx("w-4 h-4 rounded-sm border",
+                isVacant ? (isCompatible ? "bg-accent-valid border-accent-valid" : "bg-slate-900 border-slate-700") : "bg-cyan-900/50 border-cyan-500")}>
                 <Handle type="target" position={Position.Top} className="!bg-slate-600 !w-1 !h-1 opacity-0" />
                 <Handle type="source" position={Position.Bottom} className="!bg-slate-600 !w-1 !h-1 opacity-0" />
             </div>
@@ -60,11 +61,11 @@ export function PositionNode({ data }: NodeProps<GraphNode>) {
             <div className={clsx("w-52 p-2 text-xs", cardBase, isVacant ? vacantClasses : mannedClasses)}>
                 <Handle type="target" position={Position.Top} className="!bg-slate-600 !w-2 !h-2" />
                 <div className="flex items-center justify-between">
-                    <div className="font-bold truncate max-w-[80%]">{roleTitle}</div>
-                    {isCompatible && <CheckCircle2 size={12} className="text-accent-green animate-pulse" />}
-                    {isIncompatible && <AlertTriangle size={12} className="text-orange-500" />}
+                    <div className="font-bold truncate max-w-[80%] font-ui tracking-tight text-white">{roleTitle}</div>
+                    {isCompatible && <CheckCircle2 size={12} className="text-accent-valid animate-pulse" />}
+                    {isIncompatible && <AlertTriangle size={12} className="text-accent-orange" />}
                 </div>
-                <div className="text-text-secondary truncate">{personName}</div>
+                <div className="text-text-secondary truncate font-mono text-[10px]">{personName}</div>
                 <Handle type="source" position={Position.Bottom} className="!bg-slate-600 !w-2 !h-2" />
             </div>
         );
@@ -81,12 +82,12 @@ export function PositionNode({ data }: NodeProps<GraphNode>) {
         <div className={clsx("w-96 p-3", cardBase, isVacant ? vacantClasses : mannedClasses)}>
             {/* Feedback Icon Overlay */}
             {isCompatible && (
-                <div className="absolute top-2 right-2 text-accent-green animate-pulse bg-bg-panel/80 rounded-full p-1 border border-accent-green">
+                <div className="absolute top-2 right-2 text-accent-valid animate-pulse bg-slate-950/80 rounded-full p-1 border border-accent-valid">
                     <CheckCircle2 size={20} />
                 </div>
             )}
             {isIncompatible && (
-                <div className="absolute top-2 right-2 text-orange-500 bg-bg-panel/80 rounded-full p-1 border border-orange-500">
+                <div className="absolute top-2 right-2 text-accent-orange bg-slate-950/80 rounded-full p-1 border border-accent-orange">
                     <AlertTriangle size={20} />
                 </div>
             )}
@@ -98,12 +99,12 @@ export function PositionNode({ data }: NodeProps<GraphNode>) {
                 <div>
                     <div className="mb-1">
                         {isFunctional ? (
-                            <span className="text-accent-green text-[10px] uppercase tracking-wider border border-green-900/50 px-1.5 py-0.5 rounded font-medium bg-green-900/10">Functional</span>
+                            <span className="text-accent-valid text-[10px] uppercase tracking-wider border border-accent-valid/30 px-1.5 py-0.5 rounded font-mono font-medium bg-emerald-900/10">Functional</span>
                         ) : (
-                            <span className="text-accent-orange text-[10px] uppercase tracking-wider border border-orange-900/50 px-1.5 py-0.5 rounded font-medium bg-orange-900/10">Billet</span>
+                            <span className="text-accent-orange text-[10px] uppercase tracking-wider border border-accent-orange/30 px-1.5 py-0.5 rounded font-mono font-medium bg-amber-900/10">Billet</span>
                         )}
                     </div>
-                    <h3 className="font-bold text-base text-text-primary leading-tight mt-1">
+                    <h3 className="font-bold text-base text-white leading-tight mt-1 tracking-tight">
                         {roleTitle}
                     </h3>
                 </div>
@@ -113,21 +114,21 @@ export function PositionNode({ data }: NodeProps<GraphNode>) {
             <div className="flex items-center gap-3 mb-3">
                 <div className={clsx(
                     "w-11 h-11 rounded-full flex items-center justify-center overflow-hidden border",
-                    isVacant ? "bg-transparent border-dashed border-slate-700 text-slate-600" : "bg-slate-700 border-transparent"
+                    isVacant ? "bg-transparent border-dashed border-slate-700 text-slate-600" : "bg-slate-800 border-slate-600 text-slate-400"
                 )}>
                     {isVacant ? (
-                        <span className="text-xl font-bold">?</span>
+                        <span className="text-xl font-bold font-mono">?</span>
                     ) : (
-                        <div className="text-[10px] text-text-secondary font-bold">IMG</div>
+                        <div className="text-[10px] text-text-secondary font-bold font-mono">IMG</div>
                     )}
                 </div>
                 <div className="flex flex-col">
                     {isVacant ? (
-                        <span className="text-text-secondary font-bold text-[13px] uppercase tracking-wide">Vacant</span>
+                        <span className="text-text-secondary font-bold text-[13px] uppercase tracking-wide font-mono">Vacant</span>
                     ) : (
-                        <span className="font-semibold text-sm text-text-primary">{personName}</span>
+                        <span className="font-semibold text-sm text-white">{personName}</span>
                     )}
-                    <span className="text-xs text-text-secondary">{rank}</span>
+                    <span className="text-xs text-text-secondary font-mono">{rank}</span>
                 </div>
             </div>
 
@@ -135,22 +136,22 @@ export function PositionNode({ data }: NodeProps<GraphNode>) {
             <div className="border-t border-slate-700/50 pt-2 mb-2">
                 <div className="flex justify-between text-xs text-text-secondary mb-1">
                     <span>Reports To:</span>
-                    <span className="text-accent-orange font-medium cursor-pointer hover:underline">
+                    <span className="text-white font-medium cursor-pointer hover:text-accent-cyan">
                         {reportsTo}
                     </span>
                 </div>
                 <div className="flex justify-between text-xs text-text-secondary">
                     <span>{isVacant ? "Status:" : "Location:"}</span>
-                    <span>{isVacant ? status : location}</span>
+                    <span className="font-mono">{isVacant ? status : location}</span>
                 </div>
             </div>
 
             {/* Actions */}
             <div className="flex gap-2 mt-auto">
-                <button className="flex-1 py-1.5 rounded bg-transparent border border-slate-600 text-text-secondary text-xs font-medium hover:bg-slate-700 hover:text-text-primary transition-colors cursor-pointer">
+                <button className="flex-1 py-1 px-2 rounded border border-slate-700 text-text-secondary text-[10px] uppercase tracking-wider font-medium hover:border-slate-500 hover:text-white transition-colors cursor-pointer">
                     {isVacant ? 'Requirements' : 'Connect'}
                 </button>
-                <button className="flex-1 py-1.5 rounded bg-transparent border border-slate-600 text-text-secondary text-xs font-medium hover:bg-slate-700 hover:text-text-primary transition-colors cursor-pointer">
+                <button className="flex-1 py-1 px-2 rounded border border-slate-700 text-text-secondary text-[10px] uppercase tracking-wider font-medium hover:border-slate-500 hover:text-white transition-colors cursor-pointer">
                     {isVacant ? 'Suggest' : 'Profile'}
                 </button>
             </div>
