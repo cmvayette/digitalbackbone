@@ -288,8 +288,18 @@ export class StateProjectionEngine {
 
       // New Task/Initiative Events
       case EventType.InitiativeCreated:
+      case EventType.TaskCreated:
       case EventType.KeyResultDefined: // KR is a Holon
         this.handleHolonCreation(event, state);
+        break;
+
+      // Task & Initiative Updates
+      case EventType.InitiativeStageChange:
+      case EventType.TaskStarted:
+      case EventType.TaskBlocked:
+      case EventType.TaskCompleted:
+      case EventType.TaskCancelled:
+        this.handleTaskInitiativeChange(event, state);
         break;
 
       default:
@@ -656,6 +666,9 @@ export class StateProjectionEngine {
       case EventType.InitiativeCreated:
       case EventType.InitiativeStageChange:
         return HolonType.Initiative;
+
+      case EventType.TaskCreated:
+        return HolonType.Task;
 
       case EventType.KeyResultDefined:
         return HolonType.KeyResult;
