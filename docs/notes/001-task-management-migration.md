@@ -30,6 +30,6 @@ The `apps/task-management` app currently uses a `taskStore.ts` that mixes data f
 
 ## Decisions / Action Items
 - [x] Update `MockSOMClient` to generate `Initiative` holons.
-- [ ] Create `useExternalTaskData` hook.
-- [ ] Refactor `taskStore` to remove internal fetching logic.
-- [ ] Update `App.tsx` to integrate.
+- [x] Create `useExternalTaskData` hook.
+- [x] Refactor `taskStore` to remove internal fetching logic.
+- [x] Update `App.tsx` to integrate.

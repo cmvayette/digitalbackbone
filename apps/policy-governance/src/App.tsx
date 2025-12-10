@@ -1,14 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { usePolicyStore } from './store/policyStore';
 import { PolicyList } from './components/PolicyList';
 import { PolicyEditor } from './components/editor/PolicyEditor';
 import { ComplianceDashboard } from './components/dashboard/ComplianceDashboard';
 import { Layout, FileText, BarChart2 } from 'lucide-react';
-
-
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useExternalPolicyData } from './hooks/useExternalPolicyData';
 
-function App() {
+const queryClient = new QueryClient();
+
+function AppContent() {
   const { currentPolicy, selectPolicy, setPolicies } = usePolicyStore();
   const [view, setView] = React.useState<'list' | 'editor' | 'dashboard'>('list');
 
@@ -73,6 +74,14 @@ function App() {
         )}
       </main>
     </div>
+  );
+}
+
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AppContent />
+    </QueryClientProvider>
   );
 }
 

@@ -129,6 +129,17 @@ export class MockSOMClient implements ISOMClient {
                     status: 'active',
                 };
                 break;
+            case HolonType.Document:
+                base.properties = {
+                    title: faker.company.catchPhrase(),
+                    type: faker.helpers.arrayElement(['Policy', 'Instruction', 'Manual', 'SOP']),
+                    version: faker.system.semver(),
+                    status: faker.helpers.arrayElement(['draft', 'review', 'published']),
+                    content: faker.lorem.paragraphs(3),
+                    createdAt: faker.date.past().toISOString(),
+                    updatedAt: faker.date.recent().toISOString(),
+                };
+                break;
             default:
                 base.properties = {
                     name: faker.word.noun(),

@@ -9,14 +9,21 @@ import { CheckSquare, Folder, Layout, User } from 'lucide-react';
 
 const queryClient = new QueryClient();
 
-function TaskAppContent() {
+function AppContent() {
   const [view, setView] = React.useState<'inbox' | 'projects' | 'hub'>('hub');
-  const { tasks, projects } = useExternalTaskData({ mode: 'mock' });
-  const { syncData } = useTaskStore();
+  // Pass explicit mock or sync from env
+  const { tasks, projects, isLoading, updateTaskStatus } = useExternalTaskData({ mode: 'mock' });
+  const { setTasks, setProjects } = useTaskStore() as any; // Cast for extended setters
 
+  // Sync hook data to store for components that rely on selectors
   React.useEffect(() => {
-    syncData(tasks as any, projects as any);
-  }, [tasks, projects, syncData]);
+    if (tasks) setTasks(tasks);
+    if (projects) setProjects(projects);
+  }, [tasks, projects, setTasks, setProjects]);
+
+  if (isLoading) {
+    return <div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-400">Loading Tasks...</div>;
+  }
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-200 font-sans flex text-sm">
@@ -28,7 +35,7 @@ function TaskAppContent() {
 
         <button
           onClick={() => setView('hub')}
-          className={`p-3 rounded-xl transition-all ${view === 'hub' ? 'bg-slate-800 text-indigo-400 shadow-inner' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}
+          className={`p - 3 rounded - xl transition - all ${view === 'hub' ? 'bg-slate-800 text-indigo-400 shadow-inner' : 'text-slate-400 hover:text-white hover:bg-slate-800'} `}
           title="My Hub"
         >
           <User size={20} />
@@ -36,7 +43,7 @@ function TaskAppContent() {
 
         <button
           onClick={() => setView('inbox')}
-          className={`p-3 rounded-xl transition-all ${view === 'inbox' ? 'bg-slate-800 text-indigo-400 shadow-inner' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}
+          className={`p - 3 rounded - xl transition - all ${view === 'inbox' ? 'bg-slate-800 text-indigo-400 shadow-inner' : 'text-slate-400 hover:text-white hover:bg-slate-800'} `}
           title="Position Inbox"
         >
           <CheckSquare size={20} />
@@ -44,7 +51,7 @@ function TaskAppContent() {
 
         <button
           onClick={() => setView('projects')}
-          className={`p-3 rounded-xl transition-all ${view === 'projects' ? 'bg-slate-800 text-indigo-400 shadow-inner' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}
+          className={`p - 3 rounded - xl transition - all ${view === 'projects' ? 'bg-slate-800 text-indigo-400 shadow-inner' : 'text-slate-400 hover:text-white hover:bg-slate-800'} `}
           title="Projects"
         >
           <Folder size={20} />
@@ -52,8 +59,8 @@ function TaskAppContent() {
       </div>
 
       <main className="flex-1 overflow-hidden relative">
-        {view === 'hub' && <MyTasksView />}
-        {view === 'inbox' && <TaskInbox />}
+        {view === 'hub' && <MyTasksView onUpdateStatus={updateTaskStatus} />}
+        {view === 'inbox' && <TaskInbox onUpdateStatus={updateTaskStatus} />}
         {view === 'projects' && <ProjectList />}
       </main>
     </div>
@@ -63,7 +70,7 @@ function TaskAppContent() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <TaskAppContent />
+      <AppContent />
     </QueryClientProvider>
   );
 }

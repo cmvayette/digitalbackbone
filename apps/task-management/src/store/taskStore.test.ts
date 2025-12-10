@@ -21,7 +21,9 @@ describe('useTaskStore', () => {
         const mockTasks: any[] = [{ id: 't1', title: 'Test Task' }];
         const mockProjects: any[] = [{ id: 'p1', name: 'Test Project' }];
 
-        useTaskStore.getState().syncData(mockTasks, mockProjects);
+        // Cast to any to access the extended store methods in test
+        (useTaskStore.getState() as any).setTasks(mockTasks);
+        (useTaskStore.getState() as any).setProjects(mockProjects);
 
         const state = useTaskStore.getState();
         expect(state.tasks).toEqual(mockTasks);
@@ -44,7 +46,7 @@ describe('useTaskStore', () => {
         expect(state.projects).toHaveLength(1);
         expect(state.projects[0].name).toBe('New Project');
         // ID should be temp
-        expect(state.projects[0].id).toMatch(/^proj-/);
+        expect(state.projects[0].id).toMatch(/^temp-/);
     });
 
     // We mock the dynamic import of api-client for actions validation if we want deeper tests,

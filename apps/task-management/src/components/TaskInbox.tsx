@@ -13,9 +13,16 @@ const StatusIcon = ({ status }: { status: Task['state'] }) => {
     }
 };
 
-export const TaskInbox: React.FC = () => {
-    const { tasks, updateTaskStatus } = useTaskStore();
+export const TaskInbox: React.FC<{ onUpdateStatus?: (id: string, status: Task['state']) => void }> = ({ onUpdateStatus }) => {
+    const { tasks, updateTaskStatus: localUpdate } = useTaskStore();
     const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+
+    const handleUpdate = (id: string, status: Task['state']) => {
+        // Optimistic local update
+        localUpdate(id, status);
+        // Server update
+        if (onUpdateStatus) onUpdateStatus(id, status);
+    };
 
     // Grouping could happen here, for MVP just a flat sorted list
     const sortedTasks = [...tasks].sort((a, b) => {
@@ -45,14 +52,14 @@ export const TaskInbox: React.FC = () => {
                             key={task.id}
                             onClick={() => setSelectedTaskId(task.id)}
                             className={`flex items-center gap-4 p-4 rounded-lg border transition-all cursor-pointer ${task.state === 'done' ? 'bg-slate-900/30 border-slate-800 opacity-60' :
-                                    selectedTaskId === task.id ? 'bg-slate-900 border-indigo-500 shadow-md ring-1 ring-indigo-500/50' :
-                                        'bg-slate-900 border-slate-700 shadow-sm hover:border-slate-500'
+                                selectedTaskId === task.id ? 'bg-slate-900 border-indigo-500 shadow-md ring-1 ring-indigo-500/50' :
+                                    'bg-slate-900 border-slate-700 shadow-sm hover:border-slate-500'
                                 }`}
                         >
                             <button
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    updateTaskStatus(task.id, task.state === 'done' ? 'todo' : 'done');
+                                    handleUpdate(task.id, task.state === 'done' ? 'todo' : 'done');
                                 }}
                                 className="shrink-0 hover:scale-110 transition-transform"
                             >
@@ -65,7 +72,7 @@ export const TaskInbox: React.FC = () => {
                                 </h3>
                                 <div className="flex items-center gap-3 text-xs text-slate-500 mt-1">
                                     <span className={`uppercase font-bold tracking-wider ${task.priority === 'critical' ? 'text-red-400' :
-                                            task.priority === 'high' ? 'text-amber-400' : 'text-slate-500'
+                                        task.priority === 'high' ? 'text-amber-400' : 'text-slate-500'
                                         }`}>
                                         {task.priority}
                                     </span>
