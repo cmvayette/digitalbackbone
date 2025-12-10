@@ -1,8 +1,8 @@
 import React, { useMemo } from 'react';
 import { mockProcesses } from '../../mocks/mock-processes';
-import { calculateProcessHealth, HealthScore } from '../../utils/health-calculator';
+import { calculateProcessHealth } from '../../utils/health-calculator';
 import { useDriftDetection } from '../../hooks/useDriftDetection';
-import { Activity, AlertTriangle, CheckCircle, Clock, FileText, Globe } from 'lucide-react';
+import { Activity, CheckCircle, Clock, FileText, Globe } from 'lucide-react';
 import type { Process } from '../../types/process';
 
 const HealthCard: React.FC<{ process: Process }> = ({ process }) => {
@@ -70,14 +70,9 @@ const HealthCard: React.FC<{ process: Process }> = ({ process }) => {
 export const ProcessHealthDashboard: React.FC = () => {
     // Sort processes by health score (lowest first)
     const sortedProcesses = useMemo(() => {
-        return [...mockProcesses].sort((a) => {
-            const healthA = calculateProcessHealth(a, false).score; // Rough sort without drift check for perf? 
-            // Better to include drift if possible, but useDriftDetection is a hook.
-            // We can't use hook in sort callback easily without strict rules check.
-            // For MVP, we'll sort inside the render or extract logic.
-            // Actually, we can't call hooks inside sort.
-            // We'll map first, then sort.
-            return 0;
+        return [...mockProcesses].sort((a, b) => {
+            // For now just sort by name as placeholder
+            return a.properties.name.localeCompare(b.properties.name);
         });
     }, []);
 
@@ -102,7 +97,7 @@ export const ProcessHealthDashboard: React.FC = () => {
             </header>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                {mockProcesses.map(process => (
+                {sortedProcesses.map(process => (
                     <HealthCard key={process.id} process={process} />
                 ))}
             </div>

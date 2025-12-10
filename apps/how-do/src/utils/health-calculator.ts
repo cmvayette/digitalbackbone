@@ -1,5 +1,5 @@
 import type { Process } from '../types/process';
-import { useDriftDetection } from '../hooks/useDriftDetection';
+
 
 export interface HealthScore {
     score: number; // 0-100
@@ -55,11 +55,11 @@ export function calculateProcessHealth(process: Process, hasDrift: boolean = fal
     const driftPenalty = hasDrift ? 20 : 0;
 
     // Calculate Weighted Score
-    let rawScore = (freshnessScore * weights.freshness) +
+    const rawScore = (freshnessScore * weights.freshness) +
         (completenessScore * weights.completeness) +
         (complianceScore * weights.compliance);
 
-    let finalScore = Math.max(0, Math.round(rawScore - driftPenalty));
+    const finalScore = Math.max(0, Math.round(rawScore - driftPenalty));
 
     // Determine Status
     let status: 'healthy' | 'at-risk' | 'critical' = 'healthy';

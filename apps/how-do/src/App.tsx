@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
-import './App.css';
 import { SwimlaneEditor } from './components/SwimlaneEditorComponent';
 import { SwimlaneViewer } from './components/SwimlaneViewer';
 import { TimelineViewer } from './components/TimelineViewer';
 import { ProcessSearch } from './components/ProcessSearch';
 import { ProcessHealthDashboard } from './components/health/ProcessHealthDashboard';
 import type { Process } from './types/process';
-import { LayoutList, GitCommitHorizontal, Activity, Search, Edit3 } from 'lucide-react';
+import { LayoutList, GitCommitHorizontal } from 'lucide-react';
+import { Header } from './components/Header';
 
-type ViewMode = 'search' | 'viewer' | 'editor' | 'health';
+export type ViewMode = 'search' | 'viewer' | 'editor' | 'health';
 type ViewerType = 'swimlane' | 'timeline';
 
 function App() {
@@ -37,36 +37,7 @@ function App() {
   return (
     <div className="h-screen w-screen overflow-hidden bg-bg-canvas text-text-primary font-ui flex flex-col selection:bg-cyan-500/30 selection:text-cyan-200">
       {/* Top Navigation Bar - Glass Effect */}
-      {(view === 'search' || view === 'health') && (
-        <div className="h-14 border-b border-border-color flex items-center px-4 justify-between bg-bg-panel/80 backdrop-blur-md z-50">
-          <div className="flex items-center gap-2">
-            <div className="w-1.5 h-6 bg-accent-cyan rounded-sm shadow-[0_0_10px_rgba(34,211,238,0.5)]"></div>
-            <div className="font-bold text-lg tracking-tight text-white uppercase font-ui">How-Do</div>
-          </div>
-
-          <div className="flex gap-1">
-            <button
-              onClick={() => setView('search')}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-sm text-xs font-bold uppercase tracking-wider transition-all border ${view === 'search' ? 'bg-cyan-900/20 text-accent-cyan border-accent-cyan/50' : 'bg-transparent text-text-secondary border-transparent hover:text-white hover:bg-slate-800'}`}
-            >
-              <Search size={14} /> Discovery
-            </button>
-            <button
-              onClick={() => setView('health')}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-sm text-xs font-bold uppercase tracking-wider transition-all border ${view === 'health' ? 'bg-amber-900/20 text-accent-orange border-accent-orange/50' : 'bg-transparent text-text-secondary border-transparent hover:text-white hover:bg-slate-800'}`}
-            >
-              <Activity size={14} /> Health
-            </button>
-            <div className="w-px h-6 bg-slate-800 mx-1"></div>
-            <button
-              onClick={() => setView('editor')}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-sm text-xs font-bold uppercase tracking-wider transition-all border border-slate-700 bg-slate-900 text-text-secondary hover:text-white hover:border-slate-500`}
-            >
-              <Edit3 size={14} /> New Process
-            </button>
-          </div>
-        </div>
-      )}
+      <Header view={view} setView={setView} />
 
       <div className="flex-1 overflow-auto relative bg-bg-canvas">
         {view === 'search' && (
