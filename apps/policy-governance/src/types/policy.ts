@@ -5,7 +5,7 @@ export type PolicyStatus = 'draft' | 'review' | 'active' | 'superseded' | 'archi
 export interface OwnerRef {
     id: string; // Real UUID from Org Store
     name: string; // Display name
-    type: 'Organization' | 'Position' | 'RoleTag';
+    type: 'Organization' | 'Position' | 'RoleTag' | 'Person';
     uic?: string; // For Orgs
     billetCode?: string; // For Positions
 }

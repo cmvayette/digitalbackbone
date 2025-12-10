@@ -15,6 +15,11 @@ export enum RelationshipType {
   BELONGS_TO = 'BELONGS_TO',
   PART_OF = 'PART_OF',
 
+  // Military Authority
+  ADCON = 'ADCON', // Administrative Control
+  TACON = 'TACON', // Tactical Control
+  OPCON = 'OPCON', // Operational Control
+
   // Responsibility
   RESPONSIBLE_FOR = 'RESPONSIBLE_FOR',
   OWNED_BY = 'OWNED_BY',

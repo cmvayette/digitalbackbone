@@ -6,7 +6,8 @@ import {
     type ProcessUpdatedPayload,
     type ProcessStep
 } from '@som/shared-types';
-import { createSOMClient, type SubmitEventRequest } from '../client';
+import { type SubmitEventRequest } from '../client';
+import { createSOMClient } from '../factory';
 import { v4 as uuidv4 } from 'uuid';
 
 export function useProcessEditor() {

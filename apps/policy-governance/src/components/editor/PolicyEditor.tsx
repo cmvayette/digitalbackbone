@@ -19,6 +19,7 @@ export const PolicyEditor: React.FC<PolicyEditorProps> = ({ onBack }) => {
     const [activeTab, setActiveTab] = React.useState<'document' | 'obligations'>('document');
     const [showComposer, setShowComposer] = React.useState(false);
     const [pendingClauseText, setPendingClauseText] = React.useState('');
+    const { getProcessById, addProcess } = useExternalProcessData({ mode: 'mock' });
 
     if (!currentPolicy) return <div>No policy selected</div>;
 
@@ -212,7 +213,6 @@ export const PolicyEditor: React.FC<PolicyEditorProps> = ({ onBack }) => {
 
                                 <div className="space-y-3">
                                     {currentPolicy.obligations.map(obl => {
-                                        const { getProcessById, addProcess } = useExternalProcessData();
                                         const linkedProcess = obl.suggestedProcessId ? getProcessById(obl.suggestedProcessId) : undefined;
 
                                         return (

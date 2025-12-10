@@ -82,7 +82,7 @@ export const usePolicyStore = create<PolicyState>((set) => ({
             const { EventType } = await import('@som/shared-types');
             const { v4: uuidv4 } = await import('uuid');
 
-            const client = createSOMClient();
+            const client = createSOMClient(undefined, { mode: 'mock' });
             const documentId = uuidv4();
 
             // Replace temp ID with real UUID in a follow-up or just use UUID initially?

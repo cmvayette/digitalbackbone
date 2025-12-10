@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import { HolonType, type Holon } from '@som/shared-types';
-import { createSOMClient } from './client';
+import { createSOMClient } from './factory';
 
 // Replicating types locally/shared for MVP (eventually refer to @som/shared-types)
 export interface ExternalObligation {
@@ -18,13 +18,16 @@ export interface ExternalPolicy {
     obligations: ExternalObligation[];
 }
 
-export function useExternalPolicyData() {
+export function useExternalPolicyData(options?: import('./factory').SOMClientOptions) {
     const [policies, setPolicies] = useState<ExternalPolicy[]>([]);
     const [loading, setLoading] = useState(true);
 
     const fetchPolicies = useCallback(async () => {
         try {
-            const client = createSOMClient();
+            const client = createSOMClient(
+                options?.mode === 'mock' ? undefined : 'http://localhost:3333/api/v1',
+                options
+            );
             const response = await client.queryHolons(HolonType.Document, {
                 properties: { documentType: 'Policy' }
             });
@@ -37,7 +40,7 @@ export function useExternalPolicyData() {
                     // This aligns with "Read" side flexibility.
                     return {
                         id: h.id,
-                        title: h.properties.title || h.properties.name || 'Untitled Policy',
+                        title: h.properties.title as string || h.properties.name as string || 'Untitled Policy',
                         status: (h.properties.status as any) || 'draft',
                         obligations: (h.properties.obligations as any[]) || []
                     };
@@ -49,7 +52,7 @@ export function useExternalPolicyData() {
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [options]);
 
     useEffect(() => {
         fetchPolicies();

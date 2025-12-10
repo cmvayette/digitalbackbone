@@ -56,10 +56,10 @@ export function DiscoveryBar({ nodes, onResultSelect, viewMode, onViewModeChange
         >
             {/* Search Input Box */}
             <div className={`
-                w-full h-12 bg-slate-900 border rounded-lg shadow-lg flex items-center px-4 gap-3 relative transition-colors
-                ${isFocused ? 'border-orange-500 ring-1 ring-orange-500/50' : 'border-slate-700'}
+                w-full h-10 bg-slate-900/90 backdrop-blur-md border rounded-sm shadow-none flex items-center px-3 gap-3 relative transition-colors
+                ${isFocused ? 'border-accent-cyan ring-1 ring-accent-cyan/30' : 'border-slate-700 hover:border-slate-500'}
             `}>
-                <Search size={18} className="text-slate-400" />
+                <Search size={16} className={isFocused ? "text-accent-cyan" : "text-slate-500"} />
 
                 <input
                     ref={inputRef}
@@ -67,15 +67,14 @@ export function DiscoveryBar({ nodes, onResultSelect, viewMode, onViewModeChange
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     onFocus={() => setIsFocused(true)}
-                    // onBlur={() => setTimeout(() => setIsFocused(false), 200)} // Delay to allow click
-                    placeholder="Search organizations, people, or 'vacant'..."
-                    className="flex-1 bg-transparent border-none outline-none text-slate-50 placeholder:text-slate-500 text-sm h-full"
+                    placeholder="SEARCH (CMD+K)"
+                    className="flex-1 bg-transparent border-none outline-none text-white placeholder:text-slate-600 text-sm font-mono h-full uppercase"
                 />
 
                 <div className="flex items-center gap-2">
                     {query && (
                         <button onClick={() => setQuery('')} className="text-slate-500 hover:text-white transition-colors">
-                            <X size={16} />
+                            <X size={14} />
                         </button>
                     )}
                 </div>
@@ -83,16 +82,16 @@ export function DiscoveryBar({ nodes, onResultSelect, viewMode, onViewModeChange
 
             {/* View Mode Toggles */}
             {!isFocused && !query && (
-                <div className="absolute -bottom-10 flex gap-2">
+                <div className="absolute -bottom-8 flex gap-2">
                     <button
                         onClick={() => onViewModeChange('reporting')}
-                        className={`text-[10px] uppercase font-bold tracking-wider px-3 py-1 rounded-full border transition-colors ${viewMode === 'reporting' ? 'bg-accent-blue text-white border-blue-400' : 'bg-bg-surface text-text-secondary border-border-color hover:border-slate-500'}`}
+                        className={`text-[10px] uppercase font-bold tracking-wider px-3 py-1 rounded-sm border transition-colors font-mono ${viewMode === 'reporting' ? 'bg-cyan-900/30 text-accent-cyan border-accent-cyan' : 'bg-slate-900/50 text-slate-500 border-slate-700 hover:border-slate-500'}`}
                     >
                         Reporting
                     </button>
                     <button
                         onClick={() => onViewModeChange('mission')}
-                        className={`text-[10px] uppercase font-bold tracking-wider px-3 py-1 rounded-full border transition-colors ${viewMode === 'mission' ? 'bg-accent-orange text-white border-orange-400' : 'bg-bg-surface text-text-secondary border-border-color hover:border-slate-500'}`}
+                        className={`text-[10px] uppercase font-bold tracking-wider px-3 py-1 rounded-sm border transition-colors font-mono ${viewMode === 'mission' ? 'bg-amber-900/30 text-accent-orange border-accent-orange' : 'bg-slate-900/50 text-slate-500 border-slate-700 hover:border-slate-500'}`}
                     >
                         Mission
                     </button>
@@ -105,23 +104,23 @@ export function DiscoveryBar({ nodes, onResultSelect, viewMode, onViewModeChange
                     <button
                         onClick={() => toggleFilter('vacant')}
                         className={`
-                            flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider border transition-all
+                            flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-[10px] font-bold uppercase tracking-wider border transition-all font-mono
                             ${filters.vacant
-                                ? 'bg-amber-500/20 border-amber-500 text-amber-500'
-                                : 'bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-500 hover:text-slate-200'}
+                                ? 'bg-amber-900/20 border-accent-orange text-accent-orange'
+                                : 'bg-slate-900/50 border-slate-700 text-slate-500 hover:border-slate-500 hover:text-slate-300'}
                         `}
                     >
-                        <div className={`w-1.5 h-1.5 rounded-full ${filters.vacant ? 'bg-amber-500' : 'bg-slate-500'}`} />
+                        <div className={`w-1.5 h-1.5 rounded-full ${filters.vacant ? 'bg-accent-orange' : 'bg-slate-500'}`} />
                         Vacancies
                     </button>
 
                     <button
                         onClick={() => toggleFilter('tigerTeams')}
                         className={`
-                            flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider border transition-all
+                            flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-[10px] font-bold uppercase tracking-wider border transition-all font-mono
                             ${filters.tigerTeams
-                                ? 'bg-orange-500/20 border-orange-500 text-orange-500'
-                                : 'bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-500 hover:text-slate-200'}
+                                ? 'bg-orange-900/20 border-orange-500 text-orange-500'
+                                : 'bg-slate-900/50 border-slate-700 text-slate-500 hover:border-slate-500 hover:text-slate-300'}
                         `}
                     >
                         <div className={`w-1.5 h-1.5 rounded-full ${filters.tigerTeams ? 'bg-orange-500' : 'bg-slate-500'}`} />
@@ -132,31 +131,31 @@ export function DiscoveryBar({ nodes, onResultSelect, viewMode, onViewModeChange
 
             {/* Results Dropdown */}
             {isFocused && (query || filters.vacant || filters.tigerTeams) && (
-                <div className="w-full mt-2 bg-slate-900 border border-slate-700 rounded-lg shadow-xl overflow-hidden max-h-[300px] overflow-y-auto">
+                <div className="w-full mt-2 bg-slate-900/95 backdrop-blur-md border border-slate-700 rounded-sm shadow-2xl overflow-hidden max-h-[300px] overflow-y-auto">
                     {results.length > 0 ? (
                         results.map((result) => (
                             <button
                                 key={result.id}
                                 onClick={() => handleSelect(result)}
-                                className="w-full text-left px-4 py-3 hover:bg-slate-800 border-b border-slate-800 last:border-0 flex items-center justify-between group transition-colors"
+                                className="w-full text-left px-4 py-2 hover:bg-slate-800 border-b border-slate-800 last:border-0 flex items-center justify-between group transition-colors"
                             >
                                 <div>
-                                    <div className="text-sm font-bold text-slate-50 group-hover:text-orange-500 transition-colors">
+                                    <div className="text-sm font-bold text-white group-hover:text-accent-cyan transition-colors font-ui tracking-tight">
                                         {result.label}
                                     </div>
-                                    <div className="text-xs text-slate-400">
+                                    <div className="text-[10px] text-slate-500 font-mono">
                                         {result.subtitle}
                                     </div>
                                 </div>
-                                <span className="text-[10px] uppercase font-bold tracking-wider text-slate-500 bg-slate-950 px-1.5 py-0.5 rounded border border-slate-800">
+                                <span className="text-[9px] uppercase font-bold tracking-wider text-slate-500 bg-slate-950 px-1.5 py-0.5 rounded-sm border border-slate-800 font-mono">
                                     {result.type}
                                 </span>
                             </button>
                         ))
                     ) : (
-                        <div className="px-4 py-8 text-sm text-slate-500 text-center flex flex-col items-center gap-2">
-                            <Search size={24} className="opacity-20" />
-                            <span>No results for your query.</span>
+                        <div className="px-4 py-8 text-sm text-slate-500 text-center flex flex-col items-center gap-2 font-mono">
+                            <Search size={20} className="opacity-20" />
+                            <span>NO SIGNAL FOUND</span>
                         </div>
                     )}
                 </div>

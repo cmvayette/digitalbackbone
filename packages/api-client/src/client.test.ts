@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { SOMClient, createSOMClient } from './client';
+import { SOMClient } from './client';
+import { createSOMClient } from './factory';
 
 describe('SOMClient', () => {
     const baseUrl = 'http://api.test';

@@ -3,7 +3,9 @@
  * Unified API client for all Tier-1 applications
  */
 
-export { SOMClient, createSOMClient } from './client';
+export { SOMClient } from './client';
+export { createSOMClient } from './factory';
+export { MockSOMClient } from './mock-client';
 export type {
   APIResponse,
   HolonFilters,
@@ -15,7 +17,7 @@ export type {
 } from './client';
 
 export { queryKeys, queryFns, staleTimes } from './hooks';
-export { useExternalOrgData, type ExternalOrganization, type ExternalPosition } from './useExternalOrgData';
+export { useExternalOrgData, type ExternalOrganization, type ExternalPosition, type ExternalPerson } from './useExternalOrgData';
 export * from './useExternalProcessData';
 export * from './hooks/useProcessEditor';
 export * from './useExternalPolicyData';

@@ -34,6 +34,7 @@ export interface APIServerConfig {
   maxRequestsPerMinute?: number;
   enableCORS?: boolean;
   corsOrigins?: string[];
+  authMode?: 'apikey' | 'gateway';
 }
 
 /**
@@ -103,8 +104,18 @@ export class APIServer {
       projectionEngine,
     );
 
-    // Default to API Key Auth for now (or could be config driven)
-    const authProvider = new ApiKeyAuthProvider();
+    // Select Auth Provider based on configuration
+    let authProvider: import('./auth/auth-types').IAuthProvider;
+
+    if (this.config.authMode === 'gateway') {
+      const { GatewayHeaderAuthProvider } = require('./auth/gateway-provider');
+      authProvider = new GatewayHeaderAuthProvider();
+    } else {
+      // Default to API Key
+      const { ApiKeyAuthProvider } = require('./auth/api-key-provider');
+      authProvider = new ApiKeyAuthProvider();
+    }
+
     this.authMiddleware = new AuthenticationMiddleware(authProvider);
 
     this.authzMiddleware = new AuthorizationMiddleware();
@@ -139,6 +150,13 @@ export class APIServer {
     this.registerRoute({
       method: 'POST',
       path: '/api/v1/relationships/query',
+      handler: (req) => this.routes.queryRelationships(req),
+      requiresAuth: true,
+    });
+
+    this.registerRoute({
+      method: 'POST',
+      path: '/api/v1/relationships', // Alias for Client Contract
       handler: (req) => this.routes.queryRelationships(req),
       requiresAuth: true,
     });
@@ -232,6 +250,14 @@ export class APIServer {
       requiresAuth: true,
     });
 
+    // Unified Search Route (Client Contract)
+    this.registerRoute({
+      method: 'GET',
+      path: '/api/v1/search',
+      handler: (req) => this.routes.unifiedSearch(req),
+      requiresAuth: true,
+    });
+
     // Pattern matching routes
     this.registerRoute({
       method: 'POST',
@@ -285,6 +311,20 @@ export class APIServer {
       path: '/api/v1/health',
       handler: (req) => this.routes.getHealth(req),
       requiresAuth: false, // Public endpoint
+    });
+
+    this.registerRoute({
+      method: 'GET',
+      path: '/health/liveness',
+      handler: async () => ({ success: true, data: { status: 'UP' } }),
+      requiresAuth: false,
+    });
+
+    this.registerRoute({
+      method: 'GET',
+      path: '/health/readiness',
+      handler: (req) => this.routes.getHealth(req),
+      requiresAuth: false,
     });
 
     this.registerRoute({

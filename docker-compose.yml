@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  som-tier0:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - AUTH_MODE=apikey # Or 'gateway' to test C-ATO path
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://localhost:3000/health/liveness"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    read_only: true # Hardening: Read-only root filesystem
+    tmpfs:
+      - /tmp # Allow write to tmp for logs/pid if needed
+
+  # Gateway Simulation (Optional, e.g. mock Envoy)
+  # gateway:
+  #   image: envoyproxy/envoy:distroless-v1.25
+  #   ...

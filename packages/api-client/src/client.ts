@@ -109,7 +109,45 @@ export interface EventResult {
  * // Get org structure
  * const structure = await client.getOrgStructure('org-123');
  */
-export class SOMClient {
+/**
+ * SOM API Client Interface
+ */
+export interface ISOMClient {
+  setAuthToken(token: string): void;
+  clearAuthToken(): void;
+
+  // Holon Operations
+  getHolon(id: HolonID): Promise<APIResponse<Holon>>;
+  queryHolons(type: HolonType, filters?: HolonFilters, pagination?: PaginationOptions): Promise<APIResponse<Holon[]>>;
+  search(query: string, types?: HolonType[], limit?: number): Promise<APIResponse<SearchResult[]>>;
+
+  // Relationship Operations
+  getRelationships(holonId: HolonID, type?: RelationshipType, direction?: 'source' | 'target' | 'both'): Promise<APIResponse<Relationship[]>>;
+
+  // Event Operations
+  submitEvent<T extends EventType>(event: SubmitEventRequest<T>): Promise<APIResponse<EventResult>>;
+  getEvents(holonId: HolonID, eventTypes?: EventType[], since?: Date): Promise<APIResponse<Event[]>>;
+
+  // Temporal Operations
+  getHolonAsOf(id: HolonID, timestamp: Date): Promise<APIResponse<Holon>>;
+  getOrgStructure(orgId: HolonID, asOf?: Date): Promise<APIResponse<OrgStructure>>;
+
+  // Domain-Specific Operations
+  getProcesses(filters?: HolonFilters): Promise<APIResponse<Holon[]>>;
+  getTasksForPosition(positionId: HolonID, status?: string): Promise<APIResponse<Holon[]>>;
+  getObjectivesForLOE(loeId: HolonID): Promise<APIResponse<Holon[]>>;
+  getPolicies(filters?: HolonFilters): Promise<APIResponse<Holon[]>>;
+
+  // Health
+  healthCheck(): Promise<{ healthy: boolean; latencyMs: number }>;
+}
+
+import { MockSOMClient } from './mock-client';
+
+/**
+ * Real SOM API Client Implementation
+ */
+export class RealSOMClient implements ISOMClient {
   private baseUrl: string;
   private defaultHeaders: Record<string, string>;
   private includeCredentials?: boolean;
@@ -181,16 +219,10 @@ export class SOMClient {
 
   // ==================== Holon Operations ====================
 
-  /**
-   * Get a single holon by ID
-   */
   async getHolon(id: HolonID): Promise<APIResponse<Holon>> {
     return this.request<Holon>('GET', `/holons/${id}`);
   }
 
-  /**
-   * Query holons by type with optional filters
-   */
   async queryHolons(
     type: HolonType,
     filters?: HolonFilters,
@@ -203,9 +235,6 @@ export class SOMClient {
     });
   }
 
-  /**
-   * Unified search across holon types
-   */
   async search(
     query: string,
     types?: HolonType[],
@@ -220,33 +249,24 @@ export class SOMClient {
 
   // ==================== Relationship Operations ====================
 
-  /**
-   * Get relationships for a holon
-   */
   async getRelationships(
     holonId: HolonID,
     type?: RelationshipType,
     direction?: 'source' | 'target' | 'both'
   ): Promise<APIResponse<Relationship[]>> {
-    return this.request<Relationship[]>('POST', '/relationships', {
-      holonId,
-      type,
-      direction: direction || 'both',
-    });
+    const params = new URLSearchParams();
+    if (type) params.set('type', type);
+    if (direction) params.set('direction', direction);
+
+    return this.request<Relationship[]>('GET', `/holons/${holonId}/relationships?${params}`);
   }
 
   // ==================== Event Operations ====================
 
-  /**
-   * Submit an event to the SOM
-   */
   async submitEvent<T extends EventType>(event: SubmitEventRequest<T>): Promise<APIResponse<EventResult>> {
     return this.request<EventResult>('POST', '/events', event);
   }
 
-  /**
-   * Get events for a holon
-   */
   async getEvents(
     holonId: HolonID,
     eventTypes?: EventType[],
@@ -261,19 +281,11 @@ export class SOMClient {
 
   // ==================== Temporal Operations ====================
 
-  /**
-   * Get a holon as it existed at a specific point in time
-   */
   async getHolonAsOf(id: HolonID, timestamp: Date): Promise<APIResponse<Holon>> {
-    return this.request<Holon>('POST', '/temporal/holons', {
-      holonId: id,
-      asOf: timestamp.toISOString(),
-    });
+    const params = new URLSearchParams({ asOfTimestamp: timestamp.toISOString() });
+    return this.request<Holon>('GET', `/temporal/holons/${id}?${params}`);
   }
 
-  /**
-   * Get organization structure (org, positions, people, relationships)
-   */
   async getOrgStructure(
     orgId: HolonID,
     asOf?: Date
@@ -292,16 +304,10 @@ export class SOMClient {
 
   // ==================== Domain-Specific Operations ====================
 
-  /**
-   * Get all processes
-   */
   async getProcesses(filters?: HolonFilters): Promise<APIResponse<Holon[]>> {
     return this.queryHolons(HolonType.Process, filters);
   }
 
-  /**
-   * Get all tasks for a position
-   */
   async getTasksForPosition(
     positionId: HolonID,
     status?: string
@@ -315,9 +321,6 @@ export class SOMClient {
     return this.queryHolons(HolonType.Task, filters);
   }
 
-  /**
-   * Get all objectives under a Line of Effort
-   */
   async getObjectivesForLOE(loeId: HolonID): Promise<APIResponse<Holon[]>> {
     // 1. Get all 'CONTAINS' relationships from the LOE
     const relResponse = await this.getRelationships(loeId, RelationshipType.CONTAINS, 'source');
@@ -352,9 +355,6 @@ export class SOMClient {
     };
   }
 
-  /**
-   * Get all documents (policies)
-   */
   async getPolicies(filters?: HolonFilters): Promise<APIResponse<Holon[]>> {
     return this.queryHolons(HolonType.Document, {
       ...filters,
@@ -364,9 +364,6 @@ export class SOMClient {
 
   // ==================== Health Check ====================
 
-  /**
-   * Check API health
-   */
   async healthCheck(): Promise<{ healthy: boolean; latencyMs: number }> {
     const start = Date.now();
     try {
@@ -380,14 +377,43 @@ export class SOMClient {
 }
 
 /**
- * Create a SOM client instance
+ * SOM Client specific options
  */
-export function createSOMClient(
-  baseUrl?: string,
-  options?: { headers?: Record<string, string>; includeCredentials?: boolean }
-): SOMClient {
-  // @ts-ignore
-  const envUrl = typeof import.meta !== 'undefined' && import.meta.env ? import.meta.env.VITE_SOM_API_URL : undefined;
-  const url = baseUrl || envUrl || 'http://localhost:3000/api/v1';
-  return new SOMClient(url, options);
+export interface SOMClientOptions {
+  headers?: Record<string, string>;
+  includeCredentials?: boolean;
+  mode?: 'real' | 'mock';
 }
+
+/**
+ * SOM API Client Facade
+ * Delegates to RealSOMClient or MockSOMClient
+ */
+export class SOMClient implements ISOMClient {
+  private delegate: ISOMClient;
+
+  constructor(baseUrl: string, options?: SOMClientOptions) {
+    if (options?.mode === 'mock') {
+      this.delegate = new MockSOMClient();
+    } else {
+      this.delegate = new RealSOMClient(baseUrl, options);
+    }
+  }
+
+  setAuthToken(token: string): void { this.delegate.setAuthToken(token); }
+  clearAuthToken(): void { this.delegate.clearAuthToken(); }
+  getHolon(id: HolonID): Promise<APIResponse<Holon>> { return this.delegate.getHolon(id); }
+  queryHolons(type: HolonType, filters?: HolonFilters, pagination?: PaginationOptions): Promise<APIResponse<Holon[]>> { return this.delegate.queryHolons(type, filters, pagination); }
+  search(query: string, types?: HolonType[], limit?: number): Promise<APIResponse<SearchResult[]>> { return this.delegate.search(query, types, limit); }
+  getRelationships(holonId: HolonID, type?: RelationshipType, direction?: 'source' | 'target' | 'both'): Promise<APIResponse<Relationship[]>> { return this.delegate.getRelationships(holonId, type, direction); }
+  submitEvent<T extends EventType>(event: SubmitEventRequest<T>): Promise<APIResponse<EventResult>> { return this.delegate.submitEvent(event); }
+  getEvents(holonId: HolonID, eventTypes?: EventType[], since?: Date): Promise<APIResponse<Event[]>> { return this.delegate.getEvents(holonId, eventTypes, since); }
+  getHolonAsOf(id: HolonID, timestamp: Date): Promise<APIResponse<Holon>> { return this.delegate.getHolonAsOf(id, timestamp); }
+  getOrgStructure(orgId: HolonID, asOf?: Date): Promise<APIResponse<OrgStructure>> { return this.delegate.getOrgStructure(orgId, asOf); }
+  getProcesses(filters?: HolonFilters): Promise<APIResponse<Holon[]>> { return this.delegate.getProcesses(filters); }
+  getTasksForPosition(positionId: HolonID, status?: string): Promise<APIResponse<Holon[]>> { return this.delegate.getTasksForPosition(positionId, status); }
+  getObjectivesForLOE(loeId: HolonID): Promise<APIResponse<Holon[]>> { return this.delegate.getObjectivesForLOE(loeId); }
+  getPolicies(filters?: HolonFilters): Promise<APIResponse<Holon[]>> { return this.delegate.getPolicies(filters); }
+  healthCheck(): Promise<{ healthy: boolean; latencyMs: number }> { return this.delegate.healthCheck(); }
+}
+

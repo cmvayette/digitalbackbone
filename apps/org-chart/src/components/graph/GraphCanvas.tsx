@@ -18,7 +18,8 @@ import { PersonNode } from '../nodes/PersonNode';
 import { TigerTeamEdge } from '../edges/TigerTeamEdge';
 import { getLayoutedElements } from '../../utils/layout';
 import { reconcileCompetence } from '../../utils/reconciliation';
-import { useOrgStore } from '../../store/orgStore';
+// import { useOrgStore } from '../../store/orgStore';
+import { useGraphFocus } from '../../hooks/useGraphFocus';
 import type { Person, Position } from '../../types/domain';
 
 const nodeTypes = {
@@ -96,16 +97,26 @@ export function GraphCanvas({ initialNodes, initialEdges, onNodeClick, viewMode 
     }, [edges, setNodes]);
 
     // FOCUS MODE LOGIC
+    const { applyFocus } = useGraphFocus();
+
     const handleNodeClick = useCallback((event: React.MouseEvent, node: Node) => {
         // 1. Notify Parent (Opens Sidebar)
         if (onNodeClick) onNodeClick(event, node);
 
-        // Removed: Ghosting (dimming/hiding nodes) and Auto-Zoom (fitView)
-        // User requested ONLY side panel to appear.
-    }, [onNodeClick]);
+        // 2. Apply Ghosting Focus
+        setNodes(nds => applyFocus(node.id, nds, edges));
+
+        // 3. Smart Zoom (Optional: slight pan to center?)
+        if (rfInstance) {
+            rfInstance.fitView({ nodes: [{ id: node.id }], duration: 800, padding: 2, minZoom: 0.5, maxZoom: 1.5 });
+        }
+    }, [onNodeClick, applyFocus, edges, setNodes, rfInstance]);
 
     // DRAG & DROP ASSIGNMENT LOGIC
-    const { assignPerson } = useOrgStore();
+    // const { assignPerson } = useOrgStore();
+    const assignPerson = useCallback((positionId: string, personName: string, designatorRating: string) => {
+        console.log(`[MOCK] Assigned ${personName} (${designatorRating}) to Position ${positionId}`);
+    }, []);
 
     const onNodeDragStart = useCallback(
         (_: React.MouseEvent, node: Node) => {
@@ -196,16 +207,8 @@ export function GraphCanvas({ initialNodes, initialEdges, onNodeClick, viewMode 
 
     const handlePaneClick = useCallback(() => {
         // Reset Focus: Undim all nodes
-        setNodes((nds) => {
-            return nds.map((n) => ({
-                ...n,
-                hidden: false,
-                zIndex: 1,
-                data: { ...n.data, isDimmed: false }
-            }));
-        });
-        setTimeout(() => rfInstance?.fitView({ duration: 800 }), 50);
-    }, [rfInstance, setNodes]);
+        setNodes(nds => applyFocus(null, nds, edges));
+    }, [applyFocus, edges, setNodes]);
 
     useEffect(() => {
         // Inject onToggle into initial nodes

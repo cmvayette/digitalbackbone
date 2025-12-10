@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { HolonType, type LOE, type Objective, type KeyResult } from '@som/shared-types';
-import { createSOMClient } from './client';
+import { createSOMClient } from './factory';
 
 export function useStrategyData() {
     const [loes, setLoes] = useState<LOE[]>([]);

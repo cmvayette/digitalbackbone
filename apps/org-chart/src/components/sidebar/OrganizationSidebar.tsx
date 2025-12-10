@@ -1,27 +1,42 @@
 import type { Node } from '@xyflow/react';
 import { Building } from 'lucide-react';
 import { useState } from 'react';
-import { useOrgStore } from '../../store/orgStore';
+// import { useOrgStore } from '../../store/orgStore';
+import { useExternalOrgData } from '@som/api-client';
 import type { Organization } from '../../types/domain';
 import { CreateOrgModal } from '../modals/CreateOrgModal';
 import { CreatePositionModal } from '../modals/CreatePositionModal';
 import { ServiceTile } from './ServiceTile';
+import { toDomainPosition } from '../../utils/mappers';
 
 export function OrganizationSidebar({ node }: { node: Node }) {
     const props = node.data.properties as Organization['properties'];
-    const { getOrgChildren, getOrgPositions, addOrganization, addPosition } = useOrgStore();
+    const { organizations, positions } = useExternalOrgData({ mode: 'mock' });
 
+    // const { getOrgChildren, getOrgPositions, addOrganization, addPosition } = useOrgStore();
+
+    const addOrganization = (_parentId: string, name: string, uic: string) => {
+        // Stub implementation
+        console.log('Adding organization:', name, uic);
+    };
+
+    const addPosition = (orgId: string, title: string, roleCode: string) => {
+        // Stub implementation
+        console.log('Adding position to', orgId, ':', title, roleCode);
+    };
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [isCreatePosModalOpen, setIsCreatePosModalOpen] = useState(false);
 
     // Note: getOrgChildren expects orgId, but we only have props here.
     // We need the ID. The ID is on the node itself: node.id
-    const children = getOrgChildren(node.id);
-    const positions = getOrgPositions(node.id);
+    const children = organizations.filter(o => o.parentId === node.id);
+    const orgPositions = positions
+        .filter(p => p.orgId === node.id)
+        .map(toDomainPosition);
 
-    const filledPositions = positions.filter(p => p.properties.state !== 'vacant').length;
-    const vacancyCount = positions.filter(p => p.properties.state === 'vacant').length;
-    const totalPositions = positions.length;
+    const filledPositions = orgPositions.filter(p => p.properties.state !== 'vacant').length;
+    const vacancyCount = orgPositions.filter(p => p.properties.state === 'vacant').length;
+    const totalPositions = orgPositions.length;
 
     return (
         <div className="flex flex-col h-full bg-bg-panel border-l border-border-color shadow-[-10px_0_30px_rgba(0,0,0,0.5)] z-20">

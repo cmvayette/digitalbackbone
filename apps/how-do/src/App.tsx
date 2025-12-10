@@ -35,35 +35,40 @@ function App() {
   };
 
   return (
-    <div className="app-container relative h-screen w-screen overflow-hidden bg-slate-950 text-slate-100 flex flex-col">
-      {/* Top Navigation Bar (Visible in Search and Health modes) */}
+    <div className="h-screen w-screen overflow-hidden bg-bg-canvas text-text-primary font-ui flex flex-col selection:bg-cyan-500/30 selection:text-cyan-200">
+      {/* Top Navigation Bar - Glass Effect */}
       {(view === 'search' || view === 'health') && (
-        <div className="h-16 border-b border-slate-800 flex items-center px-6 justify-between bg-slate-900/50 backdrop-blur-sm z-50">
-          <div className="font-bold text-xl tracking-tight text-blue-400">How-Do</div>
-          <div className="flex gap-2">
+        <div className="h-14 border-b border-border-color flex items-center px-4 justify-between bg-bg-panel/80 backdrop-blur-md z-50">
+          <div className="flex items-center gap-2">
+            <div className="w-1.5 h-6 bg-accent-cyan rounded-sm shadow-[0_0_10px_rgba(34,211,238,0.5)]"></div>
+            <div className="font-bold text-lg tracking-tight text-white uppercase font-ui">How-Do</div>
+          </div>
+
+          <div className="flex gap-1">
             <button
               onClick={() => setView('search')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${view === 'search' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'}`}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-sm text-xs font-bold uppercase tracking-wider transition-all border ${view === 'search' ? 'bg-cyan-900/20 text-accent-cyan border-accent-cyan/50' : 'bg-transparent text-text-secondary border-transparent hover:text-white hover:bg-slate-800'}`}
             >
-              <Search size={18} /> Process Discovery
+              <Search size={14} /> Discovery
             </button>
             <button
               onClick={() => setView('health')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${view === 'health' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'}`}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-sm text-xs font-bold uppercase tracking-wider transition-all border ${view === 'health' ? 'bg-amber-900/20 text-accent-orange border-accent-orange/50' : 'bg-transparent text-text-secondary border-transparent hover:text-white hover:bg-slate-800'}`}
             >
-              <Activity size={18} /> Health Dashboard
+              <Activity size={14} /> Health
             </button>
+            <div className="w-px h-6 bg-slate-800 mx-1"></div>
             <button
               onClick={() => setView('editor')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors text-slate-400 hover:text-slate-200 hover:bg-slate-800`}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-sm text-xs font-bold uppercase tracking-wider transition-all border border-slate-700 bg-slate-900 text-text-secondary hover:text-white hover:border-slate-500`}
             >
-              <Edit3 size={18} /> New Process
+              <Edit3 size={14} /> New Process
             </button>
           </div>
         </div>
       )}
 
-      <div className="flex-1 overflow-auto relative">
+      <div className="flex-1 overflow-auto relative bg-bg-canvas">
         {view === 'search' && (
           <ProcessSearch onSelectProcess={handleSelectProcess} />
         )}
@@ -74,28 +79,28 @@ function App() {
 
         {view === 'viewer' && selectedProcess && (
           <div className="h-full flex flex-col">
-            {/* View Toggle */}
-            <div className="absolute top-4 right-20 z-10 bg-slate-800 rounded-lg p-1 flex border border-slate-700 shadow-xl">
+            {/* View Toggle - Positioned Absolute or in a Header */}
+            <div className="absolute top-4 right-6 z-10 bg-slate-900/90 backdrop-blur rounded-sm p-1 flex border border-slate-700">
               <button
                 onClick={() => setViewerType('swimlane')}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${viewerType === 'swimlane'
-                  ? 'bg-blue-600 text-white shadow-sm'
-                  : 'text-slate-400 hover:text-slate-200'
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-sm text-[10px] font-mono font-bold uppercase tracking-wider transition-all ${viewerType === 'swimlane'
+                  ? 'bg-slate-800 text-accent-cyan shadow-sm border border-slate-600'
+                  : 'text-slate-500 hover:text-slate-300 border border-transparent'
                   }`}
                 title="Swimlane View"
               >
-                <GitCommitHorizontal size={14} />
+                <GitCommitHorizontal size={12} />
                 Swimlane
               </button>
               <button
                 onClick={() => setViewerType('timeline')}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${viewerType === 'timeline'
-                  ? 'bg-blue-600 text-white shadow-sm'
-                  : 'text-slate-400 hover:text-slate-200'
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-sm text-[10px] font-mono font-bold uppercase tracking-wider transition-all ${viewerType === 'timeline'
+                  ? 'bg-slate-800 text-accent-cyan shadow-sm border border-slate-600'
+                  : 'text-slate-500 hover:text-slate-300 border border-transparent'
                   }`}
                 title="Timeline View"
               >
-                <LayoutList size={14} />
+                <LayoutList size={12} />
                 Timeline
               </button>
             </div>
@@ -117,10 +122,12 @@ function App() {
         )}
 
         {view === 'editor' && (
-          <SwimlaneEditor
-            initialProcess={selectedProcess || undefined}
-            onBack={selectedProcess ? handleBackToViewer : handleBackToSearch}
-          />
+          <div className="h-full bg-bg-canvas">
+            <SwimlaneEditor
+              initialProcess={selectedProcess || undefined}
+              onBack={selectedProcess ? handleBackToViewer : handleBackToSearch}
+            />
+          </div>
         )}
       </div>
     </div>
