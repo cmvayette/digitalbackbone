@@ -174,9 +174,20 @@ export type AssetUpgradePayload = SystemPayload & { newSpecs: Record<string, unk
 export interface ObjectiveCreatedPayload extends BasePayload {
     objectiveId: HolonID;
     statement: string;
+    narrative?: string;
+    level?: string;
     ownerId: HolonID;
     timeHorizon: string;
     status?: string;
+}
+
+export interface KeyResultDefinedPayload extends BasePayload {
+    krId: HolonID;
+    objectiveId: HolonID;
+    statement: string;
+    target: number;
+    baseline: number;
+    ownerId: HolonID;
 }
 
 export interface ObjectiveRescopedPayload extends BasePayload {
@@ -228,11 +239,53 @@ export interface TaskCancelledPayload extends BasePayload {
     reason: string;
 }
 
+export interface InitiativeCreatedPayload extends BasePayload {
+    initiativeId: HolonID;
+    name: string;
+    description?: string;
+    ownerId: HolonID;
+    startDate?: string;
+    targetEndDate?: string;
+    status: string;
+}
+
 export interface InitiativeStageChangePayload extends BasePayload {
     newStage: string;
 }
 
 // --- Governance ---
+
+// --- Governance ---
+
+export interface DocumentCreatedPayload extends BasePayload {
+    documentId: HolonID;
+    title: string;
+    type: string;
+    format: string;
+    content: string;
+    version: string;
+}
+
+export interface DocumentPublishedPayload extends BasePayload {
+    documentId: HolonID;
+    version: string;
+    publishedAt: Date | string;
+    approverId: HolonID;
+}
+
+export interface ClauseExtractedPayload extends BasePayload {
+    clauseId: HolonID;
+    sourceDocumentId: HolonID;
+    text: string;
+    location: string;
+}
+
+export interface ObligationDefinedPayload extends BasePayload {
+    obligationId: HolonID;
+    sourceClauseId: HolonID;
+    description: string;
+    responsibleRole: string;
+}
 
 export interface DocumentIssuedPayload extends BasePayload {
     title: string;
@@ -270,13 +323,13 @@ export interface LensEvaluatedPayload extends BasePayload {
 
 // --- Process ---
 
+import { ProcessStep } from './holon';
+
 export interface ProcessDefinedPayload extends BasePayload {
     processId: HolonID;
     name: string;
-    steps: Array<{
-        id: string;
-        title: string;
-    }>;
+    description: string;
+    steps: ProcessStep[];
 }
 
 export interface ProcessUpdatedPayload extends BasePayload {
@@ -321,6 +374,7 @@ export type PayloadFor<T extends EventType> =
     T extends EventType.AssetFailure ? AssetFailurePayload :
     T extends EventType.AssetUpgrade ? AssetUpgradePayload :
     T extends EventType.ObjectiveCreated ? ObjectiveCreatedPayload :
+    T extends EventType.KeyResultDefined ? KeyResultDefinedPayload :
     T extends EventType.ObjectiveRescoped ? ObjectiveRescopedPayload :
     T extends EventType.ObjectiveClosed ? ObjectiveClosedPayload :
     T extends EventType.LOECreated ? LOECreatedPayload :
@@ -331,7 +385,12 @@ export type PayloadFor<T extends EventType> =
     T extends EventType.TaskBlocked ? TaskBlockedPayload :
     T extends EventType.TaskCompleted ? TaskCompletedPayload :
     T extends EventType.TaskCancelled ? TaskCancelledPayload :
+    T extends EventType.InitiativeCreated ? InitiativeCreatedPayload :
     T extends EventType.InitiativeStageChange ? InitiativeStageChangePayload :
+    T extends EventType.DocumentCreated ? DocumentCreatedPayload :
+    T extends EventType.DocumentPublished ? DocumentPublishedPayload :
+    T extends EventType.ClauseExtracted ? ClauseExtractedPayload :
+    T extends EventType.ObligationDefined ? ObligationDefinedPayload :
     T extends EventType.DocumentIssued ? DocumentIssuedPayload :
     T extends EventType.DocumentUpdated ? DocumentUpdatedPayload :
     T extends EventType.DocumentRescinded ? DocumentRescindedPayload :

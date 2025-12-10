@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import orgStructure from '../mocks/org-structure.json';
 import type { ProcessStep } from '@som/shared-types';
-import { useExternalProcessData } from '@som/api-client';
+import { useExternalProcessData, useProcessEditor } from '@som/api-client';
 
 // Extend shared type for local UI needs if necessary, or just use it.
 // The app currently uses ownerType for UI icons. We'll keep it as a local extension.
@@ -65,6 +65,23 @@ export function useProcess(initialProcessId?: string) {
 
     const selectStep = (stepId: string | null) => setSelectedStepId(stepId);
 
+    const { createProcess, isSubmitting } = useProcessEditor();
+
+    const saveProcess = async (name: string, description: string) => {
+        // Map local steps back to shared ProcessStep structure
+        const processSteps: ProcessStep[] = steps.map(s => ({
+            id: s.id,
+            title: s.title,
+            description: s.description,
+            owner: s.owner,
+            obligations: s.obligations, // assuming structure matches or is compatible
+            source: 'native'
+        }));
+
+        const actorId = 'user-123'; // Hardcoded for MVP
+        await createProcess(name, description, processSteps, actorId);
+    };
+
     return {
         steps,
         addStep,
@@ -72,6 +89,8 @@ export function useProcess(initialProcessId?: string) {
         updateStep,
         selectedStepId,
         selectStep,
-        orgStructure
+        orgStructure,
+        saveProcess,
+        isSubmitting
     };
 }

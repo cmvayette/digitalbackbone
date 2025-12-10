@@ -44,12 +44,14 @@ export enum EventType {
 
     // Objective/LOE
     ObjectiveCreated = 'ObjectiveCreated',
+    KeyResultDefined = 'KeyResultDefined',
     ObjectiveRescoped = 'ObjectiveRescoped',
     ObjectiveClosed = 'ObjectiveClosed',
     LOECreated = 'LOECreated',
     LOEReframed = 'LOEReframed',
 
     // Initiative/Task
+    InitiativeCreated = 'InitiativeCreated',
     InitiativeStageChange = 'InitiativeStageChange',
     TaskCreated = 'TaskCreated',
     TaskAssigned = 'TaskAssigned',
@@ -59,9 +61,13 @@ export enum EventType {
     TaskCancelled = 'TaskCancelled',
 
     // Governance
-    DocumentIssued = 'DocumentIssued',
+    DocumentCreated = 'DocumentCreated',
+    DocumentIssued = 'DocumentIssued', // Published
     DocumentUpdated = 'DocumentUpdated',
-    DocumentRescinded = 'DocumentRescinded',
+    DocumentRescinded = 'DocumentRescinded', // Revoked
+    DocumentPublished = 'DocumentPublished', // Explicit publish step
+    ClauseExtracted = 'ClauseExtracted',
+    ObligationDefined = 'ObligationDefined',
     ConstraintViolation = 'ConstraintViolation',
 
     // Measurement

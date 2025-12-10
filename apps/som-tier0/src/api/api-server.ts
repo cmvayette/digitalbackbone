@@ -13,6 +13,7 @@ import { IHolonRepository as HolonRegistry } from '../core/interfaces/holon-repo
 import { RelationshipRegistry } from '../relationship-registry';
 import { ConstraintEngine } from '../constraint-engine';
 import { DocumentRegistry } from '../document-registry';
+import { StateProjectionEngine } from '../state-projection';
 import { APIRoutes } from './routes';
 import {
   AuthenticationMiddleware,
@@ -76,7 +77,8 @@ export class APIServer {
     holonRegistry: HolonRegistry,
     relationshipRegistry: RelationshipRegistry,
     constraintEngine: ConstraintEngine,
-    documentRegistry: DocumentRegistry
+    documentRegistry: DocumentRegistry,
+    projectionEngine: StateProjectionEngine
   ) {
     this.config = {
       port: 3000,
@@ -97,7 +99,8 @@ export class APIServer {
       holonRegistry,
       relationshipRegistry,
       constraintEngine,
-      documentRegistry
+      documentRegistry,
+      projectionEngine,
     );
 
     // Default to API Key Auth for now (or could be config driven)
@@ -485,7 +488,8 @@ export function createAPIServer(
   holonRegistry: HolonRegistry,
   relationshipRegistry: RelationshipRegistry,
   constraintEngine: ConstraintEngine,
-  documentRegistry: DocumentRegistry
+  documentRegistry: DocumentRegistry,
+  projectionEngine: StateProjectionEngine
 ): APIServer {
   return new APIServer(
     config,
@@ -498,6 +502,7 @@ export function createAPIServer(
     holonRegistry,
     relationshipRegistry,
     constraintEngine,
-    documentRegistry
+    documentRegistry,
+    projectionEngine
   );
 }

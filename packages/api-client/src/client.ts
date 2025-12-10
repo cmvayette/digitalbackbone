@@ -11,6 +11,7 @@ import {
   RelationshipType,
   Event,
   EventType,
+  TypedEvent,
 } from '@som/shared-types';
 
 /**
@@ -78,16 +79,11 @@ export interface OrgStructure {
 
 /**
  * Event submission request
+ * Enforces strict typing against the EventType but omits server-generated fields
  */
-export interface SubmitEventRequest {
-  type: EventType;
-  occurredAt: Date;
-  actor: HolonID;
-  subjects: HolonID[];
-  payload: Record<string, unknown>;
-  sourceSystem: string;
-  sourceDocuments?: string[];
-}
+export type SubmitEventRequest<T extends EventType> = Omit<TypedEvent<T>, 'id' | 'recordedAt' | 'causalLinks'> & {
+  causalLinks?: TypedEvent<T>['causalLinks']
+};
 
 /**
  * Event submission result
@@ -244,7 +240,7 @@ export class SOMClient {
   /**
    * Submit an event to the SOM
    */
-  async submitEvent(event: SubmitEventRequest): Promise<APIResponse<EventResult>> {
+  async submitEvent<T extends EventType>(event: SubmitEventRequest<T>): Promise<APIResponse<EventResult>> {
     return this.request<EventResult>('POST', '/events', event);
   }
 
@@ -323,9 +319,9 @@ export class SOMClient {
    * Get all objectives under a Line of Effort
    */
   async getObjectivesForLOE(loeId: HolonID): Promise<APIResponse<Holon[]>> {
-    const relResponse = await this.getRelationships(loeId, RelationshipType.CONTAINS);
+    // 1. Get all 'CONTAINS' relationships from the LOE
+    const relResponse = await this.getRelationships(loeId, RelationshipType.CONTAINS, 'source');
 
-    // Fix: If error, return error (casted cautiously or reconstructed)
     if (!relResponse.success || !relResponse.data) {
       return {
         success: false,
@@ -333,26 +329,26 @@ export class SOMClient {
       };
     }
 
-    // Fix: Ensure we are returing Holons, not relationships.
-    const holons = relResponse.data
-      // @ts-ignore - Relationship type definition needs update
-      .filter((r: any) => r.targetHolonType === HolonType.Objective)
-      .map((r: any) => ({
-        id: r.targetHolonID,
-        type: HolonType.Objective,
-        name: 'Linked Objective',
-        description: 'Fetched via relationship',
-        creatorID: 'system',
-        createdAt: new Date(),
-        status: 'active',
-        properties: { name: 'Mock Name', description: 'Mock Prop' },
-        createdBy: 'system',
-        sourceDocuments: []
-      } as unknown as Holon));
+    // 2. Fetch all target holons (since we can't filter by type on the relationship itself)
+    const targetIDs = relResponse.data.map(r => r.targetHolonID);
+
+    if (targetIDs.length === 0) {
+      return { success: true, data: [] };
+    }
+
+    // 3. Fetch each Holon
+    // Ideally use a bulk fetch if available, else parallel requests
+    const holonPromises = targetIDs.map(id => this.getHolon(id));
+    const responses = await Promise.all(holonPromises);
+
+    // 4. Filter for success and specifically for Objectives
+    const objectives = responses
+      .filter(res => res.success && res.data && res.data.type === HolonType.Objective)
+      .map(res => res.data as Holon);
 
     return {
       success: true,
-      data: holons
+      data: objectives
     };
   }
 

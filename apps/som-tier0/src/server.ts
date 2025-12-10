@@ -81,7 +81,8 @@ async function startServer() {
         holonRegistry,
         relationshipRegistry,
         constraintEngine,
-        documentRegistry
+        documentRegistry,
+        projectionEngine,
     );
 
     // Register Dev Key

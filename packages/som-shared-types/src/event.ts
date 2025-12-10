@@ -63,6 +63,7 @@ export type Event =
   | TypedEvent<EventType.AssetFailure>
   | TypedEvent<EventType.AssetUpgrade>
   | TypedEvent<EventType.ObjectiveCreated>
+  | TypedEvent<EventType.KeyResultDefined>
   | TypedEvent<EventType.ObjectiveRescoped>
   | TypedEvent<EventType.ObjectiveClosed>
   | TypedEvent<EventType.LOECreated>
@@ -73,7 +74,12 @@ export type Event =
   | TypedEvent<EventType.TaskBlocked>
   | TypedEvent<EventType.TaskCompleted>
   | TypedEvent<EventType.TaskCancelled>
+  | TypedEvent<EventType.InitiativeCreated>
   | TypedEvent<EventType.InitiativeStageChange>
+  | TypedEvent<EventType.DocumentCreated>
+  | TypedEvent<EventType.DocumentPublished>
+  | TypedEvent<EventType.ClauseExtracted>
+  | TypedEvent<EventType.ObligationDefined>
   | TypedEvent<EventType.DocumentIssued>
   | TypedEvent<EventType.DocumentUpdated>
   | TypedEvent<EventType.DocumentRescinded>

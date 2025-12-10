@@ -1,4 +1,6 @@
-import { useMemo } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
+import { HolonType, type Holon } from '@som/shared-types';
+import { createSOMClient } from './client';
 
 // Replicating types locally/shared for MVP (eventually refer to @som/shared-types)
 export interface ExternalObligation {
@@ -16,39 +18,54 @@ export interface ExternalPolicy {
     obligations: ExternalObligation[];
 }
 
-// Mock data mirrored from Policy Governance app
-const MOCK_POLICIES: ExternalPolicy[] = [
-    {
-        id: 'pol-1',
-        title: 'Cybersecurity Incident Response',
-        status: 'active',
-        obligations: [
-            { id: 'obl-1', statement: 'MUST report incidents within 1 hour', assignedTo: 'pos-1', criticality: 'high' },
-            { id: 'obl-2', statement: 'SHALL maintain incident log', assignedTo: 'pos-3', criticality: 'medium' }
-        ]
-    },
-    {
-        id: 'pol-2',
-        title: 'Remote Work Authorization',
-        status: 'active',
-        obligations: [
-            { id: 'obl-3', statement: 'MUST use VPN for all external connections', assignedTo: 'pos-3', criticality: 'high' },
-            { id: 'obl-4', statement: 'SHALL complete annual refresher training', assignedTo: 'pos-4', criticality: 'low' }
-        ]
-    }
-];
-
 export function useExternalPolicyData() {
-    return useMemo(() => {
-        // Flatten obligations for easier lookup
-        const allObligations = MOCK_POLICIES.flatMap(p => p.obligations);
+    const [policies, setPolicies] = useState<ExternalPolicy[]>([]);
+    const [loading, setLoading] = useState(true);
 
-        return {
-            policies: MOCK_POLICIES,
-            obligations: allObligations,
-            getObligationsForOwner: (ownerId: string) => {
-                return allObligations.filter(o => o.assignedTo === ownerId);
+    const fetchPolicies = useCallback(async () => {
+        try {
+            const client = createSOMClient();
+            const response = await client.queryHolons(HolonType.Document, {
+                properties: { documentType: 'Policy' }
+            });
+
+            if (response.success && response.data) {
+                const mappedPolicies: ExternalPolicy[] = response.data.map((h: Holon) => {
+                    // Map Holon to ExternalPolicy view model
+                    // Assuming obligations are linked or embedded. For MVP, we might parse text or look for linked Obligation holons.
+                    // Ideally, we'd fetch linked obligations. For now, we'll default to empty or mock if not in payload.
+                    // This aligns with "Read" side flexibility.
+                    return {
+                        id: h.id,
+                        title: h.properties.title || h.properties.name || 'Untitled Policy',
+                        status: (h.properties.status as any) || 'draft',
+                        obligations: (h.properties.obligations as any[]) || []
+                    };
+                });
+                setPolicies(mappedPolicies);
             }
-        };
+        } catch (err) {
+            console.error("Failed to fetch policies", err);
+        } finally {
+            setLoading(false);
+        }
     }, []);
+
+    useEffect(() => {
+        fetchPolicies();
+        const interval = setInterval(fetchPolicies, 5000); // 5s polling
+        return () => clearInterval(interval);
+    }, [fetchPolicies]);
+
+    const allObligations = useMemo(() => policies.flatMap(p => p.obligations), [policies]);
+
+    return {
+        policies,
+        obligations: allObligations,
+        getObligationsForOwner: useCallback((ownerId: string) => {
+            return allObligations.filter(o => o.assignedTo === ownerId);
+        }, [allObligations]),
+        refresh: fetchPolicies,
+        loading
+    };
 }

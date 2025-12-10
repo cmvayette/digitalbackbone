@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { HolonType, type Objective } from '@som/shared-types';
-import { useExternalOrgData, useStrategyData } from '@som/api-client';
+import { useExternalOrgData, useStrategyComposer } from '@som/api-client';
 
 export const ObjectiveComposer = ({ onClose }: { onClose: () => void }) => {
-    const { addObjective } = useStrategyData();
+    // const { addObjective } = useStrategyData(); // Deprecated
+    const { createObjective, isSubmitting } = useStrategyComposer();
     const { getCandidates } = useExternalOrgData();
 
     const [statement, setStatement] = useState('');
@@ -11,25 +12,12 @@ export const ObjectiveComposer = ({ onClose }: { onClose: () => void }) => {
     const [ownerId, setOwnerId] = useState('');
     const [level, setLevel] = useState<'strategic' | 'operational' | 'tactical'>('operational');
 
-    const handleSave = () => {
-        const newObj: Objective = {
-            id: `obj-${Date.now()}`,
-            type: HolonType.Objective,
-            createdAt: new Date(),
-            createdBy: 'user',
-            status: 'draft', // Holon status
-            sourceDocuments: [],
-            properties: {
-                statement,
-                narrative,
-                ownerId,
-                level,
-                timeHorizon: new Date(new Date().getFullYear(), 11, 31), // End of year
-                linkedKRs: [],
-                status: 'proposed' // Objective-specific status
-            }
-        };
-        addObjective(newObj);
+    const handleSave = async () => {
+        // Use hardcoded actor for MVP, should come from auth context
+        const actorId = 'user-123';
+        const timeHorizon = new Date(new Date().getFullYear(), 11, 31);
+
+        await createObjective(statement, narrative, ownerId, level, timeHorizon, actorId);
         onClose();
     };
 

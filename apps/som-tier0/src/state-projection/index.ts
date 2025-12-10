@@ -272,6 +272,26 @@ export class StateProjectionEngine {
         this.handleMeasurementEvent(event, state);
         break;
 
+      // Process events
+      case EventType.ProcessDefined:
+      case EventType.ProcessUpdated:
+      case EventType.ProcessArchived:
+        this.handleHolonCreation(event, state); // Unified handler for now, refined later
+        break;
+
+      // New Governance events
+      case EventType.DocumentCreated:
+      case EventType.DocumentPublished:
+      case EventType.ObligationDefined:
+        this.handleHolonCreation(event, state);
+        break;
+
+      // New Task/Initiative Events
+      case EventType.InitiativeCreated:
+      case EventType.KeyResultDefined: // KR is a Holon
+        this.handleHolonCreation(event, state);
+        break;
+
       default:
       // Unknown event type - log but don't fail
       // console.warn(`Unknown event type: ${event.type}`);
@@ -285,13 +305,17 @@ export class StateProjectionEngine {
     const holonId = event.subjects[0];
     if (!holonId) return;
 
-    // Cast payload for loose access, as we handle multiple event types here
+    // Cast payload for loose access
     const payload = event.payload as any;
+
+    // Extract specific structural fields to avoid duplicating them in properties if desired,
+    // but generally we want to capturing the payload content into properties.
+    const { holonType, type, properties, ...otherPayloadFields } = payload;
 
     const holon: Holon = {
       id: holonId,
       type: payload.holonType || payload.type || this.inferHolonTypeFromEvent(event),
-      properties: payload.properties || {},
+      properties: { ...otherPayloadFields, ...(properties || {}) },
       createdAt: event.occurredAt,
       createdBy: event.id,
       status: 'active',
@@ -620,7 +644,24 @@ export class StateProjectionEngine {
       case EventType.DocumentIssued:
       case EventType.DocumentUpdated:
       case EventType.DocumentRescinded:
+      case EventType.DocumentCreated:
+      case EventType.DocumentPublished:
         return HolonType.Document;
+
+      case EventType.ProcessDefined:
+      case EventType.ProcessUpdated:
+      case EventType.ProcessArchived:
+        return HolonType.Process;
+
+      case EventType.InitiativeCreated:
+      case EventType.InitiativeStageChange:
+        return HolonType.Initiative;
+
+      case EventType.KeyResultDefined:
+        return HolonType.KeyResult;
+
+      case EventType.ObligationDefined:
+        return HolonType.Constraint; // Or specialized type if available
 
       default:
         return HolonType.System; // Default fallback
