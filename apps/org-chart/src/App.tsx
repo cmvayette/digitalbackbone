@@ -4,7 +4,7 @@ import type { Node, Edge } from '@xyflow/react';
 // import { useOrgStore } from './store/orgStore'; // Removed
 import { useExternalOrgData } from '@som/api-client';
 import { getLayoutedElements } from './utils/layout';
-import { useEffect, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { SidebarPanel } from './components/sidebar/SidebarPanel';
 import { DiscoveryBar } from './components/discovery/DiscoveryBar';
 import { useGraphNavigation } from './hooks/useGraphNavigation';
@@ -18,43 +18,39 @@ const queryClient = new QueryClient();
 // Inner component to access ReactFlow Context
 function OrgChartContent() {
   const { organizations } = useExternalOrgData({ mode: 'mock' });
-  const [layoutedNodes, setLayoutedNodes] = useState<Node[]>([]);
-  const [layoutedEdges, setLayoutedEdges] = useState<Edge[]>([]);
-  const [selectedNode, setSelectedNode] = useState<Node | null>(null);
+
   const [viewMode, setViewMode] = useState<'reporting' | 'mission'>('reporting');
-
-
+  const [selectedNode, setSelectedNode] = useState<Node | null>(null);
 
   // Navigation Hook (MUST be inside ReactFlowProvider)
   const { focusNode } = useGraphNavigation();
 
-  useEffect(() => {
-    if (organizations.length > 0) {
-      // Transform Domain Data to React Flow Nodes/Edges
-      const nodes: Node[] = organizations.map(org => ({
-        id: org.id,
-        type: 'organization', // Matches GraphCanvas nodeTypes
-        data: {
-          label: org.name,
-          properties: org.properties || {}
-        },
-        position: { x: 0, y: 0 }
+  // Derived State (Layout)
+  const { nodes: layoutedNodes, edges: layoutedEdges } = useMemo(() => {
+    if (organizations.length === 0) return { nodes: [], edges: [] };
+
+    // Transform Domain Data to React Flow Nodes/Edges
+    const nodes: Node[] = organizations.map(org => ({
+      id: org.id,
+      type: 'organization', // Matches GraphCanvas nodeTypes
+      data: {
+        label: org.name,
+        properties: org.properties || {}
+      },
+      position: { x: 0, y: 0 }
+    }));
+
+    const edges: Edge[] = organizations
+      .filter(org => org.parentId)
+      .map(org => ({
+        id: `e-${org.parentId}-${org.id}`,
+        source: org.parentId!,
+        target: org.id,
+        type: 'smoothstep'
       }));
 
-      const edges: Edge[] = organizations
-        .filter(org => org.parentId)
-        .map(org => ({
-          id: `e-${org.parentId}-${org.id}`,
-          source: org.parentId!,
-          target: org.id,
-          type: 'smoothstep'
-        }));
-
-      // Apply Layout
-      const { nodes: layoutNodes, edges: layoutEdges } = getLayoutedElements(nodes, edges, 'TB', viewMode);
-      setLayoutedNodes(layoutNodes);
-      setLayoutedEdges(layoutEdges);
-    }
+    // Apply Layout
+    return getLayoutedElements(nodes, edges, 'TB', viewMode);
   }, [organizations, viewMode]);
 
   const onNodeClick = (_: React.MouseEvent, node: Node) => {

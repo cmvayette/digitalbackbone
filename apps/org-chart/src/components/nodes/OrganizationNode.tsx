@@ -4,7 +4,8 @@ import type { GraphNode } from '../../types/graph';
 import clsx from 'clsx';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 
-import { useTooltip, HolonTooltip } from '../tooltip/HolonTooltip';
+import { HolonTooltip } from '../tooltip/HolonTooltip';
+import { useTooltip } from '../../hooks/useTooltip';
 
 
 
@@ -60,13 +61,20 @@ export function OrganizationNode({ id, data }: NodeProps<GraphNode>) {
             {/* Header */}
             <div className={clsx("flex justify-between items-start", isCompact ? "mb-1" : "mb-3")}>
                 <div>
-                    <span className={clsx(
-                        "uppercase tracking-wider rounded font-semibold",
-                        isCompact ? "text-[9px] text-text-secondary" : "text-[10px] px-1.5 py-0.5 bg-bg-surface text-text-secondary",
-                        isTigerTeam && "text-amber-500 bg-transparent"
-                    )}>
-                        {uic}
-                    </span>
+                    <div className="flex gap-1 mb-0.5">
+                        <span className={clsx(
+                            "uppercase tracking-wider rounded font-semibold",
+                            isCompact ? "text-[9px] text-text-secondary" : "text-[10px] px-1.5 py-0.5 bg-bg-surface text-text-secondary",
+                            isTigerTeam && "text-amber-500 bg-transparent"
+                        )}>
+                            {uic}
+                        </span>
+                        {!isCompact && (
+                            <span className="text-[10px] px-1.5 py-0.5 bg-slate-700 text-blue-300 rounded uppercase font-bold tracking-wider">
+                                {echelon}
+                            </span>
+                        )}
+                    </div>
                     <h3 className={clsx(
                         "font-semibold text-text-primary leading-tight mt-0.5",
                         isCompact ? "text-[13px]" : "text-base",

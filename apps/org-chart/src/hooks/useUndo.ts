@@ -11,16 +11,6 @@ export interface HistoryAction<T = any> {
 export function useUndo() {
     const [history, setHistory] = useState<HistoryAction[]>([]);
 
-    const addAction = useCallback((action: HistoryAction) => {
-        setHistory(prev => [action, ...prev].slice(0, 20)); // Keep last 20
-        toast.success(action.description, {
-            action: {
-                label: 'Undo',
-                onClick: () => undo()
-            }
-        });
-    }, []);
-
     const undo = useCallback(() => {
         setHistory(prev => {
             if (prev.length === 0) return prev;
@@ -30,6 +20,16 @@ export function useUndo() {
             return rest;
         });
     }, []);
+
+    const addAction = useCallback((action: HistoryAction) => {
+        setHistory(prev => [action, ...prev].slice(0, 20)); // Keep last 20
+        toast.success(action.description, {
+            action: {
+                label: 'Undo',
+                onClick: () => undo()
+            }
+        });
+    }, [undo]);
 
     const canUndo = history.length > 0;
 

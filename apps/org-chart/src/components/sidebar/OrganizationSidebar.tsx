@@ -15,9 +15,15 @@ export function OrganizationSidebar({ node }: { node: Node }) {
 
     // const { getOrgChildren, getOrgPositions, addOrganization, addPosition } = useOrgStore();
 
-    const addOrganization = (_parentId: string, _name: string, _uic: string) => console.log('Mock add org');
-    const addPosition = (_orgId: string, _title: string, _roleCode: string) => console.log('Mock add pos');
+    const addOrganization = (_parentId: string, name: string, uic: string) => {
+        // Stub implementation
+        console.log('Adding organization:', name, uic);
+    };
 
+    const addPosition = (orgId: string, title: string, roleCode: string) => {
+        // Stub implementation
+        console.log('Adding position to', orgId, ':', title, roleCode);
+    };
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [isCreatePosModalOpen, setIsCreatePosModalOpen] = useState(false);
 
