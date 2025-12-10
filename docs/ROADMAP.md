@@ -11,7 +11,7 @@
 - [ ] **Tier-1 Migration**: Refactor all Tier-1 apps to use updated client.
     - [x] Org Chart
     - [x] How-Do
-    - [ ] Policy Governance
+    - [x] Policy Governance
     - [ ] Task Management
     - [ ] Objectives/OKR
 
@@ -20,10 +20,10 @@
 - [ ] **Health Checks**: Implement K8s-compatible `/health/liveness` and `/health/readiness` probes.
 - [ ] **Configuration**: Standardize `dotenv` and environment variable handling.
 
-### Phase 3: Persistence (Status: Planned ⚪)
-- [ ] **Schema Design**: Design SQL schema for Events and Snapshots.
-- [ ] **Postgres Implementation**: Create `PostgresEventStore` to replace in-memory store.
-- [ ] **Migration**: Update initialization logic to support async store loading.
+### Phase 3: Persistence (Status: Partial 🟡)
+- [x] **Schema Design**: Design SQL schema for Events and Snapshots.
+- [/] **SQLite Implementation**: Implemented `SQLiteEventStore` (default).
+- [ ] **Migration**: Database migration scripts (pending).
 
 ### Phase 4: Containerization & Hardening (Status: Planned ⚪)
 - [ ] **Base Image**: Transition to DoD Iron Bank `nodejs` or `distroless` equivalent.

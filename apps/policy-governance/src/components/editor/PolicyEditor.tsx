@@ -12,10 +12,13 @@ import { ClauseHighlighter } from './ClauseHighlighter';
 
 interface PolicyEditorProps {
     onBack: () => void;
+    onPublish: (id: string, version: string) => void;
+    onAddObligation: (policyId: string, obligation: any) => void;
+    onUpdateObligation: (policyId: string, obligationId: string, updates: any) => void; // Optional if local only
 }
 
-export const PolicyEditor: React.FC<PolicyEditorProps> = ({ onBack }) => {
-    const { currentPolicy, updatePolicy, addObligation, updateObligation, publishPolicy } = usePolicyStore();
+export const PolicyEditor: React.FC<PolicyEditorProps> = ({ onBack, onPublish, onAddObligation, onUpdateObligation }) => {
+    const { currentPolicy, updatePolicy, updateObligation: localUpdateObligation } = usePolicyStore();
     const [activeTab, setActiveTab] = React.useState<'document' | 'obligations'>('document');
     const [showComposer, setShowComposer] = React.useState(false);
     const [pendingClauseText, setPendingClauseText] = React.useState('');
@@ -70,7 +73,7 @@ export const PolicyEditor: React.FC<PolicyEditorProps> = ({ onBack }) => {
 
     const handlePublish = () => {
         if (confirm('Are you sure you want to publish this policy? It will become active and read-only.')) {
-            publishPolicy(currentPolicy.id);
+            onPublish(currentPolicy.id, currentPolicy.version);
             // Optionally force editor to update its editable state
             editor?.setEditable(false);
         }
@@ -195,7 +198,7 @@ export const PolicyEditor: React.FC<PolicyEditorProps> = ({ onBack }) => {
                                         <ObligationComposer
                                             initialStatement={pendingClauseText}
                                             onSave={(obl) => {
-                                                addObligation(currentPolicy.id, obl);
+                                                onAddObligation(currentPolicy.id, obl);
                                                 setShowComposer(false);
                                                 setPendingClauseText('');
                                                 // Confirm highlight color green?
@@ -251,7 +254,7 @@ export const PolicyEditor: React.FC<PolicyEditorProps> = ({ onBack }) => {
                                                                     }
                                                                 };
                                                                 addProcess(newProcess);
-                                                                updateObligation(currentPolicy.id, obl.id, { suggestedProcessId: newProcess.id });
+                                                                onUpdateObligation(currentPolicy.id, obl.id, { suggestedProcessId: newProcess.id });
                                                             }}
                                                             className="opacity-0 group-hover:opacity-100 transition-opacity text-xs bg-indigo-600 text-white px-2 py-1 rounded hover:bg-indigo-500 flex items-center gap-1"
                                                         >

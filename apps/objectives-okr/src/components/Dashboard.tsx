@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import './Dashboard.css';
-import { generateTaskHistory, MOCK_OBJECTIVES } from '../scripts/seed-history';
+import { generateTaskHistory } from '../scripts/seed-history';
 import type { HistoricalEvent } from '../scripts/seed-history';
+import { useStrategyData } from '@som/api-client';
 
 export const Dashboard: React.FC = () => {
     const [history, setHistory] = useState<HistoricalEvent[]>([]);
+    const { objectives, loading } = useStrategyData();
 
     useEffect(() => {
-        // "Seed" the history on mount
+        // "Seed" the history on mount (Simulated Analytics)
         const data = generateTaskHistory(20);
         setHistory(data);
     }, []);
@@ -41,20 +43,24 @@ export const Dashboard: React.FC = () => {
 
                 <div className="card">
                     <h2 className="card-title">Strategic Objectives</h2>
-                    <div className="obj-list">
-                        {MOCK_OBJECTIVES.map(obj => (
-                            <div key={obj.id} className="obj-item">
-                                <div className="obj-statement">{obj.properties.statement}</div>
-                                <div className="progress-bar-container">
-                                    <div
-                                        className="progress-bar-fill"
-                                        style={{ width: `60%` }}
-                                    ></div>
+                    {loading ? (
+                        <div className="p-4 text-slate-400">Loading Strategy...</div>
+                    ) : (
+                        <div className="obj-list">
+                            {objectives.map(obj => (
+                                <div key={obj.id} className="obj-item">
+                                    <div className="obj-statement">{obj.properties.statement || 'No Statement'}</div>
+                                    <div className="progress-bar-container">
+                                        <div
+                                            className="progress-bar-fill"
+                                            style={{ width: `${obj.properties.progress || 0}%` }}
+                                        ></div>
+                                    </div>
+                                    <div className="progress-text">Status: {obj.properties.status} ({(obj.properties.progress || 0)}%)</div>
                                 </div>
-                                <div className="progress-text">Status: {obj.properties.status} (Simulated Progress)</div>
-                            </div>
-                        ))}
-                    </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

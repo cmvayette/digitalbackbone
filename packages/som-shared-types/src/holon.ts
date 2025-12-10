@@ -184,6 +184,7 @@ export interface Objective extends Holon {
     source?: 'native' | 'external';
     externalId?: string;
     externalSource?: string;
+    progress?: number;
   };
 }
 

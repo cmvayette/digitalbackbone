@@ -17,10 +17,26 @@ vi.mock('@tiptap/react', () => ({
             selection: { from: 0, to: 0 },
             doc: { textBetween: () => 'Mock Selection' }
         },
-        setEditable: vi.fn()
+        setEditable: vi.fn(),
+        registerPlugin: vi.fn(),
+        unregisterPlugin: vi.fn()
     }),
-    EditorContent: () => <div data-testid="editor-content">Editor Content</div>,
+    BubbleMenu: ({ children }: any) => <div data-testid="bubble-menu">{children}</div>,
+    EditorContent: () => <div data-testid="editor-content">Editor Content</div>
+}));
+
+vi.mock('@tiptap/react/menus', () => ({
     BubbleMenu: ({ children }: any) => <div data-testid="bubble-menu">{children}</div>
+}));
+
+vi.mock('@som/api-client', () => ({
+    useExternalProcessData: () => ({
+        getProcessById: vi.fn(),
+        addProcess: vi.fn()
+    }),
+    useExternalOrgData: () => ({
+        getCandidates: () => [{ id: 'user-1', name: 'User 1', type: 'Person' }]
+    })
 }));
 
 vi.mock('lucide-react', () => ({
@@ -57,17 +73,17 @@ describe('PolicyEditor', () => {
     });
 
     it('renders policy title', () => {
-        render(<PolicyEditor onBack={() => { }} />);
+        render(<PolicyEditor onBack={() => { }} onPublish={() => { }} onAddObligation={() => { }} onUpdateObligation={() => { }} />);
         expect(screen.getByDisplayValue('Test Policy')).toBeInTheDocument();
     });
 
     it('renders editor content', () => {
-        render(<PolicyEditor onBack={() => { }} />);
+        render(<PolicyEditor onBack={() => { }} onPublish={() => { }} onAddObligation={() => { }} onUpdateObligation={() => { }} />);
         expect(screen.getByTestId('editor-content')).toBeInTheDocument();
     });
 
     it('switches tabs', () => {
-        render(<PolicyEditor onBack={() => { }} />);
+        render(<PolicyEditor onBack={() => { }} onPublish={() => { }} onAddObligation={() => { }} onUpdateObligation={() => { }} />);
         // Default is Document Text
         expect(screen.getByText('Document Text')).toBeInTheDocument();
 
@@ -77,7 +93,7 @@ describe('PolicyEditor', () => {
     });
 
     it('opens and closes obligation composer', () => {
-        render(<PolicyEditor onBack={() => { }} />);
+        render(<PolicyEditor onBack={() => { }} onPublish={() => { }} onAddObligation={() => { }} onUpdateObligation={() => { }} />);
         fireEvent.click(screen.getByText(/Obligations \(/)); // Switch tab
 
         fireEvent.click(screen.getByText('Add'));

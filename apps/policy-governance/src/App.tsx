@@ -1,13 +1,25 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { usePolicyStore } from './store/policyStore';
 import { PolicyList } from './components/PolicyList';
 import { PolicyEditor } from './components/editor/PolicyEditor';
 import { ComplianceDashboard } from './components/dashboard/ComplianceDashboard';
 import { Layout, FileText, BarChart2 } from 'lucide-react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { useExternalPolicyData } from './hooks/useExternalPolicyData';
 
-function App() {
-  const { currentPolicy, selectPolicy } = usePolicyStore();
+const queryClient = new QueryClient();
+
+function AppContent() {
+  const { currentPolicy, selectPolicy, setPolicies } = usePolicyStore();
   const [view, setView] = React.useState<'list' | 'editor' | 'dashboard'>('list');
+
+  // Use mock mode by default for now (or drive via env)
+  const { policies, createPolicy, publishPolicy, addObligation, updateObligation } = useExternalPolicyData({ mode: 'mock' });
+
+  // Sync external data to store
+  React.useEffect(() => {
+    setPolicies(policies);
+  }, [policies, setPolicies]);
 
   // If a policy is selected in the store, we should probably be in editor mode if we were in list
   React.useEffect(() => {
@@ -43,17 +55,33 @@ function App() {
 
       <main className="flex-1 overflow-hidden relative">
         {view === 'dashboard' && <ComplianceDashboard />}
-        {view === 'list' && <PolicyList onSelectPolicy={() => setView('editor')} />}
+        {view === 'list' && (
+          <PolicyList
+            onSelectPolicy={() => setView('editor')}
+            onCreatePolicy={createPolicy}
+          />
+        )}
         {view === 'editor' && (
           <PolicyEditor
             onBack={() => {
               selectPolicy(''); // Clear selection
               setView('list');
             }}
+            onPublish={publishPolicy}
+            onAddObligation={addObligation}
+            onUpdateObligation={updateObligation}
           />
         )}
       </main>
     </div>
+  );
+}
+
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AppContent />
+    </QueryClientProvider>
   );
 }
 

@@ -7,11 +7,11 @@ interface PolicyListProps {
     onSelectPolicy: (id: string) => void;
 }
 
-export const PolicyList: React.FC<PolicyListProps> = ({ onSelectPolicy }) => {
-    const { policies, createPolicy, selectPolicy } = usePolicyStore();
+export const PolicyList: React.FC<PolicyListProps & { onCreatePolicy: (policy: any) => void }> = ({ onSelectPolicy, onCreatePolicy }) => {
+    const { policies, selectPolicy } = usePolicyStore();
 
     const handleCreate = () => {
-        createPolicy({
+        onCreatePolicy({
             title: 'New Policy',
             documentType: 'Instruction',
             version: '0.1',

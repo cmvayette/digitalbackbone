@@ -17,8 +17,8 @@ const StatusIcon = ({ status }: { status: Task['state'] }) => {
     }
 };
 
-export const MyTasksView: React.FC = () => {
-    const { getTasksForMember, updateTaskStatus } = useTaskStore();
+export const MyTasksView: React.FC<{ onUpdateStatus?: (id: string, status: Task['state']) => void }> = ({ onUpdateStatus }) => {
+    const { getTasksForMember, updateTaskStatus: localUpdate } = useTaskStore();
     const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
 
     const myTasks = getTasksForMember(CURRENT_USER_ID, CURRENT_USER_POSITIONS);
@@ -31,14 +31,16 @@ export const MyTasksView: React.FC = () => {
         <div
             onClick={() => setSelectedTaskId(task.id)}
             className={`flex items-center gap-3 p-3 rounded-lg border transition-all cursor-pointer text-sm mb-2 ${task.state === 'done' ? 'bg-slate-900/30 border-slate-800 opacity-60' :
-                    selectedTaskId === task.id ? 'bg-slate-900 border-indigo-500 shadow-md ring-1 ring-indigo-500/50' :
-                        'bg-slate-900 border-slate-700 hover:border-slate-500'
+                selectedTaskId === task.id ? 'bg-slate-900 border-indigo-500 shadow-md ring-1 ring-indigo-500/50' :
+                    'bg-slate-900 border-slate-700 hover:border-slate-500'
                 }`}
         >
             <button
                 onClick={(e) => {
                     e.stopPropagation();
-                    updateTaskStatus(task.id, task.state === 'done' ? 'todo' : 'done');
+                    const newStatus = task.state === 'done' ? 'todo' : 'done';
+                    localUpdate(task.id, newStatus);
+                    if (onUpdateStatus) onUpdateStatus(task.id, newStatus);
                 }}
                 className="shrink-0 hover:scale-110 transition-transform"
             >

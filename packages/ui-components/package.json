@@ -14,7 +14,8 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
-    "test": "vitest"
+    "test": "vitest",
+    "lint": "tsc --noEmit"
   },
   "dependencies": {
     "@som/shared-types": "^0.1.0",

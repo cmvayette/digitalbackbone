@@ -9,67 +9,52 @@ describe('policyStore', () => {
         });
     });
 
-    it('creates a policy', () => {
+    it('sets policies', () => {
         const store = usePolicyStore.getState();
-        store.createPolicy({
-            title: 'Test Policy',
-            documentType: 'Instruction',
-            version: '1.0',
-            status: 'draft',
-            sections: [],
-            obligations: []
-        });
-
+        const policies: any[] = [{ id: '1', title: 'Test', obligations: [] }];
+        store.setPolicies(policies);
         expect(usePolicyStore.getState().policies).toHaveLength(1);
-        expect(usePolicyStore.getState().policies[0].title).toBe('Test Policy');
     });
 
-    it('adds an obligation to a policy', () => {
-        const store = usePolicyStore.getState();
-        store.createPolicy({
-            title: 'Test Policy',
+    it('updates a policy locally', () => {
+        usePolicyStore.getState().setPolicies([{
+            id: 'p1',
+            title: 'Old Title',
             documentType: 'Instruction',
             version: '1.0',
             status: 'draft',
             sections: [],
-            obligations: []
-        });
+            obligations: [],
+            createdAt: '',
+            updatedAt: ''
+        }]);
 
-        const policyId = usePolicyStore.getState().policies[0].id;
+        usePolicyStore.getState().updatePolicy('p1', { title: 'New Title' });
 
-        store.addObligation(policyId, {
-            statement: 'Must do X',
-            actor: { id: 'pos-1', name: 'Commander', type: 'Position' },
-            criticality: 'high',
-            status: 'draft'
-        });
-
-        const updatedPolicy = usePolicyStore.getState().policies[0];
-        expect(updatedPolicy.obligations).toHaveLength(1);
-        expect(updatedPolicy.obligations[0].statement).toBe('Must do X');
+        expect(usePolicyStore.getState().policies[0].title).toBe('New Title');
     });
 
-    it('updates an obligation', () => {
-        const store = usePolicyStore.getState();
-        store.createPolicy({
-            title: 'Test Policy',
+    it('updates an obligation locally', () => {
+        usePolicyStore.getState().setPolicies([{
+            id: 'p1',
+            title: 'Test',
             documentType: 'Instruction',
             version: '1.0',
             status: 'draft',
             sections: [],
-            obligations: []
-        });
-        const policyId = usePolicyStore.getState().policies[0].id;
-        store.addObligation(policyId, {
-            statement: 'Must do X',
-            actor: { id: 'pos-1', name: 'Commander', type: 'Position' },
-            criticality: 'high',
-            status: 'draft'
-        });
-        const obligationId = usePolicyStore.getState().policies[0].obligations[0].id;
+            obligations: [{
+                id: 'o1',
+                statement: 'Old Statement',
+                actor: { id: 'a1', name: 'Actor', type: 'Person' },
+                criticality: 'medium',
+                status: 'draft'
+            }],
+            createdAt: '',
+            updatedAt: ''
+        }]);
 
-        store.updateObligation(policyId, obligationId, { statement: 'Must do Y' });
+        usePolicyStore.getState().updateObligation('p1', 'o1', { statement: 'New Statement' });
 
-        expect(usePolicyStore.getState().policies[0].obligations[0].statement).toBe('Must do Y');
+        expect(usePolicyStore.getState().policies[0].obligations[0].statement).toBe('New Statement');
     });
 });

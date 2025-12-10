@@ -4,6 +4,7 @@
  */
 
 export { SOMClient } from './client';
+export type { SOMClientOptions } from './client';
 export { createSOMClient } from './factory';
 export { MockSOMClient } from './mock-client';
 export type {

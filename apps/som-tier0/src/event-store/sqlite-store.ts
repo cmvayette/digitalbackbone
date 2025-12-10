@@ -15,15 +15,15 @@ export class SQLiteEventStore implements IEventStore {
 
     private initialize() {
         // Load schema
-        // Look for schema.sql in known locations (dist or src)
+        const schemaPath = path.resolve(__dirname, '../db/schema.sql');
+
         try {
-            const schemaPath = path.resolve(__dirname, '../db/schema.sql');
             if (fs.existsSync(schemaPath)) {
                 const schema = fs.readFileSync(schemaPath, 'utf-8');
                 this.db.exec(schema);
             } else {
-                // Fallback if file not found (e.g. in development structure mismatch)
-                // Or hardcode minimal schema here for safety
+                // Fallback for robustness during dev/test if file is moved
+                console.warn(`[SQLiteEventStore] Schema file not found at ${schemaPath}, using fallback.`);
                 this.db.exec(`
                     CREATE TABLE IF NOT EXISTS events (
                         id TEXT PRIMARY KEY,
@@ -40,7 +40,8 @@ export class SQLiteEventStore implements IEventStore {
                  `);
             }
         } catch (e) {
-            console.error("Failed to load schema from file, using fallback execution.");
+            console.error("[SQLiteEventStore] Failed to initialize schema", e);
+            throw e; // Critical failure
         }
     }
 
