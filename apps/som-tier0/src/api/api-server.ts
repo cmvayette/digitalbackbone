@@ -34,6 +34,7 @@ export interface APIServerConfig {
   maxRequestsPerMinute?: number;
   enableCORS?: boolean;
   corsOrigins?: string[];
+  authMode?: 'apikey' | 'gateway';
 }
 
 /**
@@ -103,8 +104,18 @@ export class APIServer {
       projectionEngine,
     );
 
-    // Default to API Key Auth for now (or could be config driven)
-    const authProvider = new ApiKeyAuthProvider();
+    // Select Auth Provider based on configuration
+    let authProvider: import('./auth/auth-types').IAuthProvider;
+
+    if (this.config.authMode === 'gateway') {
+      const { GatewayHeaderAuthProvider } = require('./auth/gateway-provider');
+      authProvider = new GatewayHeaderAuthProvider();
+    } else {
+      // Default to API Key
+      const { ApiKeyAuthProvider } = require('./auth/api-key-provider');
+      authProvider = new ApiKeyAuthProvider();
+    }
+
     this.authMiddleware = new AuthenticationMiddleware(authProvider);
 
     this.authzMiddleware = new AuthorizationMiddleware();
@@ -300,6 +311,20 @@ export class APIServer {
       path: '/api/v1/health',
       handler: (req) => this.routes.getHealth(req),
       requiresAuth: false, // Public endpoint
+    });
+
+    this.registerRoute({
+      method: 'GET',
+      path: '/health/liveness',
+      handler: async () => ({ success: true, data: { status: 'UP' } }),
+      requiresAuth: false,
+    });
+
+    this.registerRoute({
+      method: 'GET',
+      path: '/health/readiness',
+      handler: (req) => this.routes.getHealth(req),
+      requiresAuth: false,
     });
 
     this.registerRoute({

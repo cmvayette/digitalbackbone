@@ -254,11 +254,11 @@ export class RealSOMClient implements ISOMClient {
     type?: RelationshipType,
     direction?: 'source' | 'target' | 'both'
   ): Promise<APIResponse<Relationship[]>> {
-    return this.request<Relationship[]>('POST', '/relationships', {
-      holonId,
-      type,
-      direction: direction || 'both',
-    });
+    const params = new URLSearchParams();
+    if (type) params.set('type', type);
+    if (direction) params.set('direction', direction);
+
+    return this.request<Relationship[]>('GET', `/holons/${holonId}/relationships?${params}`);
   }
 
   // ==================== Event Operations ====================
@@ -282,10 +282,8 @@ export class RealSOMClient implements ISOMClient {
   // ==================== Temporal Operations ====================
 
   async getHolonAsOf(id: HolonID, timestamp: Date): Promise<APIResponse<Holon>> {
-    return this.request<Holon>('POST', '/temporal/holons', {
-      holonId: id,
-      asOf: timestamp.toISOString(),
-    });
+    const params = new URLSearchParams({ asOfTimestamp: timestamp.toISOString() });
+    return this.request<Holon>('GET', `/temporal/holons/${id}?${params}`);
   }
 
   async getOrgStructure(
