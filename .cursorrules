@@ -61,10 +61,22 @@ This is **NOT** a standard CRUD application. It is a "Glacial" architecture:
 
 ## 7. Documentation & Process Standards
 - **Strategy**: Follow the **[Documentation Strategy](file:///Users/baxter/devProject/digital_backbone/docs/notes/template.md)**.
-- **ADRs**: Key architectural decisions go in `docs/adr/` (Use template).
-- **Notes**: Drafts, scratchpads, and design thoughts go in `docs/notes/` (Use template).
-- **Roadmap**: Central task tracking is in `docs/ROADMAP.md`. Update this when completing milestones.
 - **Templates**: Always use the provided templates in `docs/adr/template.md` and `docs/notes/template.md`.
+
+### Architecture Decision Records (ADRs)
+- **Location**: `docs/adr/`
+- **Trigger**: Create an ADR when:
+  - Making a significant architectural decision (e.g., database choice, new framework, deviation from core patterns).
+  - Introducing a breaking change to the Data Model or API.
+  - Resolving a complex trade-off between multiple viable options.
+
+### Engineering Notes
+- **Location**: `docs/notes/`
+- **Trigger**: Create a Note when:
+  - Performing an audit or broad system investigation.
+  - Designing a complex feature before implementation (if not a formal plan).
+  - Documenting "Why" something is built a certain way if it's not a full architectural decision.
+- **Roadmap**: Central task tracking is in `docs/ROADMAP.md`. Update this when completing milestones.
 
 ## 8. UI & Design System ("Deep Void")
 

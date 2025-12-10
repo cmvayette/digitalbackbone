@@ -14,7 +14,9 @@ import { IEventStore, EventFilter } from '../core/interfaces/event-store';
 
 export { IEventStore, EventFilter };
 // export { InMemoryEventStore } from './index'; // Removed duplicate
-export { SQLiteEventStore } from './sqlite-store';
+// export { InMemoryEventStore } from './index'; // Removed duplicate
+import { SQLiteEventStore } from './sqlite-store';
+export { SQLiteEventStore };
 
 
 /**
@@ -175,8 +177,13 @@ export class InMemoryEventStore implements IEventStore {
 }
 
 /**
- * Create a new in-memory event store instance
+ * Create a new event store instance
+ * Defaults to SQLiteEventStore unless configured otherwise
  */
 export function createEventStore(): IEventStore {
-  return new InMemoryEventStore();
+  // Check env var if we wanted to support switching back
+  // const type = process.env.SOM_EVENT_STORE || 'sqlite';
+  // if (type === 'memory') return new InMemoryEventStore();
+
+  return new SQLiteEventStore();
 }

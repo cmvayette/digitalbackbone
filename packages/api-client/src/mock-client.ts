@@ -57,6 +57,17 @@ export class MockSOMClient implements ISOMClient {
                     isTigerTeam: false,
                 };
                 break;
+            case HolonType.Initiative:
+                base.properties = {
+                    name: faker.company.catchPhrase(),
+                    description: faker.lorem.paragraph(),
+                    status: faker.helpers.arrayElement(['planning', 'active', 'on-hold', 'completed', 'cancelled']),
+                    progress: faker.number.int({ min: 0, max: 100 }),
+                    startDate: faker.date.past().toISOString(),
+                    targetEndDate: faker.date.future().toISOString(),
+                    ownerId: faker.string.uuid(), // Mock owner
+                };
+                break;
             case HolonType.Person:
                 base.properties = {
                     name: faker.person.fullName(),

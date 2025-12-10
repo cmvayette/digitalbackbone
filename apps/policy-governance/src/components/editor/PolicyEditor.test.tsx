@@ -57,17 +57,17 @@ describe('PolicyEditor', () => {
     });
 
     it('renders policy title', () => {
-        render(<PolicyEditor onBack={() => { }} />);
+        render(<PolicyEditor onBack={() => { }} onPublish={() => { }} onAddObligation={() => { }} onUpdateObligation={() => { }} />);
         expect(screen.getByDisplayValue('Test Policy')).toBeInTheDocument();
     });
 
     it('renders editor content', () => {
-        render(<PolicyEditor onBack={() => { }} />);
+        render(<PolicyEditor onBack={() => { }} onPublish={() => { }} onAddObligation={() => { }} onUpdateObligation={() => { }} />);
         expect(screen.getByTestId('editor-content')).toBeInTheDocument();
     });
 
     it('switches tabs', () => {
-        render(<PolicyEditor onBack={() => { }} />);
+        render(<PolicyEditor onBack={() => { }} onPublish={() => { }} onAddObligation={() => { }} onUpdateObligation={() => { }} />);
         // Default is Document Text
         expect(screen.getByText('Document Text')).toBeInTheDocument();
 
@@ -77,7 +77,7 @@ describe('PolicyEditor', () => {
     });
 
     it('opens and closes obligation composer', () => {
-        render(<PolicyEditor onBack={() => { }} />);
+        render(<PolicyEditor onBack={() => { }} onPublish={() => { }} onAddObligation={() => { }} onUpdateObligation={() => { }} />);
         fireEvent.click(screen.getByText(/Obligations \(/)); // Switch tab
 
         fireEvent.click(screen.getByText('Add'));
