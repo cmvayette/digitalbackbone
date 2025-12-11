@@ -14,7 +14,8 @@ import { AlertTriangle, AlertCircle } from 'lucide-react';
 import { DriftAlert } from './alerts/DriftAlert';
 import { useDriftDetection } from '../hooks/useDriftDetection';
 import { EditStepModal } from './editor/EditStepModal';
-import { Edit2 } from 'lucide-react';
+import { Edit2, Save } from 'lucide-react';
+import { useProcessPersistence } from '../hooks/useProcessPersistence';
 
 interface SwimlaneEditorProps {
     initialProcess?: Process;
@@ -27,31 +28,46 @@ export const SwimlaneEditor: React.FC<SwimlaneEditorProps> = ({ initialProcess, 
     // (Note: Editor currently doesn't list obligations directly in the main view in the loop, 
     // mostly delegates to internal components, but we set it up anyway if needed later)
 
+    // Persistence
+    const { saveProcess, loadLastActiveProcess } = useProcessPersistence();
+    const [saveStatus, setSaveStatus] = useState<'idle' | 'saved' | 'error'>('idle');
+
     // Basic Process State
-    const [process, setProcess] = useState<Process>(initialProcess || {
-        id: 'new-process',
-        type: HolonType.Process,
-        createdAt: new Date(),
-        createdBy: 'user',
-        status: 'active',
-        sourceDocuments: [],
-        properties: {
-            name: "New Operational Workflow",
-            description: "",
-            inputs: [],
-            outputs: [],
-            tags: [],
-            estimatedDuration: 3600,
-            steps: [
-                { id: 'step-1', title: 'Initiate Request', description: 'Start the form', owner: 'pos-1', obligations: [] },
-                { id: 'step-2', title: 'Review & Approve', description: 'Manager review', owner: 'pos-2', obligations: [] },
-            ]
-        }
+    const [process, setProcess] = useState<Process>(() => {
+        if (initialProcess) return initialProcess;
+        const last = loadLastActiveProcess();
+        if (last) return last;
+
+        return {
+            id: 'new-process',
+            type: HolonType.Process,
+            createdAt: new Date(),
+            createdBy: 'user',
+            status: 'active',
+            sourceDocuments: [],
+            properties: {
+                name: "New Operational Workflow",
+                description: "",
+                inputs: [],
+                outputs: [],
+                tags: [],
+                estimatedDuration: 3600,
+                steps: [
+                    { id: 'step-1', title: 'Initiate Request', description: 'Start the form', owner: 'pos-1', obligations: [] },
+                    { id: 'step-2', title: 'Review & Approve', description: 'Manager review', owner: 'pos-2', obligations: [] },
+                ]
+            }
+        };
     });
 
     const [editingStepId, setEditingStepId] = useState<string | null>(null); // For Owner Picker
     const [detailsEditingStepId, setDetailsEditingStepId] = useState<string | null>(null); // For Modal
     const [validationIssues, setValidationIssues] = useState<ValidationIssue[]>([]);
+
+    // Reset save status on change
+    React.useEffect(() => {
+        if (saveStatus !== 'idle') setSaveStatus('idle');
+    }, [process]);
 
     const sensors = useSensors(
         useSensor(PointerSensor),
@@ -164,8 +180,14 @@ export const SwimlaneEditor: React.FC<SwimlaneEditorProps> = ({ initialProcess, 
     const runValidation = () => {
         const issues = validateProcess(process);
         setValidationIssues(issues);
-        if (issues.length === 0) {
-            alert('Process is valid! (Mock Save)');
+
+        const errors = issues.filter(i => i.type === 'error');
+        if (errors.length === 0) {
+            const success = saveProcess(process);
+            setSaveStatus(success ? 'saved' : 'error');
+            if (success) {
+                setTimeout(() => setSaveStatus('idle'), 2000);
+            }
         }
     };
 
@@ -191,32 +213,36 @@ export const SwimlaneEditor: React.FC<SwimlaneEditorProps> = ({ initialProcess, 
                         <p className="text-[10px] text-text-secondary font-mono uppercase tracking-wide">Edit and validate your workflow</p>
                     </div>
                 </div>
-                <div className="actions flex gap-2">
-                    <button className="px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-sm text-xs font-bold uppercase tracking-wider text-text-secondary hover:text-white hover:border-slate-500 transition-all font-mono" onClick={addStep}>+ Add Step</button>
+                <div className="flex items-center gap-2">
+                    {saveStatus === 'saved' && <span className="text-xs text-emerald-400 font-bold animate-pulse">Saved Locally ✓</span>}
                     <button
-                        className={`px-3 py-1.5 rounded-sm text-xs font-bold uppercase tracking-wider transition-all font-mono border ${validationIssues.filter(i => i.type === 'error').length > 0 ? 'bg-red-900/20 text-accent-critical border-accent-critical/50 cursor-not-allowed' : 'bg-emerald-900/20 text-accent-valid border-accent-valid/50 hover:bg-emerald-900/30'}`}
+                        className={`px-3 py-1.5 rounded-sm text-xs font-bold uppercase tracking-wider transition-all font-mono border flex items-center gap-2 ${validationIssues.filter(i => i.type === 'error').length > 0 ? 'bg-red-900/20 text-accent-critical border-accent-critical/50 cursor-not-allowed' : 'bg-emerald-900/20 text-accent-valid border-accent-valid/50 hover:bg-emerald-900/30'}`}
                         onClick={runValidation}
                     >
+                        <Save size={12} />
                         Validate & Save
                     </button>
                 </div>
             </div>
 
-            {validationIssues.length > 0 && (
-                <div className="mb-4 bg-slate-900/80 border border-slate-700 rounded-sm p-3 backdrop-blur-md">
-                    <h4 className="text-xs font-bold text-white mb-2 flex items-center gap-2 uppercase tracking-wide font-mono">
-                        <AlertTriangle size={14} className="text-accent-orange" /> Validation Issues
-                    </h4>
-                    <div className="space-y-1">
-                        {validationIssues.map((issue, idx) => (
-                            <div key={idx} className={`text-[10px] font-mono flex items-center gap-2 ${issue.type === 'error' ? 'text-accent-critical' : 'text-accent-orange'}`}>
-                                {issue.type === 'error' ? <AlertCircle size={10} /> : <AlertTriangle size={10} />}
-                                {issue.message}
-                            </div>
-                        ))}
+
+            {
+                validationIssues.length > 0 && (
+                    <div className="mb-4 bg-slate-900/80 border border-slate-700 rounded-sm p-3 backdrop-blur-md">
+                        <h4 className="text-xs font-bold text-white mb-2 flex items-center gap-2 uppercase tracking-wide font-mono">
+                            <AlertTriangle size={14} className="text-accent-orange" /> Validation Issues
+                        </h4>
+                        <div className="space-y-1">
+                            {validationIssues.map((issue, idx) => (
+                                <div key={idx} className={`text-[10px] font-mono flex items-center gap-2 ${issue.type === 'error' ? 'text-accent-critical' : 'text-accent-orange'}`}>
+                                    {issue.type === 'error' ? <AlertCircle size={10} /> : <AlertTriangle size={10} />}
+                                    {issue.message}
+                                </div>
+                            ))}
+                        </div>
                     </div>
-                </div>
-            )}
+                )
+            }
 
             {/* Governance Drift Alert */}
             <div className="mb-4">
@@ -308,14 +334,16 @@ export const SwimlaneEditor: React.FC<SwimlaneEditorProps> = ({ initialProcess, 
                 </div>
             </DndContext>
 
-            {detailsEditingStepId && (
-                <EditStepModal
-                    step={process.properties.steps.find(s => s.id === detailsEditingStepId)!}
-                    onSave={updateStepDetails}
-                    onCancel={() => setDetailsEditingStepId(null)}
-                    onDelete={deleteStep}
-                />
-            )}
-        </div>
+            {
+                detailsEditingStepId && (
+                    <EditStepModal
+                        step={process.properties.steps.find(s => s.id === detailsEditingStepId)!}
+                        onSave={updateStepDetails}
+                        onCancel={() => setDetailsEditingStepId(null)}
+                        onDelete={deleteStep}
+                    />
+                )
+            }
+        </div >
     );
 };
