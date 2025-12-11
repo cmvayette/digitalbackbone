@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { usePolicyStore } from './policyStore';
+import type { PolicyDocument } from '../types/policy';
 
 describe('policyStore', () => {
     beforeEach(() => {
@@ -11,7 +12,17 @@ describe('policyStore', () => {
 
     it('sets policies', () => {
         const store = usePolicyStore.getState();
-        const policies: any[] = [{ id: '1', title: 'Test', obligations: [] }];
+        const policies: PolicyDocument[] = [{
+            id: '1',
+            title: 'Test',
+            obligations: [],
+            documentType: 'Instruction',
+            version: '1.0',
+            status: 'draft',
+            sections: [],
+            createdAt: '',
+            updatedAt: ''
+        }];
         store.setPolicies(policies);
         expect(usePolicyStore.getState().policies).toHaveLength(1);
     });

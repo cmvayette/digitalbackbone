@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { diffWords, diffSentences, Change } from 'diff';
+import { diffSentences, Change } from 'diff';
 import { AlertTriangle, Info, ChevronDown, ChevronRight, Users, FileText } from 'lucide-react';
 import type { PolicyDocument, Obligation } from '../../types/policy';
 

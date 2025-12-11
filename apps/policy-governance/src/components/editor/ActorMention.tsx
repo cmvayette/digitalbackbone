@@ -37,7 +37,7 @@ export const ActorMention = Mention.configure({
     },
 
     render: () => {
-      let component: ReactRenderer<any>;
+      let component: ReactRenderer;
       let popup: TippyInstance[];
 
       return {
@@ -52,7 +52,7 @@ export const ActorMention = Mention.configure({
           }
 
           popup = tippy('body', {
-            getReferenceClientRect: props.clientRect as any,
+            getReferenceClientRect: props.clientRect as (() => DOMRect) | null,
             appendTo: () => document.body,
             content: component.element,
             showOnCreate: true,
@@ -70,17 +70,19 @@ export const ActorMention = Mention.configure({
           }
 
           popup[0].setProps({
-            getReferenceClientRect: props.clientRect as any,
+            getReferenceClientRect: props.clientRect as (() => DOMRect) | null,
           });
         },
 
-        onKeyDown(props: any) {
+        onKeyDown(props: { event: KeyboardEvent }) {
           if (props.event.key === 'Escape') {
             popup[0].hide();
             return true;
           }
 
-          return (component.ref as any)?.onKeyDown(props);
+          // Access the component ref and call onKeyDown if available
+          const ref = component.ref as { onKeyDown?: (props: { event: KeyboardEvent }) => boolean } | null;
+          return ref?.onKeyDown?.(props) ?? false;
         },
 
         onExit() {

@@ -24,10 +24,9 @@ export const PolicyEditor: React.FC<PolicyEditorProps> = ({ initialContent = '',
             documentType: 'Policy'
         };
 
-        const mockEvent = {
-            type: EventType.DocumentIssued,
-            payload
-        };
+        // TODO: Wire up event sourcing - emit DocumentIssued event
+        // const mockEvent = { type: EventType.DocumentIssued, payload };
+        console.log('TODO: Emit event:', EventType.DocumentIssued, payload);
 
         if (onSave) onSave(content);
     };

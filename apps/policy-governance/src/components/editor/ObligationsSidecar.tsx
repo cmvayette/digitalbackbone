@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ListChecks, AlertTriangle, Users, Plus, CheckSquare, List, X } from 'lucide-react';
+import { ListChecks, AlertTriangle, Users, Plus, CheckSquare, List } from 'lucide-react';
 import type { Obligation, PolicyDocument } from '../../types/policy';
 import { ObligationComposer } from './ObligationComposer';
 import { useExternalProcessData } from '@som/api-client';
@@ -16,6 +16,35 @@ interface ObligationsSidecarProps {
   onClosePendingClause: () => void;
   onHighlightObligation?: (obligationId: string) => void;
 }
+
+// TabButton component extracted outside render to avoid recreation
+const TabButton: React.FC<{
+  tab: SidecarTab;
+  icon: React.ReactNode;
+  label: string;
+  count?: number;
+  activeTab: SidecarTab;
+  onClick: (tab: SidecarTab) => void;
+}> = ({ tab, icon, label, count, activeTab, onClick }) => (
+  <button
+    onClick={() => onClick(tab)}
+    className={`flex items-center gap-2 px-3 py-2 text-xs font-bold uppercase tracking-wider transition-all flex-1 border-b-2 ${
+      activeTab === tab
+        ? 'border-blue-500 text-blue-400 bg-blue-900/10'
+        : 'border-transparent text-slate-400 hover:text-white hover:bg-slate-800/50'
+    }`}
+  >
+    {icon}
+    <span>{label}</span>
+    {count !== undefined && (
+      <span className={`ml-auto px-1.5 py-0.5 rounded text-[10px] font-mono ${
+        activeTab === tab ? 'bg-blue-900/50 text-blue-300' : 'bg-slate-800 text-slate-400'
+      }`}>
+        {count}
+      </span>
+    )}
+  </button>
+);
 
 export const ObligationsSidecar: React.FC<ObligationsSidecarProps> = ({
   policy,
@@ -38,32 +67,6 @@ export const ObligationsSidecar: React.FC<ObligationsSidecarProps> = ({
     }
   }, [pendingClauseText]);
 
-  const TabButton: React.FC<{ tab: SidecarTab; icon: React.ReactNode; label: string; count?: number }> = ({
-    tab,
-    icon,
-    label,
-    count,
-  }) => (
-    <button
-      onClick={() => setActiveTab(tab)}
-      className={`flex items-center gap-2 px-3 py-2 text-xs font-bold uppercase tracking-wider transition-all flex-1 border-b-2 ${
-        activeTab === tab
-          ? 'border-blue-500 text-blue-400 bg-blue-900/10'
-          : 'border-transparent text-slate-400 hover:text-white hover:bg-slate-800/50'
-      }`}
-    >
-      {icon}
-      <span>{label}</span>
-      {count !== undefined && (
-        <span className={`ml-auto px-1.5 py-0.5 rounded text-[10px] font-mono ${
-          activeTab === tab ? 'bg-blue-900/50 text-blue-300' : 'bg-slate-800 text-slate-400'
-        }`}>
-          {count}
-        </span>
-      )}
-    </button>
-  );
-
   const handleSaveObligation = (obl: Omit<Obligation, 'id'>) => {
     onAddObligation(obl);
     setShowComposer(false);
@@ -76,8 +79,10 @@ export const ObligationsSidecar: React.FC<ObligationsSidecarProps> = ({
   };
 
   const handleSuggestProcess = (obligation: Obligation) => {
+    // Use crypto.randomUUID for ID generation (modern browsers support this)
+    const randomId = crypto.randomUUID().slice(0, 8);
     const newProcess: Process = {
-      id: `proc-sug-${Date.now()}`,
+      id: `proc-sug-${randomId}`,
       type: HolonType.Process,
       createdAt: new Date(),
       createdBy: 'policy-gov',
@@ -148,14 +153,25 @@ export const ObligationsSidecar: React.FC<ObligationsSidecarProps> = ({
           icon={<ListChecks size={14} />}
           label="Obligations"
           count={policy.obligations.length}
+          activeTab={activeTab}
+          onClick={setActiveTab}
         />
         <TabButton
           tab="linter"
           icon={<AlertTriangle size={14} />}
           label="Linter"
           count={linterWarnings.length}
+          activeTab={activeTab}
+          onClick={setActiveTab}
         />
-        <TabButton tab="actors" icon={<Users size={14} />} label="Actors" count={uniqueActors.length} />
+        <TabButton
+          tab="actors"
+          icon={<Users size={14} />}
+          label="Actors"
+          count={uniqueActors.length}
+          activeTab={activeTab}
+          onClick={setActiveTab}
+        />
       </div>
 
       {/* Tab Content */}

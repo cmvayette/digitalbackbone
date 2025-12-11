@@ -30,7 +30,8 @@ export function useExternalPolicyData(options: SOMClientOptions = { mode: 'mock'
                     updatedAt: new Date().toISOString()
                 })) as PolicyDocument[];
             }
-            return [];
+            // Throw error instead of returning empty array
+            throw new Error(response.error || 'Failed to fetch policies');
         }
     });
 
@@ -108,8 +109,9 @@ export function useExternalPolicyData(options: SOMClientOptions = { mode: 'mock'
 
     // Stub for updateObligation as it wasn't fully implemented in original either
     const updateObligationMutation = useMutation({
-        mutationFn: async (_variables: { policyId: string, obligationId: string, updates: Partial<Obligation> }) => {
+        mutationFn: async (variables: { policyId: string, obligationId: string, updates: Partial<Obligation> }) => {
             // TODO: Implement obligation update endpoint when backend API is ready
+            console.log('TODO: Update obligation', variables);
             return true;
         },
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ['policies'] })

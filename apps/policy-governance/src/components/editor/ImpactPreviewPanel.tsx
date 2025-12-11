@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { AlertTriangle, TrendingUp, Users, Activity, CheckCircle, X, AlertCircle } from 'lucide-react';
-import type { PolicyDocument, Obligation } from '../../types/policy';
+import type { PolicyDocument } from '../../types/policy';
 
 interface ActorCapacity {
   actorId: string;
@@ -40,7 +40,9 @@ export const ImpactPreviewPanel: React.FC<ImpactPreviewPanelProps> = ({
     policy.obligations.forEach(obl => {
       if (!capacityMap.has(obl.actor.id)) {
         // Mock current load (in real app, query existing obligations)
-        const currentObligations = Math.floor(Math.random() * 30) + 15;
+        // Use deterministic mock based on actor ID hash to avoid impure Math.random()
+        const hash = obl.actor.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+        const currentObligations = (hash % 30) + 15;
         const newObligations = 1;
         const maxCapacity = 50; // Mock capacity threshold
         const projectedLoad = Math.round(((currentObligations + newObligations) / maxCapacity) * 100);

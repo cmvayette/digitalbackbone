@@ -1,6 +1,6 @@
 import React from 'react';
 import { usePolicyStore } from '../store/policyStore';
-import { FileText, Shield, AlertTriangle, CheckCircle, ChevronRight, Plus } from 'lucide-react';
+import { FileText, Shield, ChevronRight, Plus } from 'lucide-react';
 import type { PolicyDocument } from '../types/policy';
 
 interface PolicyListProps {

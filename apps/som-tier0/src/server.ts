@@ -22,14 +22,50 @@ import { ConstraintEngine } from './constraint-engine';
 import { DocumentRegistry } from './document-registry';
 import { APIServer } from './api/api-server';
 
+// Import Security Middleware (C-ATO Compliance)
+import { securityHeaders, auditLogger } from './api/middleware/index';
+
 dotenv.config();
 
 const app = new Hono();
 const PORT = process.env.PORT ? parseInt(process.env.PORT) : 3333;
+const NODE_ENV = process.env.NODE_ENV || 'development';
 
-// Middleware
-app.use('*', logger());
-app.use('*', cors());
+// ==================== Security Middleware (C-ATO) ====================
+// Applied BEFORE all other middleware for maximum protection
+
+// 1. Security Headers (NIST SC-8, SC-7, SI-3)
+app.use('*', securityHeaders({
+  enableHSTS: NODE_ENV === 'production',
+  enableCSP: true,
+  cspReportUri: '/api/v1/csp-report',
+}));
+
+// 2. Audit Logging (NIST AU-2, AU-3)
+app.use('*', auditLogger({
+  enabled: true,
+  logAllRequests: false, // Only security-relevant events
+  excludePaths: ['/health', '/health/liveness', '/health/readiness'],
+}));
+
+// ==================== Standard Middleware ====================
+
+// 3. Request Logging (Development)
+if (NODE_ENV === 'development') {
+  app.use('*', logger());
+}
+
+// 4. CORS (NIST SC-7)
+// TODO: Restrict origins in production
+app.use('*', cors({
+  origin: NODE_ENV === 'production'
+    ? ['https://your-domain.mil'] // Replace with actual domains
+    : '*',
+  credentials: true,
+  allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+  allowHeaders: ['Content-Type', 'Authorization', 'X-Request-ID'],
+  exposeHeaders: ['X-Request-ID'],
+}));
 
 
 async function startServer() {

@@ -31,18 +31,7 @@ export const PolicyEditor: React.FC<PolicyEditorProps> = ({
   const [showRedlineView, setShowRedlineView] = React.useState(false);
   const [showImpactPreview, setShowImpactPreview] = React.useState(false);
 
-  if (!currentPolicy) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <div className="text-center text-slate-400">
-          <p className="text-lg font-medium mb-2">No policy selected</p>
-          <p className="text-sm">Select a policy from the list or create a new one</p>
-        </div>
-      </div>
-    );
-  }
-
-  const isReadOnly = currentPolicy.status !== 'draft' && currentPolicy.status !== 'review';
+  const isReadOnly = currentPolicy?.status !== 'draft' && currentPolicy?.status !== 'review';
 
   const editor = useEditor({
     editable: !isReadOnly,
@@ -52,14 +41,14 @@ export const PolicyEditor: React.FC<PolicyEditorProps> = ({
       BubbleMenu,
       ActorMention,
     ],
-    content: currentPolicy.sections[0]?.content || '<p>Start writing your policy...</p>',
+    content: currentPolicy?.sections[0]?.content || '<p>Start writing your policy...</p>',
     editorProps: {
       attributes: {
         class: 'prose-policy focus:outline-none',
       },
     },
     onUpdate: ({ editor }) => {
-      if (isReadOnly) return;
+      if (isReadOnly || !currentPolicy) return;
       if (currentPolicy.sections[0]) {
         const updatedSections = [...currentPolicy.sections];
         updatedSections[0] = { ...updatedSections[0], content: editor.getHTML() };
@@ -136,7 +125,7 @@ export const PolicyEditor: React.FC<PolicyEditorProps> = ({
   useEffect(() => {
     if (
       editor &&
-      currentPolicy.sections[0]?.content &&
+      currentPolicy?.sections[0]?.content &&
       editor.getHTML() !== currentPolicy.sections[0].content
     ) {
       if (editor.getText() === '') {
@@ -144,7 +133,19 @@ export const PolicyEditor: React.FC<PolicyEditorProps> = ({
       }
     }
     editor?.setEditable(!isReadOnly);
-  }, [currentPolicy.id, editor, isReadOnly]);
+  }, [currentPolicy?.id, currentPolicy?.sections, editor, isReadOnly]);
+
+  // Early return after all hooks are initialized
+  if (!currentPolicy) {
+    return (
+      <div className="flex items-center justify-center h-full bg-bg-canvas">
+        <div className="text-center text-slate-400">
+          <p className="text-lg font-medium mb-2">No policy selected</p>
+          <p className="text-sm">Select a policy from the list or create a new one</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -155,23 +156,27 @@ export const PolicyEditor: React.FC<PolicyEditorProps> = ({
             onClick={onBack}
             className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded transition-colors"
             title="Back to list"
+            aria-label="Back to policy list"
           >
-            <ArrowLeft size={20} />
+            <ArrowLeft size={20} aria-hidden="true" />
           </button>
           <div className="flex flex-col">
+            <label htmlFor="policy-title" className="sr-only">Policy Title</label>
             <input
+              id="policy-title"
               type="text"
               value={currentPolicy.title}
               onChange={handleTitleChange}
               readOnly={isReadOnly}
               placeholder="Policy Title"
+              aria-required="true"
               className={`bg-transparent text-lg font-bold text-slate-100 focus:outline-none focus:ring-1 focus:ring-blue-500 rounded px-2 -ml-2 border border-transparent ${
                 !isReadOnly && 'hover:border-slate-700'
               }`}
             />
             <div className="flex items-center gap-2 text-xs text-slate-500 font-mono">
               <span className="uppercase font-bold tracking-wider">{currentPolicy.documentType}</span>
-              <span>•</span>
+              <span aria-hidden="true">•</span>
               <span>v{currentPolicy.version}</span>
               <span
                 className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold ml-2 ${
@@ -181,7 +186,11 @@ export const PolicyEditor: React.FC<PolicyEditorProps> = ({
                     ? 'bg-yellow-900/30 text-yellow-400 border border-yellow-900/50'
                     : 'bg-slate-800 text-slate-400'
                 }`}
+                role="status"
+                aria-label={`Policy status: ${currentPolicy.status}`}
               >
+                {currentPolicy.status === 'active' && <span aria-hidden="true">✓ </span>}
+                {currentPolicy.status === 'review' && <span aria-hidden="true">⚠ </span>}
                 {currentPolicy.status}
               </span>
             </div>
@@ -225,15 +234,17 @@ export const PolicyEditor: React.FC<PolicyEditorProps> = ({
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* Toolbar */}
           {!isReadOnly && editor && (
-            <div className="flex items-center gap-1 bg-slate-900 border-b border-slate-800 px-4 py-2 shrink-0">
+            <div className="flex items-center gap-1 bg-slate-900 border-b border-slate-800 px-4 py-2 shrink-0" role="toolbar" aria-label="Text formatting toolbar">
               <button
                 onClick={() => editor.chain().focus().toggleBold().run()}
                 className={`p-2 rounded hover:bg-slate-700 transition-colors ${
                   editor.isActive('bold') ? 'bg-slate-700 text-blue-400' : 'text-slate-300'
                 }`}
                 title="Bold"
+                aria-label="Bold"
+                aria-pressed={editor.isActive('bold')}
               >
-                <Bold size={16} />
+                <Bold size={16} aria-hidden="true" />
               </button>
               <button
                 onClick={() => editor.chain().focus().toggleItalic().run()}
@@ -241,18 +252,22 @@ export const PolicyEditor: React.FC<PolicyEditorProps> = ({
                   editor.isActive('italic') ? 'bg-slate-700 text-blue-400' : 'text-slate-300'
                 }`}
                 title="Italic"
+                aria-label="Italic"
+                aria-pressed={editor.isActive('italic')}
               >
-                <Italic size={16} />
+                <Italic size={16} aria-hidden="true" />
               </button>
-              <div className="w-px h-6 bg-slate-700 mx-1"></div>
+              <div className="w-px h-6 bg-slate-700 mx-1" role="separator" aria-hidden="true"></div>
               <button
                 onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
                 className={`p-2 rounded hover:bg-slate-700 transition-colors ${
                   editor.isActive('heading', { level: 1 }) ? 'bg-slate-700 text-blue-400' : 'text-slate-300'
                 }`}
                 title="Heading 1"
+                aria-label="Heading 1"
+                aria-pressed={editor.isActive('heading', { level: 1 })}
               >
-                <Heading1 size={16} />
+                <Heading1 size={16} aria-hidden="true" />
               </button>
               <button
                 onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
@@ -260,18 +275,22 @@ export const PolicyEditor: React.FC<PolicyEditorProps> = ({
                   editor.isActive('heading', { level: 2 }) ? 'bg-slate-700 text-blue-400' : 'text-slate-300'
                 }`}
                 title="Heading 2"
+                aria-label="Heading 2"
+                aria-pressed={editor.isActive('heading', { level: 2 })}
               >
-                <Heading2 size={16} />
+                <Heading2 size={16} aria-hidden="true" />
               </button>
-              <div className="w-px h-6 bg-slate-700 mx-1"></div>
+              <div className="w-px h-6 bg-slate-700 mx-1" role="separator" aria-hidden="true"></div>
               <button
                 onClick={() => editor.chain().focus().toggleBulletList().run()}
                 className={`p-2 rounded hover:bg-slate-700 transition-colors ${
                   editor.isActive('bulletList') ? 'bg-slate-700 text-blue-400' : 'text-slate-300'
                 }`}
                 title="Bullet List"
+                aria-label="Bullet list"
+                aria-pressed={editor.isActive('bulletList')}
               >
-                <List size={16} />
+                <List size={16} aria-hidden="true" />
               </button>
               <button
                 onClick={() => editor.chain().focus().toggleCodeBlock().run()}
@@ -279,8 +298,10 @@ export const PolicyEditor: React.FC<PolicyEditorProps> = ({
                   editor.isActive('codeBlock') ? 'bg-slate-700 text-blue-400' : 'text-slate-300'
                 }`}
                 title="Code Block"
+                aria-label="Code block"
+                aria-pressed={editor.isActive('codeBlock')}
               >
-                <Code size={16} />
+                <Code size={16} aria-hidden="true" />
               </button>
             </div>
           )}

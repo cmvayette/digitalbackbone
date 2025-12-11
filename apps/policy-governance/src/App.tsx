@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { usePolicyStore } from './store/policyStore';
 import { PolicyList } from './components/PolicyList';
 import { PolicyEditor } from './components/editor/PolicyEditor';
@@ -6,6 +6,7 @@ import { ComplianceDashboard } from './components/dashboard/ComplianceDashboard'
 import { Header } from './components/Header';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useExternalPolicyData } from './hooks/useExternalPolicyData';
+import { ErrorBoundary } from '@som/ui-components';
 
 const queryClient = new QueryClient();
 
@@ -64,9 +65,11 @@ function AppContent() {
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <AppContent />
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <AppContent />
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
 

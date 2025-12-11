@@ -21,12 +21,12 @@ vi.mock('@tiptap/react', () => ({
         registerPlugin: vi.fn(),
         unregisterPlugin: vi.fn()
     }),
-    BubbleMenu: ({ children }: any) => <div data-testid="bubble-menu">{children}</div>,
+    BubbleMenu: ({ children }: { children: React.ReactNode }) => <div data-testid="bubble-menu">{children}</div>,
     EditorContent: () => <div data-testid="editor-content">Editor Content</div>
 }));
 
 vi.mock('@tiptap/react/menus', () => ({
-    BubbleMenu: ({ children }: any) => <div data-testid="bubble-menu">{children}</div>
+    BubbleMenu: ({ children }: { children: React.ReactNode }) => <div data-testid="bubble-menu">{children}</div>
 }));
 
 vi.mock('@som/api-client', () => ({

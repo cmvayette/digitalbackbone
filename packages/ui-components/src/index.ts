@@ -25,5 +25,7 @@ export type { EmptyStateProps, EmptyStateVariant } from './components/EmptyState
 export { OwnerPicker } from './components/OwnerPicker';
 export type { OwnerPickerProps } from './components/OwnerPicker';
 
+export { ErrorBoundary } from './components/ErrorBoundary';
+
 // Hooks
 export { useDebounce } from './hooks/useDebounce';

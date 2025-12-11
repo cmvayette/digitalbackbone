@@ -1,14 +1,25 @@
-import React, { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
+import React, { forwardRef, useImperativeHandle, useState } from 'react';
 import { Users, Building2, User } from 'lucide-react';
 import type { OwnerRef } from '../../types/policy';
 
 interface MentionListProps {
   items: OwnerRef[];
-  command: (item: any) => void;
+  command: (item: { id: string; label: string }) => void;
 }
 
-export const MentionList = forwardRef<any, MentionListProps>((props, ref) => {
+interface MentionListRef {
+  onKeyDown: (props: { event: KeyboardEvent }) => boolean;
+}
+
+export const MentionList = forwardRef<MentionListRef, MentionListProps>((props, ref) => {
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [prevItems, setPrevItems] = useState(props.items);
+
+  // Reset selection when items change (using derived state pattern)
+  if (props.items !== prevItems) {
+    setPrevItems(props.items);
+    setSelectedIndex(0);
+  }
 
   const selectItem = (index: number) => {
     const item = props.items[index];
@@ -28,8 +39,6 @@ export const MentionList = forwardRef<any, MentionListProps>((props, ref) => {
   const enterHandler = () => {
     selectItem(selectedIndex);
   };
-
-  useEffect(() => setSelectedIndex(0), [props.items]);
 
   useImperativeHandle(ref, () => ({
     onKeyDown: ({ event }: { event: KeyboardEvent }) => {
