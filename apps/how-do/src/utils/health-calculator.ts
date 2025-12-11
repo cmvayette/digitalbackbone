@@ -1,9 +1,11 @@
 import type { Process } from '../types/process';
-import { useDriftDetection } from '../hooks/useDriftDetection';
 
-export interface HealthScore {
-    score: number; // 0-100
-    status: 'healthy' | 'at-risk' | 'critical';
+
+export interface ProcessMaturity {
+    level: 1 | 2 | 3 | 4 | 5;
+    label: string;
+    nextStep: string;
+    score: number; // Legacy 0-100 score kept for sorting
     factors: {
         freshness: number;
         completeness: number;
@@ -12,68 +14,88 @@ export interface HealthScore {
     };
 }
 
-export function calculateProcessHealth(process: Process, hasDrift: boolean = false): HealthScore {
-    const weights = {
-        freshness: 0.3,
-        completeness: 0.3,
-        compliance: 0.4
-    };
+export interface AggregationWeights {
+    freshness: number;
+    completeness: number;
+    compliance: number;
+}
 
-    // 1. Freshness (Days since creation - strict freshness)
-    // Assume mock data doesn't have 'updatedAt', using 'createdAt'
-    const daysSinceUpdate = (new Date().getTime() - new Date(process.createdAt).getTime()) / (1000 * 3600 * 24);
-    let freshnessScore = 100;
-    if (daysSinceUpdate > 90) freshnessScore = 50;
-    if (daysSinceUpdate > 180) freshnessScore = 0;
-    if (daysSinceUpdate <= 30) freshnessScore = 100;
-    // Linear decay between 30 and 90? Let's keep it simple:
-    // < 30 days: 100
-    // 30-90 days: 80
-    // 90-180 days: 40
-    // > 180 days: 0
-    if (daysSinceUpdate > 30 && daysSinceUpdate <= 90) freshnessScore = 80;
-    else if (daysSinceUpdate > 90 && daysSinceUpdate <= 180) freshnessScore = 40;
-
-
-    // 2. Completeness (Steps have descriptions and owners)
+export function calculateProcessHealth(
+    process: Process,
+    hasDrift: boolean = false,
+    weights: AggregationWeights = { freshness: 0.3, completeness: 0.3, compliance: 0.4 }
+): ProcessMaturity {
+    // 1. Calculate Base Factors
     const steps = process.properties.steps;
     const totalSteps = steps.length;
-    let completenessScore = 0;
-    if (totalSteps > 0) {
-        const validSteps = steps.filter(s => s.description && s.owner).length;
-        completenessScore = (validSteps / totalSteps) * 100;
+
+    // Freshness
+    const daysSinceUpdate = (new Date().getTime() - new Date(process.createdAt).getTime()) / (1000 * 3600 * 24);
+    let freshnessScore = 100;
+    if (daysSinceUpdate > 180) freshnessScore = 0;
+    else if (daysSinceUpdate > 90) freshnessScore = 50;
+    else if (daysSinceUpdate > 30) freshnessScore = 80;
+
+    // Structure & Ownership
+    const validOwnerSteps = steps.filter(s => s.owner && s.owner.length > 0).length;
+    const ownerCompleteness = totalSteps > 0 ? (validOwnerSteps / totalSteps) : 0;
+
+    // Obligations
+    const stepsWithObligations = steps.filter(s => s.obligations && s.obligations.length > 0).length;
+
+    // 2. Determine Maturity Level (Waterfall Logic)
+    let level: 1 | 2 | 3 | 4 | 5 = 1;
+    let label = "Drafting";
+    let nextStep = "Define steps and owners";
+
+    // Level 1: Basic Definition (Implicit if it exists)
+
+    // Level 2: Ownership (Accountability)
+    if (ownerCompleteness === 1) {
+        level = 2;
+        label = "Owned";
+        nextStep = "Link policy obligations";
     }
 
-    // 3. Compliance (Steps have obligations linked)
-    let complianceScore = 0;
-    if (totalSteps > 0) {
-        const stepsWithObligations = steps.filter(s => s.obligations && s.obligations.length > 0).length;
-        complianceScore = (stepsWithObligations / totalSteps) * 100;
+    // Level 3: Governance (Linked)
+    if (level === 2 && stepsWithObligations > 0) { // At least some obligations linked
+        level = 3;
+        label = "Governed";
+        nextStep = "Resolve drift and compliance gaps";
     }
 
-    // 4. Drift Penalty
-    const driftPenalty = hasDrift ? 20 : 0;
+    // Level 4: Compliant (No Drift + Full Coverage)
+    // For MVP, "Full Coverage" is hard to define strictly without policy engine.
+    // We'll require No Drift + >50% Obligation Coverage
+    const obCoverage = totalSteps > 0 ? (stepsWithObligations / totalSteps) : 0;
+    if (level >= 3 && !hasDrift && obCoverage > 0.5) {
+        level = 4;
+        label = "Compliant";
+        nextStep = "Optimize for freshness and complexity";
+    }
 
-    // Calculate Weighted Score
-    let rawScore = (freshnessScore * weights.freshness) +
-        (completenessScore * weights.completeness) +
-        (complianceScore * weights.compliance);
+    // Level 5: Optimized (Fresh + High Completeness)
+    if (level === 4 && freshnessScore >= 80) {
+        level = 5;
+        label = "Optimized";
+        nextStep = "Maintain excellence";
+    }
 
-    let finalScore = Math.max(0, Math.round(rawScore - driftPenalty));
-
-    // Determine Status
-    let status: 'healthy' | 'at-risk' | 'critical' = 'healthy';
-    if (finalScore < 50) status = 'critical';
-    else if (finalScore < 80) status = 'at-risk';
+    // Legacy Score Calculation (for compatibility/sorting)
+    // Normalize weights to ensure they sum to ~1 or operate on 100 scale correctly
+    const rawScore = (freshnessScore * weights.freshness) + (ownerCompleteness * weights.completeness * 100) + (obCoverage * weights.compliance * 100);
+    const finalScore = Math.max(0, Math.round(rawScore - (hasDrift ? 20 : 0)));
 
     return {
+        level,
+        label,
+        nextStep,
         score: finalScore,
-        status,
         factors: {
             freshness: freshnessScore,
-            completeness: completenessScore,
-            compliance: complianceScore,
-            driftPenalty
+            completeness: ownerCompleteness * 100, // normalized to 0-100
+            compliance: obCoverage * 100,
+            driftPenalty: hasDrift ? 20 : 0
         }
     };
 }

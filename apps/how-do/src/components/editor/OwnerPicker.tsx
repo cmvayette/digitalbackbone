@@ -1,5 +1,5 @@
 import React from 'react';
-import { OwnerPicker as SharedOwnerPicker, OwnerPickerProps as SharedOwnerPickerProps } from '@som/ui-components';
+import { OwnerPicker as SharedOwnerPicker } from '@som/ui-components';
 
 interface OwnerPickerProps {
     value: string;

@@ -2,12 +2,14 @@ import { useMemo } from 'react';
 import type { Process } from '../types/process';
 import { useExternalPolicyData } from '@som/api-client';
 import { useExternalOrgData } from '@som/api-client';
+import { useGovernanceConfig } from './useGovernanceConfig';
 
 export enum DriftType {
     PolicyUpdate = 'POLICY_UPDATE',
     MissingObligation = 'MISSING_OBLIGATION',
     Deprecated = 'DEPRECATED',
-    OrphanedOwner = 'ORPHANED_OWNER'
+    OrphanedOwner = 'ORPHANED_OWNER',
+    Stale = 'STALE_DATA'
 }
 
 export interface DriftIssue {
@@ -22,14 +24,28 @@ export const useDriftDetection = (process: Process) => {
     // Hooks for external context
     const { obligations: policyObligations } = useExternalPolicyData();
     const { getCandidates, isLoading: isOrgLoading } = useExternalOrgData();
+    const { config } = useGovernanceConfig({ mode: 'mock' });
 
     const issues = useMemo(() => {
         const detectedIssues: DriftIssue[] = [];
 
         // Avoid drift checks if context is still loading
-        if (isOrgLoading) return [];
+        if (isOrgLoading || !config) return [];
 
         const validOwners = getCandidates().map(c => c.id);
+        const { staleDays, requiredObligationCriticality, inspectionMode } = config.properties.drift;
+
+        // 0. Check for Staleness
+        if (process.createdAt) { // Assuming createdAt is proxy for last updated in this mock
+            const daysOld = (new Date().getTime() - new Date(process.createdAt).getTime()) / (1000 * 3600 * 24);
+            if (daysOld > staleDays) {
+                detectedIssues.push({
+                    type: DriftType.Stale,
+                    message: `Process hasn't been updated in ${Math.floor(daysOld)} days (Threshold: ${staleDays}d)`,
+                    severity: 'medium'
+                });
+            }
+        }
 
         // 1. Check for linked obligations that don't exist anymore or have changed
         process.properties.steps.forEach(step => {
@@ -61,7 +77,9 @@ export const useDriftDetection = (process: Process) => {
         });
 
         // 2. Check for Missing Obligations (Governance Check)
-        // If a step owner has obligations assigned in policy that are NOT linked to the step
+        const criticalityLevels = { 'low': 1, 'medium': 2, 'high': 3 };
+        const minLevel = criticalityLevels[requiredObligationCriticality] || 3;
+
         process.properties.steps.forEach(step => {
             if (!step.owner) return;
 
@@ -70,23 +88,23 @@ export const useDriftDetection = (process: Process) => {
 
             expectedObligations.forEach(expected => {
                 const isLinked = step.obligations?.some(link => link.id === expected.id);
+                const obligLevel = criticalityLevels[expected.criticality as keyof typeof criticalityLevels] || 1;
 
-                // If the owner matches AND the criticality is high, we expect it to be linked
-                // This is a naive heuristic: "All high crit obligations for a role must be explicitly linked/handled"
-                if (!isLinked && expected.criticality === 'high') {
+                // IF (Not Linked) AND (Level >= Threshold OR InspectionMode is ON)
+                if (!isLinked && (obligLevel >= minLevel || inspectionMode)) {
                     detectedIssues.push({
                         type: DriftType.MissingObligation,
                         stepId: step.id,
                         obligationId: expected.id,
-                        message: `High priority obligation ${expected.id} ("${expected.statement}") assigned to ${step.owner} is not linked.`,
-                        severity: 'medium'
+                        message: `Priority obligation ${expected.id} ("${expected.statement}") assigned to ${step.owner} is not linked.`,
+                        severity: expected.criticality === 'high' ? 'high' : 'medium'
                     });
                 }
             });
         });
 
         return detectedIssues;
-    }, [process, policyObligations, getCandidates, isOrgLoading]);
+    }, [process, policyObligations, getCandidates, isOrgLoading, config]);
 
     return { issues, hasDrift: issues.length > 0 };
 };

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './Dashboard.css';
 import { generateTaskHistory } from '../scripts/seed-history';
 import type { HistoricalEvent } from '../scripts/seed-history';
-import { useStrategyData } from '@som/api-client';
+import { useStrategyData } from '../hooks/useStrategyData';
 
 export const Dashboard: React.FC = () => {
     const [history, setHistory] = useState<HistoricalEvent[]>([]);

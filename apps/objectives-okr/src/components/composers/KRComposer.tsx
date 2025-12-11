@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { HolonType, type KeyResult } from '@som/shared-types';
-import { useExternalOrgData, useStrategyComposer } from '@som/api-client';
+import { useExternalOrgData } from '@som/api-client';
+import { useStrategyComposer } from '../../hooks/useStrategyComposer';
 
 interface KRComposerProps {
     objectiveId: string;

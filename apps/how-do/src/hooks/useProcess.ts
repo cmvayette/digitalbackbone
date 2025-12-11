@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import orgStructure from '../mocks/org-structure.json';
 import type { ProcessStep } from '@som/shared-types';
 import { useExternalProcessData, useProcessEditor } from '@som/api-client';
@@ -7,16 +7,18 @@ import { useExternalProcessData, useProcessEditor } from '@som/api-client';
 // The app currently uses ownerType for UI icons. We'll keep it as a local extension.
 export interface LocalProcessStep extends Omit<ProcessStep, 'obligations'> {
     ownerType: 'Position' | 'Organization' | 'RoleTag';
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     obligations: any[]; // relax for now or use shared ObligationLink[]
 }
 
 export function useProcess(initialProcessId?: string) {
-    const { processes, getProcessById, isLoading } = useExternalProcessData();
+    const { getProcessById, isLoading } = useExternalProcessData();
     const [steps, setSteps] = useState<LocalProcessStep[]>([]);
+    const initializedRef = useRef(false);
 
     // Load mock data or initialize empty
     useEffect(() => {
-        if (initialProcessId && !isLoading) {
+        if (initialProcessId && !isLoading && !initializedRef.current) {
             const process = getProcessById(initialProcessId);
             if (process) {
                 // Map shared process steps to local UI steps
@@ -26,10 +28,12 @@ export function useProcess(initialProcessId?: string) {
                     ownerType: 'Position', // Defaulting for now
                     obligations: s.obligations
                 }));
+                // eslint-disable-next-line react-hooks/set-state-in-effect
                 setSteps(mappedSteps);
+                initializedRef.current = true;
             }
         }
-    }, [initialProcessId, processes, isLoading, getProcessById]);
+    }, [initialProcessId, isLoading, getProcessById]);
 
     const addStep = (ownerId: string, ownerType: 'Position' | 'Organization' | 'RoleTag') => {
         const newStep: LocalProcessStep = {

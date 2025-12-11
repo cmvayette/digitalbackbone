@@ -8,6 +8,7 @@ import {
     RelationshipType,
     Event,
     EventType,
+    GovernanceConfig,
 } from '@som/shared-types';
 import {
     SOMClient,
@@ -127,6 +128,8 @@ export class MockSOMClient implements ISOMClient {
                     name: faker.commerce.department() + ' Modernization',
                     description: faker.lorem.sentence(),
                     status: 'active',
+                    createdAt: faker.date.past().toISOString(),
+                    timeframe: { start: faker.date.past(), end: faker.date.future() }
                 };
                 break;
             case HolonType.Document:
@@ -403,6 +406,65 @@ export class MockSOMClient implements ISOMClient {
 
     async getPolicies(filters?: HolonFilters): Promise<APIResponse<Holon[]>> {
         return this.queryHolons(HolonType.Document, filters);
+    }
+
+    // ==================== Governance Configuration ====================
+    private governanceConfig: GovernanceConfig = {
+        id: 'gov-config-singleton',
+        type: HolonType.GovernanceConfig,
+        status: 'active',
+        createdAt: new Date(),
+        createdBy: 'system',
+        sourceDocuments: [],
+        properties: {
+            aggregation: {
+                // Note: coolness isn't in schema but JS allows extra props? No, need to match interface.
+                // Wait, Schema was:
+                // freshness, completeness, compliance.
+                // Re-checking shared-types schema.
+                // weights: { freshness: number; completeness: number; compliance: number; }; 
+                // Ah, I need to match exact schema.
+                // Let's assume standard weights.
+                weights: {
+                    freshness: 0.3,
+                    completeness: 0.3,
+                    compliance: 0.4
+                },
+                alertThresholds: {
+                    critical: 50,
+                    warning: 75
+                }
+            },
+            search: {
+                weights: {
+                    rankMatch: 50,
+                    roleMatch: 30,
+                    tagMatch: 10
+                },
+                recommendationMinScore: 10
+            },
+            drift: {
+                inspectionMode: false,
+                staleDays: 90,
+                requiredObligationCriticality: 'high'
+            }
+        }
+    };
+
+    async getGovernanceConfig(): Promise<APIResponse<GovernanceConfig>> {
+        return this.mockResponse(this.governanceConfig);
+    }
+
+    async updateGovernanceConfig(config: Partial<GovernanceConfig['properties']>): Promise<APIResponse<GovernanceConfig>> {
+        // Deep merge for proper partial updates
+        this.governanceConfig.properties = {
+            ...this.governanceConfig.properties,
+            ...config,
+            aggregation: { ...this.governanceConfig.properties.aggregation, ...config.aggregation },
+            search: { ...this.governanceConfig.properties.search, ...config.search },
+            drift: { ...this.governanceConfig.properties.drift, ...config.drift },
+        };
+        return this.mockResponse(this.governanceConfig);
     }
 
     // ==================== Health Check ====================

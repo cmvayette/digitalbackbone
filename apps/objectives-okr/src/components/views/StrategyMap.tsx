@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useStrategyData } from '@som/api-client';
+import { useStrategyData } from '../../hooks/useStrategyData';
 import { ArrowRight, Target, TrendingUp, AlertTriangle, CheckCircle, Plus } from 'lucide-react';
 import { KRComposer } from '../composers/KRComposer';
 

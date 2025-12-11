@@ -2,37 +2,36 @@
 @import "@som/ui-components/styles";
 
 @theme {
+  /* Inherit/Override theme values if needed, but rely on shared CSS vars where possible */
+  /* Re-declaring key colors in the @theme block allows Tailwind to use them as utilities like bg-bg-canvas */
   --color-bg-canvas: var(--bg-canvas);
   --color-bg-panel: var(--bg-panel);
   --color-bg-surface: var(--bg-surface);
   --color-border-color: var(--border-color);
   --color-text-primary: var(--text-primary);
   --color-text-secondary: var(--text-secondary);
+  --color-accent-cyan: var(--accent-cyan);
+  --color-accent-orange: var(--accent-orange);
+  --color-accent-critical: var(--accent-critical);
+  --color-accent-valid: var(--accent-valid);
+
+  --font-ui: var(--font-ui);
+  --font-mono: var(--font-mono);
 }
 
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  /* Local Mappings specific to this app */
+  --bg-vacant: var(--bg-surface);
+  --highlight: var(--accent-orange);
 }
 
-::-webkit-scrollbar-thumb {
-  @apply bg-slate-600 rounded;
-}
-
-@layer base {
-  body {
-    @apply bg-bg-canvas text-text-primary font-ui antialiased overflow-hidden;
-  }
+body {
+  background-color: var(--bg-canvas);
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  margin: 0;
+  min-height: 100vh;
+  @apply antialiased;
 }
 
 /* Custom Scrollbar for Deep Void feel */

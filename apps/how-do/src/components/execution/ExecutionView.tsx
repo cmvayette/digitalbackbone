@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Process } from '../../types/process';
-import { CheckCircle, Circle, ArrowRight, Play, Check } from 'lucide-react';
+import { CheckCircle, Circle, ArrowRight } from 'lucide-react';
 
 interface ExecutionViewProps {
     process: Process;
