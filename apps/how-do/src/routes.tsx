@@ -8,7 +8,9 @@ import { TimelineViewer } from './components/TimelineViewer';
 import { SwimlaneEditor } from './components/SwimlaneEditorComponent';
 import App from './App';
 import { useExternalProcessData } from '@som/api-client';
+import { AuthCallback, AuthGuard } from '@som/ui-components';
 import { LayoutList, GitCommitHorizontal } from 'lucide-react';
+import { authConfig } from './config/auth';
 
 // --- Wrapper Components ---
 
@@ -126,27 +128,31 @@ export const router = createBrowserRouter([
         children: [
             {
                 index: true,
-                element: <ProcessSearchWrapper />,
+                element: <AuthGuard authConfig={authConfig}><ProcessSearchWrapper /></AuthGuard>,
             },
             {
                 path: 'health',
-                element: <ProcessHealthDashboard />,
+                element: <AuthGuard authConfig={authConfig}><ProcessHealthDashboard /></AuthGuard>,
             },
             {
                 path: 'admin',
-                element: <div className="h-full bg-bg-canvas"><GovernanceTuner /></div>,
+                element: <AuthGuard authConfig={authConfig}><div className="h-full bg-bg-canvas"><GovernanceTuner /></div></AuthGuard>,
             },
             {
                 path: 'process/:processId',
-                element: <ProcessViewerWrapper />,
+                element: <AuthGuard authConfig={authConfig}><ProcessViewerWrapper /></AuthGuard>,
             },
             {
                 path: 'editor',
-                element: <ProcessEditorWrapper />,
+                element: <AuthGuard authConfig={authConfig}><ProcessEditorWrapper /></AuthGuard>,
             },
             {
                 path: 'editor/:processId',
-                element: <ProcessEditorWrapper />,
+                element: <AuthGuard authConfig={authConfig}><ProcessEditorWrapper /></AuthGuard>,
+            },
+            {
+                path: 'auth/callback',
+                element: <AuthCallback />,
             },
         ],
     },

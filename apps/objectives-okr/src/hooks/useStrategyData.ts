@@ -1,13 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { createSOMClient, SOMClientOptions } from '@som/api-client';
+import { SOMClientOptions } from '@som/api-client';
 import { HolonType, type LOE, type Objective, type KeyResult } from '@som/shared-types';
+import { getClient } from '../api/client';
 
 export function useStrategyData(options: SOMClientOptions = { mode: 'mock' }) {
     const queryClient = useQueryClient();
-    const client = createSOMClient(
-        options.mode === 'mock' ? undefined : 'http://localhost:3333/api/v1',
-        options
-    );
+    const client = getClient(options.mode);
 
     const loeQuery = useQuery({
         queryKey: ['strategy', 'loes'],

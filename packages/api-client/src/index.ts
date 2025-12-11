@@ -15,6 +15,7 @@ export type {
   OrgStructure,
   SubmitEventRequest,
   EventResult,
+  OPAInput,
 } from './client';
 
 export { queryKeys, queryFns, staleTimes } from './hooks';
@@ -24,3 +25,4 @@ export * from './hooks/useProcessEditor';
 export * from './useExternalPolicyData';
 export * from './hooks/useStrategyComposer';
 export * from './useStrategyData';
+export * from './services/OPAClient';

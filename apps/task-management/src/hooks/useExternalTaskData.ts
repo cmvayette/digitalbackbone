@@ -1,15 +1,13 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { createSOMClient, SOMClientOptions } from '@som/api-client';
+import { SOMClientOptions } from '@som/api-client';
 import { HolonType, EventType } from '@som/shared-types';
 import { Task, Project } from '../types/domain';
 import { v4 as uuidv4 } from 'uuid';
+import { getClient } from '../api/client';
 
 export function useExternalTaskData(options: SOMClientOptions = { mode: 'mock' }) {
     const queryClient = useQueryClient();
-    const client = createSOMClient(
-        options.mode === 'mock' ? undefined : 'http://localhost:3333/api/v1',
-        options
-    );
+    const client = getClient(options.mode);
 
     // --- Queries ---
 

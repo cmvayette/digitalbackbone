@@ -506,4 +506,10 @@ export class MockSOMClient implements ISOMClient {
     async healthCheck(): Promise<{ healthy: boolean; latencyMs: number }> {
         return { healthy: true, latencyMs: 5 };
     }
+
+    // OPA
+    async checkAccess(input: import('./services/OPAClient').OPAInput): Promise<boolean> {
+        console.log('[MockSOMClient] Checking access (ALLOW)', input);
+        return true;
+    }
 }

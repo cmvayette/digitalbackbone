@@ -9,7 +9,7 @@ services:
       - NODE_ENV=development
       - AUTH_MODE=apikey # Or 'gateway' to test C-ATO path
     healthcheck:
-      test: ["CMD", "wget", "-q", "-O", "-", "http://localhost:3000/health/liveness"]
+      test: [ "CMD", "wget", "-q", "-O", "-", "http://localhost:3000/health/liveness" ]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -17,7 +17,42 @@ services:
     tmpfs:
       - /tmp # Allow write to tmp for logs/pid if needed
 
+  # Identity Provider (Keycloak)
+  keycloak:
+    image: quay.io/keycloak/keycloak:23.0
+    command: start-dev
+    ports:
+      - "8080:8080"
+    environment:
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+    volumes:
+      - ./keycloak_data:/opt/keycloak/data
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/health/ready" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   # Gateway Simulation (Optional, e.g. mock Envoy)
   # gateway:
   #   image: envoyproxy/envoy:distroless-v1.25
   #   ...
+
+  opa:
+    image: openpolicyagent/opa:latest
+    ports:
+      - "8181:8181"
+    volumes:
+      - ./policies:/policies
+    command:
+      - "run"
+      - "--server"
+      - "--addr=0.0.0.0:8181"
+      - "--log-format=json-pretty"
+      - "/policies"
+    healthcheck:
+      test: [ "CMD", "wget", "--spider", "http://localhost:8181/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
