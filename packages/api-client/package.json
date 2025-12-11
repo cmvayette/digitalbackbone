@@ -8,6 +8,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
+    },
+    "./mock": {
+      "types": "./dist/mock-client.d.ts",
+      "default": "./dist/mock-client.js"
     }
   },
   "scripts": {
@@ -25,6 +29,6 @@
   },
   "devDependencies": {
     "@types/react": "^19.0.0",
-    "typescript": "^5.3.0"
+    "typescript": "~5.9.3"
   }
 }

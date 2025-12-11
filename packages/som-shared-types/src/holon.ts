@@ -119,6 +119,8 @@ export interface ProcessStep {
   source?: 'native' | 'external';
   externalId?: string;
   externalSource?: string;
+  attachments?: Array<{ name: string; url: string }>;
+  decision?: { label: string; paths: string[] };
 }
 
 export interface ProcessProperties {
