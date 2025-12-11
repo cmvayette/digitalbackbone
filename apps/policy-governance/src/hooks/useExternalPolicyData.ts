@@ -109,7 +109,7 @@ export function useExternalPolicyData(options: SOMClientOptions = { mode: 'mock'
     // Stub for updateObligation as it wasn't fully implemented in original either
     const updateObligationMutation = useMutation({
         mutationFn: async (_variables: { policyId: string, obligationId: string, updates: Partial<Obligation> }) => {
-            console.log('Update Obligation Not Implemented specifically on backend yet');
+            // TODO: Implement obligation update endpoint when backend API is ready
             return true;
         },
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ['policies'] })

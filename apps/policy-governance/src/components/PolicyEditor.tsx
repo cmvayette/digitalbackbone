@@ -17,8 +17,6 @@ export const PolicyEditor: React.FC<PolicyEditorProps> = ({ initialContent = '',
     };
 
     const handlePublish = () => {
-        console.log('Publishing Policy...');
-
         const payload: DocumentIssuedPayload = {
             title: 'Draft Policy',
             content: content,
@@ -30,7 +28,6 @@ export const PolicyEditor: React.FC<PolicyEditorProps> = ({ initialContent = '',
             type: EventType.DocumentIssued,
             payload
         };
-        console.log('Event Emitted:', mockEvent);
 
         if (onSave) onSave(content);
     };
