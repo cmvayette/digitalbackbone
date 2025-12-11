@@ -1,1 +1,7 @@
 *.db
+
+# TLS Certificates (development)
+certs/
+*.key
+*.crt
+*.pem

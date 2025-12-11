@@ -24,6 +24,7 @@ import { APIServer } from './api/api-server';
 
 // Import Security Middleware (C-ATO Compliance)
 import { securityHeaders, auditLogger } from './api/middleware/index';
+import { createSecureServer, getHTTPSConfigFromEnv } from './https-server';
 
 dotenv.config();
 
@@ -167,12 +168,20 @@ async function startServer() {
     // Health Check (Direct Hono route)
     app.get('/health', (c) => c.json({ status: 'ok', events: allEvents.length }));
 
-    console.log(`SOM Tier-0 running on http://localhost:${PORT}`);
+    // 6. Start Server (HTTP or HTTPS based on configuration)
+    const httpsConfig = getHTTPSConfigFromEnv();
 
-    serve({
-        fetch: app.fetch,
-        port: PORT
-    });
+    if (httpsConfig.enabled) {
+        console.log('Starting server with HTTPS (NIST SC-8 compliant)...');
+        createSecureServer(app, httpsConfig);
+    } else {
+        console.log(`SOM Tier-0 running on http://localhost:${PORT}`);
+        console.warn('⚠️  HTTP mode - use HTTPS in production!');
+        serve({
+            fetch: app.fetch,
+            port: PORT
+        });
+    }
 }
 
 startServer().catch(console.error);

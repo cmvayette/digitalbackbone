@@ -10,7 +10,8 @@
     "test": "vitest",
     "test:watch": "vitest",
     "test:coverage": "vitest --coverage",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "generate-certs": "bash scripts/generate-certs.sh"
   },
   "keywords": [
     "semantic-model",
