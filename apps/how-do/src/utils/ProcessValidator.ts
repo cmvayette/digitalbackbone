@@ -1,4 +1,9 @@
 import type { Process, ProcessStep } from '../types/process';
+import * as SemanticLinter from '@som/semantic-linter/runtime';
+// Extract for easier usage, while handling potential CJS interop issues
+const { validateProcess: validateProcessRules } = SemanticLinter;
+// ValidationViolation is a type, need to access differently or just use any if strictly needed, but types might work from module
+import type { ValidationViolation } from '@som/semantic-linter/runtime';
 
 export interface ValidationIssue {
     type: 'error' | 'warning';
@@ -9,6 +14,24 @@ export interface ValidationIssue {
 export const validateProcess = (process: Process): ValidationIssue[] => {
     const issues: ValidationIssue[] = [];
 
+    // 1. Run Semantic Linter Rules (Dead Links, Cycles)
+    const ruleViolations = validateProcessRules(process);
+
+    ruleViolations.forEach(v => {
+        // Map path to stepId if possible. e.g. ['steps', 'step-1', ...]
+        let stepId = undefined;
+        if (v.path[0] === 'steps' && v.path[1]) {
+            stepId = v.path[1];
+        }
+
+        issues.push({
+            type: v.level,
+            stepId,
+            message: v.message // e.g. "Step 'A' points to non-existent..."
+        });
+    });
+
+    // 2. Run Local Completeness Checks (Legacy/UI specific)
     if (!process.properties.steps || process.properties.steps.length === 0) {
         issues.push({
             type: 'error',
@@ -57,3 +80,4 @@ export const validateProcess = (process: Process): ValidationIssue[] => {
 
     return issues;
 };
+

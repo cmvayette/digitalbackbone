@@ -1,38 +1,69 @@
-import { renderHook } from '@testing-library/react';
-import { describe, it, expect } from 'vitest';
+import { renderHook, waitFor } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { useSearch } from '../../hooks/useSearch';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
-const mockNodes = [
-    { id: '1', type: 'organization', data: { label: 'Logistics Unit', properties: { uic: 'LSU-1' } } },
-    { id: '2', type: 'person', data: { label: 'Sarah Miller', properties: { rank: 'LCDR' } } },
-    { id: '3', type: 'position', data: { label: 'Ops Officer', properties: { billetCode: '12345' } } },
-] as any[];
+// Mock API Client
+const mockSearch = vi.fn();
+vi.mock('@som/api-client', () => ({
+    createSOMClient: () => ({
+        search: mockSearch
+    })
+}));
+
+const wrapper = ({ children }: any) => {
+    const queryClient = new QueryClient({
+        defaultOptions: { queries: { retry: false } }
+    });
+    return (
+        <QueryClientProvider client={queryClient}>
+            {children}
+        </QueryClientProvider>
+    );
+};
 
 describe('useSearch', () => {
-    it('returns empty array for empty query', () => {
-        const { result } = renderHook(() => useSearch(mockNodes, ''));
-        expect(result.current).toEqual([]);
+    beforeEach(() => {
+        vi.clearAllMocks();
     });
 
-    it('filters by label (case-insensitive)', () => {
-        const { result } = renderHook(() => useSearch(mockNodes, 'logistics'));
-        expect(result.current).toHaveLength(1);
-        expect(result.current[0].label).toBe('Logistics Unit');
+    it('returns empty results initially', async () => {
+        const { result } = renderHook(() => useSearch(''), { wrapper });
+        expect(result.current.results).toEqual([]);
+        expect(mockSearch).not.toHaveBeenCalled();
     });
 
-    it('filters by subtitle/properties', () => {
-        const { result } = renderHook(() => useSearch(mockNodes, 'lcdr')); // Search by rank
-        expect(result.current).toHaveLength(1);
-        expect(result.current[0].label).toBe('Sarah Miller');
+    it('calls api.search when query is provided', async () => {
+        mockSearch.mockResolvedValue({
+            success: true,
+            data: [{ id: '1', name: 'Logistics', type: 'Organization', description: 'Test' }]
+        });
+
+        const { result } = renderHook(() => useSearch('logistics'), { wrapper });
+
+        await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+        // Expect exact call assuming impl logic (which sends activeQuery)
+        expect(mockSearch).toHaveBeenCalled();
+        expect(result.current.results).toHaveLength(1);
+        expect(result.current.results[0].label).toBe('Logistics');
     });
 
-    it('limits results', () => {
-        // Create 15 matching nodes
-        const manyNodes = Array.from({ length: 15 }, (_, i) => ({
-            id: String(i), type: 'person', data: { label: `Person ${i}`, properties: {} }
-        })) as any[];
+    it('handles search failure gracefully', async () => {
+        mockSearch.mockResolvedValue({
+            success: false,
+            error: { message: 'Failed' }
+        });
 
-        const { result } = renderHook(() => useSearch(manyNodes, 'Person'));
-        expect(result.current).toHaveLength(10);
+        const { result } = renderHook(() => useSearch('crash'), { wrapper });
+
+        await waitFor(() => expect(result.current.error).toBeTruthy());
+        expect(result.current.results).toEqual([]);
+    });
+
+    it('appends intent keywords to query', async () => {
+        mockSearch.mockResolvedValue({ success: true, data: [] });
+        renderHook(() => useSearch('jobs', { vacant: true }), { wrapper });
+        await waitFor(() => expect(mockSearch).toHaveBeenCalledWith('jobs vacant', undefined, 10));
     });
 });

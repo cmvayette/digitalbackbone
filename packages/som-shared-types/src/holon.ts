@@ -113,6 +113,8 @@ export interface ProcessStep {
   title: string;
   description: string;
   owner: string;
+  assigneeType?: 'human' | 'agent' | 'system';
+  nextStepId?: string; // Optional pointer for graph-based flows
   obligations: ObligationLink[];
   source?: 'native' | 'external';
   externalId?: string;

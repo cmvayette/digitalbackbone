@@ -1,12 +1,12 @@
+import { useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
-import type { Node } from '@xyflow/react';
+import { createSOMClient, type SOMClientOptions } from '@som/api-client';
 
 export interface SearchResult {
     id: string;
     label: string;
     type: string;
     subtitle?: string;
-    node: Node;
 }
 
 export interface SearchFilters {
@@ -14,87 +14,38 @@ export interface SearchFilters {
     tigerTeams?: boolean;
 }
 
-export function useSearch(nodes: Node[], query: string, filters: SearchFilters = {}): SearchResult[] {
-    return useMemo(() => {
-        // 1. Parse Query for NL Intents
-        let activeQuery = query.toLowerCase();
-        let nlVacant = false;
-        let nlTiger = false;
+export function useSearch(query: string, filters: SearchFilters = {}, options?: SOMClientOptions) {
+    // Stable client instance
+    const client = useMemo(() => createSOMClient(
+        options?.mode === 'mock' ? undefined : 'http://localhost:3333/api/v1',
+        options
+    ), [options?.mode, options?.includeCredentials]);
 
-        // Detect "vacant"
-        if (activeQuery.includes('vacant')) {
-            nlVacant = true;
-            activeQuery = activeQuery.replace('vacant', '').trim();
-        }
+    const { data, isLoading, error } = useQuery({
+        queryKey: ['search', query, filters],
+        queryFn: async () => {
+            // 1. Handle special local intent if API doesn't support it yet
+            // For now, we assume simple text search + basic client side modification of query
+            let activeQuery = query;
+            if (filters.vacant) activeQuery += " vacant";
+            if (filters.tigerTeams) activeQuery += " tiger team";
 
-        // Detect "tiger team"
-        if (activeQuery.includes('tiger team')) {
-            nlTiger = true;
-            activeQuery = activeQuery.replace('tiger team', '').trim();
-        }
+            const response = await client.search(activeQuery, undefined, 10);
 
-        // Detect "in [Scope]" (Basic implementation)
-        // e.g. "admin in N1" -> query: "admin", scope: "N1"
-        // For now, we'll just treat the remaining query as a broad match against parent/path if we had that data.
-        // Assuming simple string matching for now.
+            if (!response.success || !response.data) {
+                throw new Error(response.error?.message || 'Search failed');
+            }
 
-        const showVacant = filters.vacant || nlVacant;
-        const showTiger = filters.tigerTeams || nlTiger;
+            return response.data.map(r => ({
+                id: r.id,
+                label: r.name,
+                type: r.type,
+                subtitle: r.description || r.type
+            }));
+        },
+        enabled: query.trim().length > 0,
+        staleTime: 1000 * 60, // 1 minute
+    });
 
-        // If no query and no filters, return empty
-        if (activeQuery.length === 0 && !showVacant && !showTiger) return [];
-
-        return nodes
-            .filter((node) => {
-                const data = node.data;
-                const props = (data.properties as any) || {};
-
-                // -- Filter Checks --
-                if (showVacant) {
-                    // Must be a position AND be vacant
-                    // Check explicit isVacant flag or property state
-                    const isVacant = data.isVacant === true || props.state === 'vacant';
-                    if (!isVacant) return false;
-                }
-
-                if (showTiger) {
-                    // Must be a Tiger Team (Org) or related
-                    const isTiger = props.isTigerTeam === true;
-                    if (!isTiger) return false;
-                }
-
-                // -- Text Matching --
-                // If we stripped everything away (e.g. "show vacant"), we match all (passed filters)
-                if (activeQuery.length === 0) return true;
-
-                // Otherwise, normal text search
-                const label = (data.label as string || '').toLowerCase();
-                const type = (node.type || '').toLowerCase();
-                const subtitle = (props.rank || props.uic || props.billetCode || '').toLowerCase();
-                const name = (props.name || '').toLowerCase(); // Org name / Person name
-
-                return label.includes(activeQuery) ||
-                    type.includes(activeQuery) ||
-                    subtitle.includes(activeQuery) ||
-                    name.includes(activeQuery);
-            })
-            .map((node) => {
-                const data = node.data;
-                const props = (data.properties as any) || {};
-                let subtitle = '';
-
-                if (node.type === 'organization') subtitle = props.uic || 'Organization';
-                else if (node.type === 'person') subtitle = props.rank || 'Person';
-                else if (node.type === 'position') subtitle = props.billetCode || 'Position';
-
-                return {
-                    id: node.id,
-                    label: data.label as string,
-                    type: node.type || 'unknown',
-                    subtitle,
-                    node
-                };
-            })
-            .slice(0, 10);
-    }, [nodes, query, filters]);
+    return { results: data || [], isLoading, error };
 }

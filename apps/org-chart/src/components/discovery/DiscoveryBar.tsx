@@ -1,22 +1,22 @@
 import { useState, useEffect, useRef } from 'react';
-import { Search, X } from 'lucide-react';
+import { Search, X, Loader2 } from 'lucide-react';
 import { useSearch, type SearchResult, type SearchFilters } from '../../hooks/useSearch';
-import type { Node } from '@xyflow/react';
+import type { SOMClientOptions } from '@som/api-client';
 
 interface DiscoveryBarProps {
-    nodes: Node[];
     onResultSelect: (result: SearchResult) => void;
     viewMode: 'reporting' | 'mission';
     onViewModeChange: (mode: 'reporting' | 'mission') => void;
+    clientOptions?: SOMClientOptions;
 }
 
-export function DiscoveryBar({ nodes, onResultSelect, viewMode, onViewModeChange }: DiscoveryBarProps) {
+export function DiscoveryBar({ onResultSelect, viewMode, onViewModeChange, clientOptions }: DiscoveryBarProps) {
     const [query, setQuery] = useState('');
     const [isFocused, setIsFocused] = useState(false);
     const [filters, setFilters] = useState<SearchFilters>({ vacant: false, tigerTeams: false });
     const inputRef = useRef<HTMLInputElement>(null);
 
-    const results = useSearch(nodes, query, filters);
+    const { results, isLoading } = useSearch(query, filters, clientOptions);
 
     // Keyboard shortcut '/'
     useEffect(() => {
@@ -72,6 +72,7 @@ export function DiscoveryBar({ nodes, onResultSelect, viewMode, onViewModeChange
                 />
 
                 <div className="flex items-center gap-2">
+                    {isLoading && <Loader2 size={14} className="animate-spin text-accent-cyan" />}
                     {query && (
                         <button onClick={() => setQuery('')} className="text-slate-500 hover:text-white transition-colors">
                             <X size={14} />
@@ -154,8 +155,17 @@ export function DiscoveryBar({ nodes, onResultSelect, viewMode, onViewModeChange
                         ))
                     ) : (
                         <div className="px-4 py-8 text-sm text-slate-500 text-center flex flex-col items-center gap-2 font-mono">
-                            <Search size={20} className="opacity-20" />
-                            <span>NO SIGNAL FOUND</span>
+                            {isLoading ? (
+                                <>
+                                    <Loader2 size={16} className="animate-spin opacity-50" />
+                                    <span>SEARCHING...</span>
+                                </>
+                            ) : (
+                                <>
+                                    <Search size={20} className="opacity-20" />
+                                    <span>NO SIGNAL FOUND</span>
+                                </>
+                            )}
                         </div>
                     )}
                 </div>

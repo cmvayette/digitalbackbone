@@ -1,4 +1,7 @@
-#!/usr/bin/env node
+// Export Runtime Validator
+export * from './runtime/validator';
+export * from './runtime/rules/process-rules';
+
 import { Command } from 'commander';
 import chalk from 'chalk';
 import { Project } from 'ts-morph';

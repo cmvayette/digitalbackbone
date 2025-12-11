@@ -17,7 +17,8 @@ const mockProcess: Process = {
         description: "A test process description",
         inputs: [],
         outputs: [],
-        estimatedDuration: 60,
+        tags: [],
+        estimatedDuration: 3600,
         steps: [
             {
                 id: "step-1",

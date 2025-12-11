@@ -14,14 +14,14 @@ export const mockProcesses: Process[] = [
             description: "Standard operating procedure for operations.",
             inputs: [],
             outputs: [],
-            estimatedDuration: 3600,
             tags: ['Operations', 'Standard', 'Officer'],
             steps: [
                 { id: 'step-1', title: 'Initiate Request', description: 'Start the form', owner: 'pos-1', obligations: [] },
                 { id: 'step-2', title: 'Review & Approve', description: 'Manager review', owner: 'pos-2', obligations: [] },
                 { id: 'step-JIRA-123', title: 'Provision Hardware', description: 'IT Dept Ticket', owner: 'pos-3', source: 'external', externalId: 'JIRA-123', externalSource: 'jira', obligations: [] },
                 { id: 'step-3', title: 'Finalize Logistics', description: 'Supply check', owner: 'pos-3', obligations: [] }
-            ]
+            ],
+            estimatedDuration: 3600
         }
     },
     {
@@ -74,7 +74,7 @@ export const mockProcesses: Process[] = [
         sourceDocuments: [],
         properties: {
             name: "Officer Leave Request",
-            description: "Leave request procedure for Commissioned Officers.",
+            description: "Standard leave request for Commissioned Officers.",
             inputs: [],
             outputs: [],
             estimatedDuration: 1800,

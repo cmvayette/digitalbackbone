@@ -28,10 +28,19 @@ export interface ExternalPerson {
     properties?: Record<string, unknown>;
 }
 
+export interface ExternalAgent {
+    id: string;
+    name: string;
+    type: string;
+    description: string;
+    capabilities: string[];
+}
+
 export function useExternalOrgData(options?: SOMClientOptions) {
     const [organizations, setOrganizations] = useState<ExternalOrganization[]>([]);
     const [positions, setPositions] = useState<ExternalPosition[]>([]);
     const [people, setPeople] = useState<ExternalPerson[]>([]);
+    const [agents, setAgents] = useState<ExternalAgent[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -45,10 +54,11 @@ export function useExternalOrgData(options?: SOMClientOptions) {
                     options
                 );
 
-                const [orgsResponse, posResponse, peopleResponse] = await Promise.all([
+                const [orgsResponse, posResponse, peopleResponse, agentsResponse] = await Promise.all([
                     client.queryHolons(HolonType.Organization),
                     client.queryHolons(HolonType.Position),
-                    client.queryHolons(HolonType.Person)
+                    client.queryHolons(HolonType.Person),
+                    client.queryHolons(HolonType.Agent)
                 ]);
 
                 if (orgsResponse.success && orgsResponse.data) {
@@ -85,17 +95,18 @@ export function useExternalOrgData(options?: SOMClientOptions) {
                     }));
                     setPeople(mappedPeople);
                 }
-                if (peopleResponse.success && peopleResponse.data) {
-                    const mappedPeople: ExternalPerson[] = peopleResponse.data.map(h => ({
+
+                if (agentsResponse.success && agentsResponse.data) {
+                    const mappedAgents: ExternalAgent[] = agentsResponse.data.map(h => ({
                         id: h.id,
-                        name: h.properties.name as string || 'Unknown Person',
-                        type: h.properties.type as string || 'Person',
-                        designatorRating: h.properties.designatorRating as string || 'N/A',
-                        avatarUrl: h.properties.avatarUrl as string,
-                        properties: h.properties
+                        name: h.properties.name as string || 'Unknown Agent',
+                        type: 'Agent',
+                        description: h.properties.description as string || '',
+                        capabilities: (h.properties.capabilities as string[]) || []
                     }));
-                    setPeople(mappedPeople);
+                    setAgents(mappedAgents);
                 }
+
             } catch (err) {
                 console.error("Failed to fetch external org data", err);
                 setError(err instanceof Error ? err.message : 'Unknown error');
@@ -113,6 +124,7 @@ export function useExternalOrgData(options?: SOMClientOptions) {
             organizations,
             positions,
             people,
+            agents,
             isLoading,
             error,
             // Helper to get formatted candidates for dropdowns/pickers
@@ -138,9 +150,16 @@ export function useExternalOrgData(options?: SOMClientOptions) {
                     subtitle: p.designatorRating,
                     avatarUrl: p.avatarUrl
                 }));
-                return [...orgCandidates, ...posCandidates, ...peopleCandidates];
+                const agentCandidates = agents.map(a => ({
+                    id: a.id,
+                    name: a.name,
+                    type: 'Agent' as const,
+                    subtitle: a.description,
+                    capabilities: a.capabilities
+                }));
+                return [...orgCandidates, ...posCandidates, ...peopleCandidates, ...agentCandidates];
             }
         };
-    }, [organizations, positions, people, isLoading, error]);
+    }, [organizations, positions, people, agents, isLoading, error]);
 }
 

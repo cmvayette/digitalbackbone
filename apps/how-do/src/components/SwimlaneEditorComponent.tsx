@@ -40,6 +40,7 @@ export const SwimlaneEditor: React.FC<SwimlaneEditorProps> = ({ initialProcess, 
             description: "",
             inputs: [],
             outputs: [],
+            tags: [],
             estimatedDuration: 3600,
             steps: [
                 { id: 'step-1', title: 'Initiate Request', description: 'Start the form', owner: 'pos-1', obligations: [] },
