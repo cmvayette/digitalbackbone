@@ -108,10 +108,12 @@ export class APIServer {
     let authProvider: import('./auth/auth-types').IAuthProvider;
 
     if (this.config.authMode === 'gateway') {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const { GatewayHeaderAuthProvider } = require('./auth/gateway-provider');
       authProvider = new GatewayHeaderAuthProvider();
     } else {
       // Default to API Key
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const { ApiKeyAuthProvider } = require('./auth/api-key-provider');
       authProvider = new ApiKeyAuthProvider();
     }

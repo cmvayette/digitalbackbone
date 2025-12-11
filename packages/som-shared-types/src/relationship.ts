@@ -2,7 +2,7 @@
  * Relationship type definitions for the Semantic Operating Model
  */
 
-import { HolonID, DocumentID, EventID, Timestamp } from './holon';
+import { HolonID, DocumentID, EventID, Timestamp } from './holon.js';
 
 export type RelationshipID = string;
 

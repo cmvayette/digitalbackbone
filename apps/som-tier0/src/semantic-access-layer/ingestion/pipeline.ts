@@ -44,7 +44,7 @@ export class IngestionPipeline<T = unknown> {
                     }
 
                     // Submit to SAL
-                    const result = this.sal.submitExternalData(externalData);
+                    const result = await this.sal.submitExternalData(externalData);
                     summary.results.push(result);
 
                     if (result.success) {

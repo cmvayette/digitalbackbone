@@ -2,12 +2,12 @@
  * Event type definitions for the Semantic Operating Model
  */
 
-import { HolonID, DocumentID, Timestamp, EventID } from './holon';
-import { EventType } from './event-enums';
-import { PayloadFor } from './event-payloads';
+import { HolonID, DocumentID, Timestamp, EventID } from './holon.js';
+import { EventType } from './event-enums.js';
+import { PayloadFor } from './event-payloads.js';
 
 export { EventID };
-export { EventType } from './event-enums';
+export { EventType } from './event-enums.js';
 
 export interface EventBase {
   id: EventID;

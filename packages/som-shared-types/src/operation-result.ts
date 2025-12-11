@@ -3,7 +3,7 @@
  * Eliminates duplication across PersonOperationResult, OrganizationOperationResult, etc.
  */
 
-import { HolonID, EventID } from './holon';
+import { HolonID, EventID } from './holon.js';
 
 /**
  * Validation error from constraint or schema validation

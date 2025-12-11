@@ -113,7 +113,7 @@ export class GraphStore {
 
     // Index holons from state projection (event-sourced)
     // Always replay events to ensure we have the latest state before indexing
-    const currentState = this.stateProjection.replayAllEvents();
+    const currentState = await this.stateProjection.replayAllEvents();
     for (const [holonId, holonState] of currentState.holons) {
       const typeSet = this.holonsByType.get(holonState.holon.type);
       if (typeSet) {
@@ -260,6 +260,34 @@ export class GraphStore {
   getAllRelationships(): Relationship[] {
     const currentState = this.stateProjection.getCurrentState();
     return Array.from(currentState.relationships.values()).map(state => state.relationship);
+  }
+
+  /**
+   * Get all relationships connected to a specific holon (both incoming and outgoing).
+   * This method retrieves relationships from both the state projection and the registry.
+   */
+  async getHolonRelationships(holonId: HolonID): Promise<Relationship[]> {
+    const outgoingIds = this.relationshipsBySource.get(holonId) || new Set<RelationshipID>();
+    const incomingIds = this.relationshipsByTarget.get(holonId) || new Set<RelationshipID>();
+    const allRelatedIds = new Set<RelationshipID>([...outgoingIds, ...incomingIds]);
+
+    const currentState = this.stateProjection.getCurrentState();
+    const results: Relationship[] = [];
+
+    for (const relationshipId of allRelatedIds) {
+      let relationship: Relationship | undefined;
+      const relationshipState = currentState.relationships.get(relationshipId);
+      if (relationshipState) {
+        relationship = relationshipState.relationship;
+      } else if (this.relationshipRegistry) {
+        relationship = await this.relationshipRegistry.getRelationship(relationshipId);
+      }
+
+      if (relationship) {
+        results.push(relationship);
+      }
+    }
+    return results;
   }
 
   /**

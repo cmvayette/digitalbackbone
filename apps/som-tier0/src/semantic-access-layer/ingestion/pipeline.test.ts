@@ -40,7 +40,7 @@ describe('SAL Ingestion Pipeline Integration', () => {
     afterEach(async () => {
         try {
             await fs.unlink(testFilePath);
-        } catch { }
+        } catch { /* ignore */ }
     });
 
     it('should ingest data from a JSON file and submit events', async () => {

@@ -130,7 +130,7 @@ export class MissionManager {
    */
   async createMission(params: CreateMissionParams): Promise<MissionOperationResult> {
     // Create event for mission creation
-    const eventId = this.eventStore.submitEvent({
+    const eventId = await this.eventStore.submitEvent({
       type: EventType.MissionPlanned,
       occurredAt: new Date(),
       actor: params.actor,
@@ -186,7 +186,7 @@ export class MissionManager {
    */
   async createCapability(params: CreateCapabilityParams): Promise<MissionOperationResult> {
     // Create event for capability creation
-    const eventId = this.eventStore.submitEvent({
+    const eventId = await this.eventStore.submitEvent({
       type: EventType.MissionPlanned, // Using generic event type
       occurredAt: new Date(),
       actor: params.actor,
@@ -240,7 +240,7 @@ export class MissionManager {
    */
   async createAsset(params: CreateAssetParams): Promise<MissionOperationResult> {
     // Create event for asset creation
-    const eventId = this.eventStore.submitEvent({
+    const eventId = await this.eventStore.submitEvent({
       type: EventType.SystemDeployed, // Using system event as proxy
       occurredAt: new Date(),
       actor: params.actor,
@@ -443,7 +443,7 @@ export class MissionManager {
     }
 
     // Create phase transition event
-    const eventId = this.eventStore.submitEvent({
+    const eventId = await this.eventStore.submitEvent({
       type: EventType.MissionPhaseTransition,
       occurredAt: params.transitionTime,
       actor: params.actor,
@@ -520,8 +520,8 @@ export class MissionManager {
   /**
    * Get all phase transition events for a mission
    */
-  getMissionPhaseHistory(missionID: HolonID): EventID[] {
-    const events = this.eventStore.getEvents({ subjects: [missionID] });
+  async getMissionPhaseHistory(missionID: HolonID): Promise<EventID[]> {
+    const events = await this.eventStore.getEvents({ subjects: [missionID] });
     return events
       .filter(event => event.type === EventType.MissionPhaseTransition)
       .map(event => event.id);

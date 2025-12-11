@@ -140,7 +140,7 @@ export class OrganizationManager {
     const id = randomUUID();
 
     // Event creation
-    const eventId = this.eventStore.submitEvent({
+    const eventId = await this.eventStore.submitEvent({
       type: EventType.PositionCreated,
       occurredAt: new Date(),
       actor: params.actor,
@@ -221,7 +221,7 @@ export class OrganizationManager {
   async createOrganization(params: CreateOrganizationParams): Promise<OrganizationOperationResult> {
     const id = randomUUID();
 
-    const eventId = this.eventStore.submitEvent({
+    const eventId = await this.eventStore.submitEvent({
       type: EventType.OrganizationCreated,
       occurredAt: new Date(),
       actor: params.actor,
@@ -330,7 +330,7 @@ export class OrganizationManager {
 
     if (result.relationship) {
       // Create event
-      this.eventStore.submitEvent({
+      await this.eventStore.submitEvent({
         type: EventType.AssignmentStarted,
         occurredAt: params.effectiveStart,
         actor: params.actor,
@@ -415,7 +415,7 @@ export class OrganizationManager {
     });
 
     if (result.relationship) {
-      this.eventStore.submitEvent({
+      await this.eventStore.submitEvent({
         type: EventType.OrganizationRealigned,
         occurredAt: params.effectiveStart,
         actor: params.actor,

@@ -52,7 +52,7 @@ describe('TemporalQueryEngine', () => {
 
       // Submit creation event
       const creationTime = new Date('2024-01-01T10:00:00Z');
-      eventStore.submitEvent({
+      await eventStore.submitEvent({
         type: EventType.OrganizationCreated,
         occurredAt: creationTime,
         actor: 'system',
@@ -66,7 +66,7 @@ describe('TemporalQueryEngine', () => {
       });
 
       // Query as of creation time
-      const result = temporalQueryEngine.getHolonAsOf(holon.id, creationTime);
+      const result = await temporalQueryEngine.getHolonAsOf(holon.id, creationTime);
       expect(result).toBeDefined();
       expect(result?.id).toBe(holon.id);
     });
@@ -103,7 +103,7 @@ describe('TemporalQueryEngine', () => {
       expect(result.validation.valid).toBe(true);
 
       // Query relationships as of start time
-      const relationships = temporalQueryEngine.getRelationshipsAsOf(
+      const relationships = await temporalQueryEngine.getRelationshipsAsOf(
         person.id,
         startTime
       );
@@ -111,9 +111,9 @@ describe('TemporalQueryEngine', () => {
       expect(relationships.length).toBeGreaterThan(0);
     });
 
-    it('should trace causal chain through event links', () => {
+    it('should trace causal chain through event links', async () => {
       // Create events with causal links
-      const event1Id = eventStore.submitEvent({
+      const event1Id = await eventStore.submitEvent({
         type: EventType.OrganizationCreated,
         occurredAt: new Date('2024-01-01T10:00:00Z'),
         actor: 'system',
@@ -123,7 +123,7 @@ describe('TemporalQueryEngine', () => {
         causalLinks: {},
       });
 
-      const event2Id = eventStore.submitEvent({
+      const event2Id = await eventStore.submitEvent({
         type: EventType.PositionCreated,
         occurredAt: new Date('2024-01-01T11:00:00Z'),
         actor: 'system',
@@ -135,7 +135,7 @@ describe('TemporalQueryEngine', () => {
         },
       });
 
-      const event3Id = eventStore.submitEvent({
+      const event3Id = await eventStore.submitEvent({
         type: EventType.AssignmentStarted,
         occurredAt: new Date('2024-01-01T12:00:00Z'),
         actor: 'system',
@@ -148,7 +148,7 @@ describe('TemporalQueryEngine', () => {
       });
 
       // Trace causal chain
-      const chain = temporalQueryEngine.traceCausalChain(event3Id);
+      const chain = await temporalQueryEngine.traceCausalChain(event3Id);
       expect(chain).toBeDefined();
       expect(chain?.rootEvent.id).toBe(event3Id);
       expect(chain?.causingEvents.length).toBeGreaterThan(0);
@@ -163,7 +163,7 @@ describe('TemporalQueryEngine', () => {
       });
 
       // Submit multiple events
-      eventStore.submitEvent({
+      await eventStore.submitEvent({
         type: EventType.OrganizationCreated,
         occurredAt: new Date('2024-01-01T10:00:00Z'),
         actor: 'system',
@@ -173,7 +173,7 @@ describe('TemporalQueryEngine', () => {
         causalLinks: {},
       });
 
-      eventStore.submitEvent({
+      await eventStore.submitEvent({
         type: EventType.PositionModified,
         occurredAt: new Date('2024-01-02T10:00:00Z'),
         actor: 'system',
@@ -183,7 +183,7 @@ describe('TemporalQueryEngine', () => {
         causalLinks: {},
       });
 
-      const history = temporalQueryEngine.getHolonEventHistory(holon.id);
+      const history = await temporalQueryEngine.getHolonEventHistory(holon.id);
       expect(history.events.length).toBe(2);
       expect(history.events[0].occurredAt.getTime()).toBeLessThan(
         history.events[1].occurredAt.getTime()
@@ -229,7 +229,7 @@ describe('TemporalQueryEngine', () => {
             });
 
             // Submit creation event at first timestamp
-            eventStore.submitEvent({
+            await eventStore.submitEvent({
               type: EventType.OrganizationCreated,
               occurredAt: firstTimestamp,
               actor: 'system',
@@ -243,11 +243,11 @@ describe('TemporalQueryEngine', () => {
             });
 
             // Get state at first timestamp
-            const stateAtT = temporalQueryEngine.getHolonAsOf(holon.id, firstTimestamp);
+            const stateAtT = await temporalQueryEngine.getHolonAsOf(holon.id, firstTimestamp);
 
             // Make modifications at later timestamps (strictly after firstTimestamp)
             for (const laterTimestamp of laterTimestamps) {
-              eventStore.submitEvent({
+              await eventStore.submitEvent({
                 type: EventType.PositionModified,
                 occurredAt: laterTimestamp,
                 actor: 'system',
@@ -261,7 +261,7 @@ describe('TemporalQueryEngine', () => {
             }
 
             // Query as-of first timestamp again
-            const stateAtTAfterModifications = temporalQueryEngine.getHolonAsOf(holon.id, firstTimestamp);
+            const stateAtTAfterModifications = await temporalQueryEngine.getHolonAsOf(holon.id, firstTimestamp);
 
             // The state at T should be the same before and after modifications
             if (stateAtT && stateAtTAfterModifications) {
@@ -329,9 +329,9 @@ describe('TemporalQueryEngine', () => {
             }
 
             // Get relationships at first timestamp
-            const relationshipsAtT = holons.flatMap(holon =>
+            const relationshipsAtT = (await Promise.all(holons.map(holon =>
               temporalQueryEngine.getRelationshipsAsOf(holon.id, firstTimestamp)
-            );
+            ))).flat();
 
             // Make changes at later timestamps
             for (const laterTimestamp of laterTimestamps) {
@@ -349,9 +349,9 @@ describe('TemporalQueryEngine', () => {
             }
 
             // Query relationships as-of first timestamp again
-            const relationshipsAtTAfterChanges = holons.flatMap(holon =>
+            const relationshipsAtTAfterChanges = (await Promise.all(holons.map(holon =>
               temporalQueryEngine.getRelationshipsAsOf(holon.id, firstTimestamp)
-            );
+            ))).flat();
 
             // The relationship graph at T should be the same
             expect(relationshipsAtT.length).toBe(relationshipsAtTAfterChanges.length);
@@ -372,13 +372,13 @@ describe('TemporalQueryEngine', () => {
      * For any event with causal links, following the links must produce a valid 
      * causal chain showing what led to the event.
      */
-    it('Property 41: Causal chain traversal', () => {
-      fc.assert(
-        fc.property(
+    it('Property 41: Causal chain traversal', async () => {
+      await fc.assert(
+        fc.asyncProperty(
           fc.record({
             chainLength: fc.integer({ min: 2, max: 5 }),
           }),
-          (data) => {
+          async (data) => {
             // Create a chain of events with causal links
             const eventIds: string[] = [];
             const baseTime = new Date('2024-01-01T10:00:00Z');
@@ -387,7 +387,7 @@ describe('TemporalQueryEngine', () => {
               const occurredAt = new Date(baseTime.getTime() + i * 60000); // 1 minute apart
               const causalLinks = i > 0 ? { precededBy: [eventIds[i - 1]] } : {};
 
-              const eventId = eventStore.submitEvent({
+              const eventId = await eventStore.submitEvent({
                 type: EventType.OrganizationCreated,
                 occurredAt,
                 actor: 'system',
@@ -402,7 +402,7 @@ describe('TemporalQueryEngine', () => {
 
             // Trace causal chain from the last event
             const lastEventId = eventIds[eventIds.length - 1];
-            const chain = temporalQueryEngine.traceCausalChain(lastEventId);
+            const chain = await temporalQueryEngine.traceCausalChain(lastEventId);
 
             // Verify chain exists and contains all events
             expect(chain).toBeDefined();
@@ -451,7 +451,7 @@ describe('TemporalQueryEngine', () => {
 
             for (let i = 0; i < data.numEvents; i++) {
               const occurredAt = new Date(baseTime.getTime() + i * 60000);
-              const eventId = eventStore.submitEvent({
+              const eventId = await eventStore.submitEvent({
                 type: i === 0 ? EventType.OrganizationCreated : EventType.PositionModified,
                 occurredAt,
                 actor: 'system',
@@ -465,7 +465,7 @@ describe('TemporalQueryEngine', () => {
             }
 
             // Get event history
-            const history = temporalQueryEngine.getHolonEventHistory(holon.id);
+            const history = await temporalQueryEngine.getHolonEventHistory(holon.id);
 
             // All events should be present
             expect(history.events.length).toBe(data.numEvents);
@@ -518,7 +518,7 @@ describe('TemporalQueryEngine', () => {
 
             // Submit event with validity window
             const eventTime = new Date((data.validityStart.getTime() + data.validityEnd.getTime()) / 2);
-            eventStore.submitEvent({
+            await eventStore.submitEvent({
               type: EventType.OrganizationCreated,
               occurredAt: eventTime,
               actor: 'system',
@@ -536,13 +536,13 @@ describe('TemporalQueryEngine', () => {
             });
 
             // Query before validity window
-            const stateBefore = temporalQueryEngine.getHolonAsOf(holon.id, data.queryBefore);
+            const stateBefore = await temporalQueryEngine.getHolonAsOf(holon.id, data.queryBefore);
 
             // Query after validity window
-            const stateAfter = temporalQueryEngine.getHolonAsOf(holon.id, data.queryAfter);
+            const stateAfter = await temporalQueryEngine.getHolonAsOf(holon.id, data.queryAfter);
 
             // Query within validity window
-            const stateWithin = temporalQueryEngine.getHolonAsOf(holon.id, eventTime);
+            const stateWithin = await temporalQueryEngine.getHolonAsOf(holon.id, eventTime);
 
             // State should not exist or not have the validity test property outside the window
             if (stateBefore) {

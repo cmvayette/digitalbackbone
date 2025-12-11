@@ -172,7 +172,7 @@ export class InitiativeTaskManager {
     const trimmedSponsor = params.sponsor.trim();
 
     // Create event for initiative creation
-    const eventId = this.eventStore.submitEvent({
+    const eventId = await this.eventStore.submitEvent({
       type: EventType.InitiativeStageChange,
       occurredAt: new Date(),
       actor: params.actor,
@@ -292,7 +292,7 @@ export class InitiativeTaskManager {
     const trimmedType = params.type.trim();
 
     // Create event for task creation
-    const eventId = this.eventStore.submitEvent({
+    const eventId = await this.eventStore.submitEvent({
       type: EventType.TaskCreated,
       occurredAt: new Date(),
       actor: params.actor,

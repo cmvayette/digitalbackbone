@@ -63,102 +63,262 @@ interface RolePermissions {
   allowedHolonTypes?: HolonType[];
 }
 
+import { config } from '../config';
+
 /**
  * Access Control Engine
- * Enforces role-based and classification-based access control
+ * Enforces role-based and classification-based access control via OPA
  */
 export class AccessControlEngine {
   private documentRegistry: DocumentRegistry;
-  private rolePermissions: Map<Role, RolePermissions>;
-  private classificationHierarchy: Map<ClassificationLevel, number>;
 
   constructor(documentRegistry: DocumentRegistry) {
     this.documentRegistry = documentRegistry;
-    this.rolePermissions = new Map();
-    this.classificationHierarchy = new Map();
-
-    this.initializeRolePermissions();
-    this.initializeClassificationHierarchy();
   }
 
   /**
-   * Initialize default role permissions
+   * Check policy against OPA
    */
-  private initializeRolePermissions(): void {
-    // Admin: Full access
-    this.rolePermissions.set(Role.Administrator, {
-      canQueryHolons: true,
-      canQueryRelationships: true,
-      canQueryEvents: true,
-      canSubmitEvents: true,
-      canModifySchema: true,
-      canAccessClassified: true,
-    });
+  private async checkPolicy(input: any): Promise<AccessDecision> {
+    try {
+      const response = await fetch(config.auth.opaUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ input }),
+      });
 
-    // Operator: Can query and submit events, but not modify schema
-    this.rolePermissions.set(Role.Operator, {
-      canQueryHolons: true,
-      canQueryRelationships: true,
-      canQueryEvents: true,
-      canSubmitEvents: true,
-      canModifySchema: false,
-      canAccessClassified: false,
-    });
+      if (!response.ok) {
+        console.error(`OPA check failed: ${response.statusText}`);
+        return { allowed: false, reason: 'Authorization service unavailable' };
+      }
 
-    // Analyst: Can query everything but not submit or modify
-    this.rolePermissions.set(Role.Analyst, {
-      canQueryHolons: true,
-      canQueryRelationships: true,
-      canQueryEvents: true,
-      canSubmitEvents: false,
-      canModifySchema: false,
-      canAccessClassified: false,
-    });
+      const result = await response.json() as { result?: boolean };
 
-    // Viewer: Read-only access to basic holons
-    this.rolePermissions.set(Role.Viewer, {
-      canQueryHolons: true,
-      canQueryRelationships: true,
-      canQueryEvents: false,
-      canSubmitEvents: false,
-      canModifySchema: false,
-      canAccessClassified: false,
-    });
+      // OPA returns { result: boolean } for simple queries or full object
+      // Our policy 'allow' rule returns boolean by default if queried directly
+      // But usually we query data/som/authz/allow
 
-    // SchemaManager: Can modify schema but limited query access
-    this.rolePermissions.set(Role.SchemaManager, {
-      canQueryHolons: true,
-      canQueryRelationships: true,
-      canQueryEvents: false,
-      canSubmitEvents: false,
-      canModifySchema: true,
-      canAccessClassified: false,
+      if (result.result === true) {
+        return { allowed: true };
+      }
+
+      return { allowed: false, reason: 'Access denied by policy' };
+    } catch (error) {
+      console.error('OPA check error:', error);
+      return { allowed: false, reason: 'Authorization check failed' };
+    }
+  }
+
+  /**
+   * Check if user can access a holon based on role and classification
+   */
+  async canAccessHolon(user: UserContext, holon: Holon): Promise<AccessDecision> {
+    const classification = this.getHolonClassificationLevel(holon);
+
+    return this.checkPolicy({
+      user,
+      action: 'read',
+      resource: {
+        type: 'holon',
+        classification,
+        subtype: holon.type,
+        properties: holon.properties
+      }
     });
   }
 
   /**
-   * Initialize classification hierarchy
-   * Higher numbers = higher classification
+   * Get the classification level for a holon based on its source documents
    */
-  private initializeClassificationHierarchy(): void {
-    this.classificationHierarchy.set(ClassificationLevel.Unclassified, 0);
-    this.classificationHierarchy.set(ClassificationLevel.Confidential, 1);
-    this.classificationHierarchy.set(ClassificationLevel.Secret, 2);
-    this.classificationHierarchy.set(ClassificationLevel.TopSecret, 3);
-  }
+  private getHolonClassificationLevel(holon: Holon): ClassificationLevel {
+    let highestLevel = ClassificationLevel.Unclassified;
+    let highestLevelValue = 0;
 
-  /**
-   * Check if user has permission for a specific action
-   */
-  private hasPermission(user: UserContext, permission: keyof RolePermissions): boolean {
-    for (const role of user.roles) {
-      const permissions = this.rolePermissions.get(role);
-      if (permissions && permissions[permission]) {
-        return true;
+    // Check holon's own classification (for Mission holons)
+    if (holon.type === HolonType.Mission) {
+      const missionClassification = this.parseClassificationLevel(
+        holon.properties.classificationMetadata || ''
+      );
+      const missionLevel = this.classificationHierarchy(missionClassification);
+      if (missionLevel > highestLevelValue) {
+        highestLevel = missionClassification;
+        highestLevelValue = missionLevel;
       }
     }
-    return false;
+
+    // Check source documents
+    for (const docId of holon.sourceDocuments) {
+      const doc = this.documentRegistry.getDocument(docId);
+      if (doc) {
+        const docClassification = this.parseClassificationLevel(
+          doc.properties.classificationMetadata
+        );
+        const docLevel = this.classificationHierarchy(docClassification);
+        if (docLevel > highestLevelValue) {
+          highestLevel = docClassification;
+          highestLevelValue = docLevel;
+        }
+      }
+    }
+
+    return highestLevel;
   }
+
+  /**
+   * Check if user can access a relationship
+   */
+  async canAccessRelationship(user: UserContext, relationship: Relationship): Promise<AccessDecision> {
+    const classification = this.getRelationshipClassificationLevel(relationship);
+
+    return this.checkPolicy({
+      user,
+      action: 'read',
+      resource: {
+        type: 'relationship',
+        classification,
+        subtype: relationship.type
+      }
+    });
+  }
+
+  /**
+   * Get the classification level for a relationship based on its source documents
+   */
+  private getRelationshipClassificationLevel(relationship: Relationship): ClassificationLevel {
+    let highestLevel = ClassificationLevel.Unclassified;
+    let highestLevelValue = 0;
+
+    for (const docId of relationship.sourceDocuments) {
+      const doc = this.documentRegistry.getDocument(docId);
+      if (doc) {
+        const docClassification = this.parseClassificationLevel(
+          doc.properties.classificationMetadata
+        );
+        const docLevel = this.classificationHierarchy(docClassification);
+        if (docLevel > highestLevelValue) {
+          highestLevel = docClassification;
+          highestLevelValue = docLevel;
+        }
+      }
+    }
+
+    return highestLevel;
+  }
+
+  /**
+   * Check if user can access an event
+   */
+  async canAccessEvent(user: UserContext, event: Event): Promise<AccessDecision> {
+    let classification = ClassificationLevel.Unclassified;
+
+    // Check classification based on source document
+    if (event.sourceDocument) {
+      const doc = this.documentRegistry.getDocument(event.sourceDocument);
+      if (doc) {
+        classification = this.parseClassificationLevel(
+          doc.properties.classificationMetadata
+        );
+      }
+    }
+
+    return this.checkPolicy({
+      user,
+      action: 'read',
+      resource: {
+        type: 'event',
+        classification,
+        subtype: event.type
+      }
+    });
+  }
+
+  /**
+   * Check if user can submit events
+   */
+  async canSubmitEvent(user: UserContext): Promise<AccessDecision> {
+    return this.checkPolicy({
+      user,
+      action: 'submit_event',
+      resource: { type: 'system' }
+    });
+  }
+
+  /**
+   * Check if user can modify schema
+   */
+  async canModifySchema(user: UserContext): Promise<AccessDecision> {
+    return this.checkPolicy({
+      user,
+      action: 'modify_schema',
+      resource: { type: 'system' }
+    });
+  }
+
+  /**
+   * Check if user can propose schema
+   */
+  async canProposeSchemaChanges(user: UserContext): Promise<AccessDecision> {
+    return this.checkPolicy({
+      user,
+      action: 'propose_schema',
+      resource: { type: 'system' }
+    });
+  }
+
+  /**
+   * Check if user can access system health
+   */
+  async canAccessSystemHealth(user: UserContext): Promise<AccessDecision> {
+    return this.checkPolicy({
+      user,
+      action: 'view_health',
+      resource: { type: 'system' }
+    });
+  }
+
+
+  /**
+   * Filter holons based on user access
+   * Returns only holons the user is authorized to access
+   * Does not reveal existence of restricted holons
+   */
+  async filterHolons(user: UserContext, holons: Holon[]): Promise<Holon[]> {
+    const results = await Promise.all(holons.map(async h => {
+      const decision = await this.canAccessHolon(user, h);
+      return decision.allowed ? h : null;
+    }));
+    return results.filter((h): h is Holon => h !== null);
+  }
+
+  /**
+   * Filter relationships based on user access
+   * Returns only relationships the user is authorized to access
+   * Does not reveal existence of restricted relationships
+   */
+  async filterRelationships(user: UserContext, relationships: Relationship[]): Promise<Relationship[]> {
+    const results = await Promise.all(relationships.map(async r => {
+      const decision = await this.canAccessRelationship(user, r);
+      return decision.allowed ? r : null;
+    }));
+    return results.filter((r): r is Relationship => r !== null);
+  }
+
+  /**
+   * Filter events based on user access
+   * Returns only events the user is authorized to access
+   * Does not reveal existence of restricted events
+   */
+  async filterEvents(user: UserContext, events: Event[]): Promise<Event[]> {
+    const results = await Promise.all(events.map(async e => {
+      const decision = await this.canAccessEvent(user, e);
+      return decision.allowed ? e : null;
+    }));
+    return results.filter((e): e is Event => e !== null);
+  }
+
+  // --- Helpers ---
 
   /**
    * Parse classification level from metadata string
@@ -177,223 +337,16 @@ export class AccessControlEngine {
     return ClassificationLevel.Unclassified;
   }
 
-  /**
-   * Check if user has sufficient clearance for a classification level
-   */
-  private hasClearance(user: UserContext, requiredLevel: ClassificationLevel): boolean {
-    const userLevel = this.classificationHierarchy.get(user.clearanceLevel) || 0;
-    const required = this.classificationHierarchy.get(requiredLevel) || 0;
-    return userLevel >= required;
+  private classificationHierarchy(level: ClassificationLevel): number {
+    const map = {
+      [ClassificationLevel.Unclassified]: 0,
+      [ClassificationLevel.Confidential]: 1,
+      [ClassificationLevel.Secret]: 2,
+      [ClassificationLevel.TopSecret]: 3,
+    };
+    return map[level] || 0;
   }
 
-  /**
-   * Check if user can access a holon based on role and classification
-   */
-  canAccessHolon(user: UserContext, holon: Holon): AccessDecision {
-    // Check role-based permissions
-    if (!this.hasPermission(user, 'canQueryHolons')) {
-      return {
-        allowed: false,
-        reason: 'User does not have permission to query holons',
-      };
-    }
-
-    // Check classification-based access
-    const classificationLevel = this.getHolonClassificationLevel(holon);
-    if (!this.hasClearance(user, classificationLevel)) {
-      return {
-        allowed: false,
-        reason: 'Insufficient clearance level',
-      };
-    }
-
-    return { allowed: true };
-  }
-
-  /**
-   * Get the classification level for a holon based on its source documents
-   */
-  private getHolonClassificationLevel(holon: Holon): ClassificationLevel {
-    let highestLevel = ClassificationLevel.Unclassified;
-    let highestLevelValue = 0;
-
-    // Check holon's own classification (for Mission holons)
-    if (holon.type === HolonType.Mission) {
-      const missionClassification = this.parseClassificationLevel(
-        holon.properties.classificationMetadata || ''
-      );
-      const missionLevel = this.classificationHierarchy.get(missionClassification) || 0;
-      if (missionLevel > highestLevelValue) {
-        highestLevel = missionClassification;
-        highestLevelValue = missionLevel;
-      }
-    }
-
-    // Check source documents
-    for (const docId of holon.sourceDocuments) {
-      const doc = this.documentRegistry.getDocument(docId);
-      if (doc) {
-        const docClassification = this.parseClassificationLevel(
-          doc.properties.classificationMetadata
-        );
-        const docLevel = this.classificationHierarchy.get(docClassification) || 0;
-        if (docLevel > highestLevelValue) {
-          highestLevel = docClassification;
-          highestLevelValue = docLevel;
-        }
-      }
-    }
-
-    return highestLevel;
-  }
-
-  /**
-   * Check if user can access a relationship
-   */
-  canAccessRelationship(user: UserContext, relationship: Relationship): AccessDecision {
-    // Check role-based permissions
-    if (!this.hasPermission(user, 'canQueryRelationships')) {
-      return {
-        allowed: false,
-        reason: 'User does not have permission to query relationships',
-      };
-    }
-
-    // Check classification based on source documents
-    const classificationLevel = this.getRelationshipClassificationLevel(relationship);
-    if (!this.hasClearance(user, classificationLevel)) {
-      return {
-        allowed: false,
-        reason: 'Insufficient clearance level',
-      };
-    }
-
-    return { allowed: true };
-  }
-
-  /**
-   * Get the classification level for a relationship based on its source documents
-   */
-  private getRelationshipClassificationLevel(relationship: Relationship): ClassificationLevel {
-    let highestLevel = ClassificationLevel.Unclassified;
-    let highestLevelValue = 0;
-
-    for (const docId of relationship.sourceDocuments) {
-      const doc = this.documentRegistry.getDocument(docId);
-      if (doc) {
-        const docClassification = this.parseClassificationLevel(
-          doc.properties.classificationMetadata
-        );
-        const docLevel = this.classificationHierarchy.get(docClassification) || 0;
-        if (docLevel > highestLevelValue) {
-          highestLevel = docClassification;
-          highestLevelValue = docLevel;
-        }
-      }
-    }
-
-    return highestLevel;
-  }
-
-  /**
-   * Check if user can access an event
-   */
-  canAccessEvent(user: UserContext, event: Event): AccessDecision {
-    // Check role-based permissions
-    if (!this.hasPermission(user, 'canQueryEvents')) {
-      return {
-        allowed: false,
-        reason: 'User does not have permission to query events',
-      };
-    }
-
-    // Check classification based on source document
-    if (event.sourceDocument) {
-      const doc = this.documentRegistry.getDocument(event.sourceDocument);
-      if (doc) {
-        const docClassification = this.parseClassificationLevel(
-          doc.properties.classificationMetadata
-        );
-        if (!this.hasClearance(user, docClassification)) {
-          return {
-            allowed: false,
-            reason: 'Insufficient clearance level',
-          };
-        }
-      }
-    }
-
-    return { allowed: true };
-  }
-
-  /**
-   * Check if user can submit events
-   */
-  canSubmitEvent(user: UserContext): AccessDecision {
-    if (!this.hasPermission(user, 'canSubmitEvents')) {
-      return {
-        allowed: false,
-        reason: 'User does not have permission to submit events',
-      };
-    }
-
-    return { allowed: true };
-  }
-
-  /**
-   * Check if user can modify schema
-   */
-  canModifySchema(user: UserContext): AccessDecision {
-    if (!this.hasPermission(user, 'canModifySchema')) {
-      return {
-        allowed: false,
-        reason: 'User does not have permission to modify schema',
-      };
-    }
-
-    return { allowed: true };
-  }
-
-  /**
-   * Filter holons based on user access
-   * Returns only holons the user is authorized to access
-   * Does not reveal existence of restricted holons
-   */
-  filterHolons(user: UserContext, holons: Holon[]): Holon[] {
-    return holons.filter(holon => this.canAccessHolon(user, holon).allowed);
-  }
-
-  /**
-   * Filter relationships based on user access
-   * Returns only relationships the user is authorized to access
-   * Does not reveal existence of restricted relationships
-   */
-  filterRelationships(user: UserContext, relationships: Relationship[]): Relationship[] {
-    return relationships.filter(rel => this.canAccessRelationship(user, rel).allowed);
-  }
-
-  /**
-   * Filter events based on user access
-   * Returns only events the user is authorized to access
-   * Does not reveal existence of restricted events
-   */
-  filterEvents(user: UserContext, events: Event[]): Event[] {
-    return events.filter(event => this.canAccessEvent(user, event).allowed);
-  }
-
-  /**
-   * Configure custom role permissions
-   */
-  setRolePermissions(role: Role, permissions: RolePermissions): void {
-    this.rolePermissions.set(role, permissions);
-  }
-
-  /**
-   * Get current permissions for a role
-   */
-  getRolePermissions(role: Role): RolePermissions | undefined {
-    return this.rolePermissions.get(role);
-  }
 }
 
 /**

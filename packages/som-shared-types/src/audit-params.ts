@@ -3,7 +3,7 @@
  * Eliminates duplication of sourceDocuments, actor, sourceSystem across 38+ param interfaces.
  */
 
-import { DocumentID, HolonID } from './holon';
+import { DocumentID, HolonID } from './holon.js';
 
 /**
  * Audit parameters required for all state-changing operations.

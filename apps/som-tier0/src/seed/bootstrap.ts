@@ -117,7 +117,7 @@ async function bootstrap() {
     const store = new SQLiteEventStore(dbPath);
 
     // Check if empty
-    const existing = store.getAllEvents();
+    const existing = await store.getAllEvents();
     if (existing.length > 0) {
         console.log(`Store already has ${existing.length} events. Skipping bootstrap.`);
         process.exit(0);
@@ -129,8 +129,8 @@ async function bootstrap() {
     let count = 0;
 
     // Submitter Helper
-    const submit = (type: EventType, subjects: string[], payload: any) => {
-        store.submitEvent({
+    const submit = async (type: EventType, subjects: string[], payload: any) => {
+        await store.submitEvent({
             type,
             occurredAt: new Date(),
             actor: 'system-bootstrap',
@@ -144,7 +144,7 @@ async function bootstrap() {
 
     // 1. Orgs
     for (const org of data.orgs) {
-        submit(EventType.OrganizationCreated, [org.id], {
+        await submit(EventType.OrganizationCreated, [org.id], {
             holonType: HolonType.Organization,
             properties: org.properties
         });
@@ -152,7 +152,7 @@ async function bootstrap() {
 
     // 2. Positions
     for (const pos of data.positions) {
-        submit(EventType.PositionCreated, [pos.id], {
+        await submit(EventType.PositionCreated, [pos.id], {
             holonType: HolonType.Position,
             properties: pos.properties
         });
@@ -160,7 +160,7 @@ async function bootstrap() {
 
     // 3. People
     for (const person of data.people) {
-        submit(EventType.PersonCreated, [person.id], {
+        await submit(EventType.PersonCreated, [person.id], {
             holonType: HolonType.Person,
             properties: person.properties
         });
@@ -168,7 +168,7 @@ async function bootstrap() {
 
     // 4. Relationships
     for (const rel of data.relationships) {
-        submit(EventType.AssignmentStarted, [rel.source, rel.target], {
+        await submit(EventType.AssignmentStarted, [rel.source, rel.target], {
             relationshipId: randomUUID(),
             relationshipType: rel.type,
             properties: {}

@@ -7,6 +7,7 @@ import dotenv from 'dotenv';
 
 // Import Core Components
 import { SQLiteEventStore } from './event-store/sqlite-store';
+import { IEventStore } from './core/interfaces/event-store';
 import { StateProjectionEngine } from './state-projection';
 import { GraphStore } from './graph-store';
 import { QueryLayer } from './query/query-layer';
@@ -37,10 +38,32 @@ async function startServer() {
     console.log('Initializing SOM Tier-0 Core...');
 
     // 1. Persistence
-    const dbPath = process.env.DB_PATH || path.resolve(__dirname, '../som.db');
-    const eventStore = new SQLiteEventStore(dbPath);
+    // 1. Persistence
+    let eventStore: IEventStore;
 
-    console.log(`Event Store initialized at ${dbPath}`);
+    // Import config dynamically or assume it's available. 
+    // Since imports are static at top, I should add import at top if possible or just use process.env for simplicity if I can't easily add import at top without messing up lines.
+    // But I can see line 6 imports dotenv. I can add config import there.
+    // Instead of messing with top imports, I will use valid require or process.env logic matching config.ts structure, or just import config if I can see where to add it.
+    // Easier to just use process.env to match existing pattern if I don't want to touch top of file.
+    // BUT config.ts exists so I should use it.
+    // I will modify the top of file separately or assume I can get by.
+
+    // Actually, looking at the file view, I can replace lines 9-10 with needed imports and then the init block.
+
+    // Let's replace the init block first.
+    const dbType = process.env.DB_TYPE || 'sqlite';
+
+    if (dbType === 'postgres') {
+        const { PostgresEventStore } = await import('./event-store/postgres-event-store');
+        const dbUrl = process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/som?schema=public';
+        console.log(`Initializing Postgres Event Store...`);
+        eventStore = new PostgresEventStore(dbUrl);
+    } else {
+        const dbPath = process.env.DB_PATH || path.resolve(__dirname, '../som.db');
+        eventStore = new SQLiteEventStore(dbPath);
+        console.log(`Event Store initialized at ${dbPath}`);
+    }
 
     // 2. Core Engines (Base)
     const documentRegistry = new DocumentRegistry();
@@ -99,7 +122,7 @@ async function startServer() {
     await graphStore.initialize();
     console.log(`Graph Store initialized.`);
 
-    const allEvents = eventStore.getAllEvents();
+    const allEvents = await eventStore.getAllEvents();
     console.log(`Current Event Count: ${allEvents.length}`);
 
 

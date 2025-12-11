@@ -73,8 +73,8 @@ export class TemporalQueryEngine {
    * Get a holon's state as of a specific timestamp
    * Replays events up to that point to reconstruct historical state
    */
-  getHolonAsOf(holonId: HolonID, timestamp: Timestamp): Holon | undefined {
-    const historicalState = this.stateProjection.replayEventsAsOf(timestamp);
+  async getHolonAsOf(holonId: HolonID, timestamp: Timestamp): Promise<Holon | undefined> {
+    const historicalState = await this.stateProjection.replayEventsAsOf(timestamp);
     const holonState = historicalState.holons.get(holonId);
     return holonState?.holon;
   }
@@ -83,12 +83,12 @@ export class TemporalQueryEngine {
    * Get all relationships for a holon as of a specific timestamp
    * Returns relationships that were effective at that time
    */
-  getRelationshipsAsOf(
+  async getRelationshipsAsOf(
     holonId: HolonID,
     timestamp: Timestamp,
     relationshipType?: RelationshipType
-  ): Relationship[] {
-    const historicalState = this.stateProjection.replayEventsAsOf(timestamp);
+  ): Promise<Relationship[]> {
+    const historicalState = await this.stateProjection.replayEventsAsOf(timestamp);
     const relationships: Relationship[] = [];
 
     // Check all relationships in the historical state
@@ -125,11 +125,11 @@ export class TemporalQueryEngine {
    * Reconstruct organizational structure at a specific timestamp
    * Shows which organizations, positions, and assignments existed at that time
    */
-  getOrganizationStructureAsOf(
+  async getOrganizationStructureAsOf(
     organizationId: HolonID,
     timestamp: Timestamp
-  ): OrganizationalStructure | undefined {
-    const historicalState = this.stateProjection.replayEventsAsOf(timestamp);
+  ): Promise<OrganizationalStructure | undefined> {
+    const historicalState = await this.stateProjection.replayEventsAsOf(timestamp);
 
     // Get the organization holon
     const orgState = historicalState.holons.get(organizationId);
@@ -148,7 +148,7 @@ export class TemporalQueryEngine {
         rel.effectiveStart <= timestamp &&
         (!rel.effectiveEnd || rel.effectiveEnd >= timestamp)
       ) {
-        const subOrgStructure = this.getOrganizationStructureAsOf(rel.targetHolonID, timestamp);
+        const subOrgStructure = await this.getOrganizationStructureAsOf(rel.targetHolonID, timestamp);
         if (subOrgStructure) {
           subOrganizations.push(subOrgStructure);
         }
@@ -213,11 +213,11 @@ export class TemporalQueryEngine {
    * Get complete event history for a holon
    * Returns all events that affected the holon in chronological order
    */
-  getHolonEventHistory(
+  async getHolonEventHistory(
     holonId: HolonID,
     timeRange?: { start: Timestamp; end: Timestamp }
-  ): EventHistory {
-    const events = this.eventStore.getEvents({ subjects: [holonId], startTime: timeRange?.start, endTime: timeRange?.end });
+  ): Promise<EventHistory> {
+    const events = await this.eventStore.getEvents({ subjects: [holonId], startTime: timeRange?.start, endTime: timeRange?.end });
 
     // Sort events chronologically
     const sortedEvents = [...events].sort((a, b) =>
@@ -258,8 +258,8 @@ export class TemporalQueryEngine {
     }
 
     // Get events for both holons involved in the relationship
-    const sourceEvents = this.eventStore.getEvents({ subjects: [relationship.sourceHolonID], startTime: timeRange?.start, endTime: timeRange?.end });
-    const targetEvents = this.eventStore.getEvents({ subjects: [relationship.targetHolonID], startTime: timeRange?.start, endTime: timeRange?.end });
+    const sourceEvents = await this.eventStore.getEvents({ subjects: [relationship.sourceHolonID], startTime: timeRange?.start, endTime: timeRange?.end });
+    const targetEvents = await this.eventStore.getEvents({ subjects: [relationship.targetHolonID], startTime: timeRange?.start, endTime: timeRange?.end });
 
     // Filter events that mention this relationship in their payload
     const relationshipEvents = [...sourceEvents, ...targetEvents].filter(event =>
@@ -290,8 +290,8 @@ export class TemporalQueryEngine {
    * Trace causal chain through event links
    * Shows what structural changes led to a specific event
    */
-  traceCausalChain(eventId: EventID): CausalChain | undefined {
-    const rootEvent = this.eventStore.getEvent(eventId);
+  async traceCausalChain(eventId: EventID): Promise<CausalChain | undefined> {
+    const rootEvent = await this.eventStore.getEvent(eventId);
     if (!rootEvent) {
       return undefined;
     }
@@ -302,7 +302,7 @@ export class TemporalQueryEngine {
     const visited = new Set<EventID>();
 
     // Recursively traverse causal links
-    const traverse = (event: Event) => {
+    const traverse = async (event: Event) => {
       if (visited.has(event.id)) {
         return;
       }
@@ -311,10 +311,10 @@ export class TemporalQueryEngine {
       // Get preceding events
       if (event.causalLinks.precededBy) {
         for (const precededById of event.causalLinks.precededBy) {
-          const precededByEvent = this.eventStore.getEvent(precededById);
+          const precededByEvent = await this.eventStore.getEvent(precededById);
           if (precededByEvent) {
             precedingEvents.push(precededByEvent);
-            traverse(precededByEvent);
+            await traverse(precededByEvent);
           }
         }
       }
@@ -322,10 +322,10 @@ export class TemporalQueryEngine {
       // Get causing events
       if (event.causalLinks.causedBy) {
         for (const causedById of event.causalLinks.causedBy) {
-          const causedByEvent = this.eventStore.getEvent(causedById);
+          const causedByEvent = await this.eventStore.getEvent(causedById);
           if (causedByEvent) {
             causingEvents.push(causedByEvent);
-            traverse(causedByEvent);
+            await traverse(causedByEvent);
           }
         }
       }
@@ -333,16 +333,16 @@ export class TemporalQueryEngine {
       // Get grouped events
       if (event.causalLinks.groupedWith) {
         for (const groupedWithId of event.causalLinks.groupedWith) {
-          const groupedWithEvent = this.eventStore.getEvent(groupedWithId);
+          const groupedWithEvent = await this.eventStore.getEvent(groupedWithId);
           if (groupedWithEvent) {
             groupedEvents.push(groupedWithEvent);
-            traverse(groupedWithEvent);
+            await traverse(groupedWithEvent);
           }
         }
       }
     };
 
-    traverse(rootEvent);
+    await traverse(rootEvent);
 
     // Build full chain in causal order
     const allEvents = [
@@ -370,12 +370,12 @@ export class TemporalQueryEngine {
    * Query holons with temporal constraints
    * Supports as-of queries and time-range queries
    */
-  queryHolonsAsOf(
+  async queryHolonsAsOf(
     type: HolonType,
     timestamp: Timestamp,
     filters?: Record<string, any>
-  ): Holon[] {
-    const historicalState = this.stateProjection.replayEventsAsOf(timestamp);
+  ): Promise<Holon[]> {
+    const historicalState = await this.stateProjection.replayEventsAsOf(timestamp);
     const holons: Holon[] = [];
 
     for (const holonState of historicalState.holons.values()) {
@@ -395,12 +395,12 @@ export class TemporalQueryEngine {
    * Query relationships with temporal constraints
    * Returns relationships that were effective at the specified time
    */
-  queryRelationshipsAsOf(
+  async queryRelationshipsAsOf(
     type: RelationshipType,
     timestamp: Timestamp,
     filters?: Record<string, any>
-  ): Relationship[] {
-    const historicalState = this.stateProjection.replayEventsAsOf(timestamp);
+  ): Promise<Relationship[]> {
+    const historicalState = await this.stateProjection.replayEventsAsOf(timestamp);
     const relationships: Relationship[] = [];
 
     for (const relState of historicalState.relationships.values()) {

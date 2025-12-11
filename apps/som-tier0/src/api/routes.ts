@@ -89,7 +89,7 @@ export class APIRoutes {
   async queryHolons(request: APIRequest<QueryHolonsRequest>): Promise<APIResponse> {
     const { type, filters, includeRelationships, relationshipTypes, pagination } = request.body!;
 
-    const result = this.queryLayer.queryCurrentHolons(request.user, type, {
+    const result = await this.queryLayer.queryCurrentHolons(request.user, type, {
       filters,
       includeRelationships,
       relationshipTypes,
@@ -97,7 +97,7 @@ export class APIRoutes {
 
     // Apply pagination
     let paginatedData = result.data;
-    let totalCount = result.data.length;
+    const totalCount = result.data.length;
 
     if (pagination) {
       const page = pagination.page || 1;
@@ -127,7 +127,7 @@ export class APIRoutes {
   async getHolon(request: APIRequest): Promise<APIResponse> {
     const holonId = request.params!.id as HolonID;
 
-    const result = this.queryLayer.getHolon(request.user, holonId);
+    const result = await this.queryLayer.getHolon(holonId, { user: request.user });
 
     if (!result.data) {
       return {
@@ -213,7 +213,7 @@ export class APIRoutes {
 
     // Apply pagination
     let paginatedData = result.data;
-    let totalCount = result.data.length;
+    const totalCount = result.data.length;
 
     if (pagination) {
       const page = pagination.page || 1;
@@ -337,7 +337,7 @@ export class APIRoutes {
     }
 
     // Submit event
-    const eventId = this.eventStore.submitEvent(event);
+    const eventId = await this.eventStore.submitEvent(event);
 
     // Provide real-time consistency for read-your-writes
     this.projectionEngine.applyNewEvent(event);
@@ -410,7 +410,7 @@ export class APIRoutes {
         }
 
         // Submit event
-        const eventId = this.eventStore.submitEvent(event);
+        const eventId = await this.eventStore.submitEvent(event);
         submittedEvents.push(event);
         results.push({ success: true, eventId });
       } catch (error: any) {
@@ -460,25 +460,32 @@ export class APIRoutes {
 
     let result;
 
+    const timeRangeDates = timeRange ? {
+      start: new Date(timeRange.start),
+      end: new Date(timeRange.end),
+    } : undefined;
+
     if (holonID) {
-      const timeRangeDates = timeRange ? {
-        start: new Date(timeRange.start),
-        end: new Date(timeRange.end),
-      } : undefined;
-
-      result = this.queryLayer.queryEventsByHolon(request.user, holonID, timeRangeDates);
+      result = await this.queryLayer.findEvents({
+        subjects: [holonID],
+        ...(timeRangeDates && {
+          startTime: timeRangeDates.start,
+          endTime: timeRangeDates.end
+        })
+      }, { user: request.user });
     } else if (eventType) {
-      const timeRangeDates = timeRange ? {
-        start: new Date(timeRange.start),
-        end: new Date(timeRange.end),
-      } : undefined;
-
-      result = this.queryLayer.queryEventsByType(request.user, eventType, timeRangeDates);
+      result = await this.queryLayer.findEvents({
+        type: [eventType],
+        ...(timeRangeDates && {
+          startTime: timeRangeDates.start,
+          endTime: timeRangeDates.end
+        })
+      }, { user: request.user });
     } else if (timeRange) {
-      result = this.queryLayer.queryEventsByTimeRange(request.user, {
-        startTime: new Date(timeRange.start),
-        endTime: new Date(timeRange.end),
-      });
+      result = await this.queryLayer.findEvents({
+        startTime: timeRangeDates!.start,
+        endTime: timeRangeDates!.end
+      }, { user: request.user });
     } else {
       return {
         success: false,
@@ -491,7 +498,7 @@ export class APIRoutes {
 
     // Apply pagination
     let paginatedData = result.data;
-    let totalCount = result.data.length;
+    const totalCount = result.data.length;
 
     if (pagination) {
       const page = pagination.page || 1;
@@ -520,7 +527,7 @@ export class APIRoutes {
    */
   async getEvent(request: APIRequest): Promise<APIResponse> {
     const eventId = request.params!.id;
-    const event = this.eventStore.getEvent(eventId);
+    const event = await this.eventStore.getEvent(eventId);
 
     if (!event) {
       return {
@@ -565,7 +572,7 @@ export class APIRoutes {
 
     const timestamp = new Date(asOfTimestamp);
 
-    const result = this.queryLayer.queryHolonsAsOf(request.user, type as HolonType, {
+    const result = await this.queryLayer.queryHolonsAsOf(request.user, type as HolonType, {
       asOfTimestamp: timestamp,
       filters,
       includeRelationships,
@@ -573,7 +580,7 @@ export class APIRoutes {
 
     // Apply pagination
     let paginatedData = result.data;
-    let totalCount = result.data.length;
+    const totalCount = result.data.length;
 
     if (pagination) {
       const page = pagination.page || 1;
@@ -605,14 +612,14 @@ export class APIRoutes {
 
     const timestamp = new Date(asOfTimestamp);
 
-    const result = this.queryLayer.queryRelationshipsAsOf(request.user, type as RelationshipType, {
+    const result = await this.queryLayer.queryRelationshipsAsOf(request.user, type as RelationshipType, {
       asOfTimestamp: timestamp,
       filters,
     });
 
     // Apply pagination
     let paginatedData = result.data;
-    let totalCount = result.data.length;
+    const totalCount = result.data.length;
 
     if (pagination) {
       const page = pagination.page || 1;
@@ -655,7 +662,10 @@ export class APIRoutes {
 
     const timestamp = new Date(asOfTimestamp);
 
-    const result = this.queryLayer.getHolonAsOf(request.user, holonId, timestamp);
+    const result = await this.queryLayer.getHolon(holonId, {
+      user: request.user,
+      asOf: timestamp
+    });
 
     if (!result.data) {
       return {
@@ -686,7 +696,7 @@ export class APIRoutes {
 
     const timestamp = asOfTimestamp ? new Date(asOfTimestamp) : new Date();
 
-    const result = this.queryLayer.getOrganizationStructureAsOf(
+    const result = await this.queryLayer.getOrganizationStructureAsOf(
       request.user,
       organizationID,
       timestamp
@@ -719,7 +729,7 @@ export class APIRoutes {
   async traceCausalChain(request: APIRequest<CausalChainRequest>): Promise<APIResponse> {
     const { eventID } = request.body!;
 
-    const result = this.queryLayer.traceCausalChain(request.user, eventID);
+    const result = await this.queryLayer.analyzeCausality(eventID, { user: request.user });
 
     if (!result.data) {
       return {
@@ -752,7 +762,10 @@ export class APIRoutes {
 
     const timeRange = startTime && endTime ? { start: startTime, end: endTime } : undefined;
 
-    const result = this.queryLayer.getHolonEventHistory(request.user, holonId, timeRange);
+    const result = await this.queryLayer.getHolonHistory(holonId, {
+      user: request.user,
+      timeRange
+    });
 
     return {
       success: true,
