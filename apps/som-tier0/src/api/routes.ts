@@ -36,6 +36,8 @@ import {
   HealthCheckResponse,
   UnifiedSearchRequest,
 } from './api-types';
+import { JWTAuthProvider } from './auth/jwt-provider';
+import type { UserContext } from '../access-control';
 
 /**
  * API Routes Handler
@@ -53,6 +55,7 @@ export class APIRoutes {
   private constraintEngine: ConstraintEngine;
   private documentRegistry: DocumentRegistry;
   private projectionEngine: StateProjectionEngine;
+  private jwtProvider?: JWTAuthProvider;
 
   constructor(
     queryLayer: QueryLayer,
@@ -65,7 +68,8 @@ export class APIRoutes {
     relationshipRegistry: RelationshipRegistry,
     constraintEngine: ConstraintEngine,
     documentRegistry: DocumentRegistry,
-    projectionEngine: StateProjectionEngine
+    projectionEngine: StateProjectionEngine,
+    jwtProvider?: JWTAuthProvider
   ) {
     this.queryLayer = queryLayer;
     this.eventStore = eventStore;
@@ -78,6 +82,308 @@ export class APIRoutes {
     this.constraintEngine = constraintEngine;
     this.documentRegistry = documentRegistry;
     this.projectionEngine = projectionEngine;
+    this.jwtProvider = jwtProvider;
+  }
+
+  // ==================== Authentication Endpoints ====================
+  // NIST 800-53: IA-2 (Identification and Authentication), IA-5 (Authenticator Management)
+  // AC-7 (Unsuccessful Logon Attempts), AC-11 (Session Lock), AC-12 (Session Termination)
+
+  /**
+   * POST /api/v1/auth/login
+   * Authenticate user with credentials and return JWT tokens
+   */
+  async login(request: APIRequest<{ username: string; password: string }>): Promise<APIResponse> {
+    if (!this.jwtProvider) {
+      return {
+        success: false,
+        error: {
+          code: 'NOT_CONFIGURED',
+          message: 'JWT authentication not configured',
+        },
+      };
+    }
+
+    const { username, password } = request.body!;
+
+    if (!username || !password) {
+      return {
+        success: false,
+        error: {
+          code: 'INVALID_REQUEST',
+          message: 'Username and password are required',
+        },
+      };
+    }
+
+    // User lookup function - placeholder for actual user store
+    const userLookup = async (username: string): Promise<UserContext | null> => {
+      // TODO: Implement actual user lookup from database
+      // For now, return null to demonstrate account lockout
+      return null;
+    };
+
+    // Password validation function - placeholder for actual password hashing
+    const validatePassword = async (password: string, hashedPassword: string): Promise<boolean> => {
+      // TODO: Implement bcrypt/argon2 password verification
+      return false;
+    };
+
+    const result = await this.jwtProvider.authenticateCredentials(
+      username,
+      password,
+      userLookup,
+      validatePassword
+    );
+
+    if (!result.authenticated) {
+      return {
+        success: false,
+        error: {
+          code: 'AUTHENTICATION_FAILED',
+          message: result.error || 'Authentication failed',
+        },
+      };
+    }
+
+    return {
+      success: true,
+      data: {
+        accessToken: result.accessToken,
+        refreshToken: result.refreshToken,
+        expiresIn: 900, // 15 minutes
+        tokenType: 'Bearer',
+        user: {
+          userId: result.user!.userId,
+          roles: result.user!.roles,
+          clearanceLevel: result.user!.clearanceLevel,
+        },
+      },
+      metadata: {
+        timestamp: new Date(),
+      },
+    };
+  }
+
+  /**
+   * POST /api/v1/auth/refresh
+   * Refresh access token using refresh token
+   */
+  async refreshToken(request: APIRequest<{ refreshToken: string }>): Promise<APIResponse> {
+    if (!this.jwtProvider) {
+      return {
+        success: false,
+        error: {
+          code: 'NOT_CONFIGURED',
+          message: 'JWT authentication not configured',
+        },
+      };
+    }
+
+    const { refreshToken } = request.body!;
+
+    if (!refreshToken) {
+      return {
+        success: false,
+        error: {
+          code: 'INVALID_REQUEST',
+          message: 'Refresh token is required',
+        },
+      };
+    }
+
+    const result = this.jwtProvider.refreshAccessToken(refreshToken);
+
+    if (result.error) {
+      return {
+        success: false,
+        error: {
+          code: 'REFRESH_FAILED',
+          message: result.error,
+        },
+      };
+    }
+
+    return {
+      success: true,
+      data: {
+        accessToken: result.accessToken,
+        expiresIn: 900, // 15 minutes
+        tokenType: 'Bearer',
+      },
+      metadata: {
+        timestamp: new Date(),
+      },
+    };
+  }
+
+  /**
+   * POST /api/v1/auth/logout
+   * End current session
+   */
+  async logout(request: APIRequest<{ sessionId?: string }>): Promise<APIResponse> {
+    if (!this.jwtProvider) {
+      return {
+        success: false,
+        error: {
+          code: 'NOT_CONFIGURED',
+          message: 'JWT authentication not configured',
+        },
+      };
+    }
+
+    // Extract session ID from JWT token if not provided
+    const authHeader = request.headers?.authorization || request.headers?.Authorization;
+
+    if (!authHeader) {
+      return {
+        success: false,
+        error: {
+          code: 'INVALID_REQUEST',
+          message: 'Authorization token required',
+        },
+      };
+    }
+
+    // Verify token to get session ID
+    const token = authHeader.split(' ')[1];
+    if (!token) {
+      return {
+        success: false,
+        error: {
+          code: 'INVALID_REQUEST',
+          message: 'Invalid authorization format',
+        },
+      };
+    }
+
+    try {
+      // Use private method to extract session ID
+      const parts = token.split('.');
+      if (parts.length !== 3) {
+        throw new Error('Invalid token format');
+      }
+
+      const payloadBase64 = parts[1];
+      // Add padding if needed
+      let padded = payloadBase64;
+      while (padded.length % 4 !== 0) {
+        padded += '=';
+      }
+
+      const payloadJson = Buffer.from(
+        padded.replace(/-/g, '+').replace(/_/g, '/'),
+        'base64'
+      ).toString('utf-8');
+
+      const payload = JSON.parse(payloadJson);
+      const sessionId = payload.sid;
+
+      if (sessionId) {
+        this.jwtProvider.endSession(sessionId);
+      }
+
+      return {
+        success: true,
+        data: {
+          message: 'Session ended successfully',
+        },
+        metadata: {
+          timestamp: new Date(),
+        },
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        error: {
+          code: 'LOGOUT_FAILED',
+          message: error.message || 'Logout failed',
+        },
+      };
+    }
+  }
+
+  /**
+   * GET /api/v1/auth/session
+   * Get current session information
+   */
+  async getSession(request: APIRequest): Promise<APIResponse> {
+    if (!this.jwtProvider) {
+      return {
+        success: false,
+        error: {
+          code: 'NOT_CONFIGURED',
+          message: 'JWT authentication not configured',
+        },
+      };
+    }
+
+    if (!request.user) {
+      return {
+        success: false,
+        error: {
+          code: 'UNAUTHORIZED',
+          message: 'User not authenticated',
+        },
+      };
+    }
+
+    const sessionCount = this.jwtProvider.getUserSessionCount(request.user.userId);
+
+    return {
+      success: true,
+      data: {
+        user: {
+          userId: request.user.userId,
+          roles: request.user.roles,
+          clearanceLevel: request.user.clearanceLevel,
+        },
+        sessionCount,
+        sessionTimeout: 900, // 15 minutes inactivity
+        maxSessionDuration: 28800, // 8 hours
+      },
+      metadata: {
+        timestamp: new Date(),
+      },
+    };
+  }
+
+  /**
+   * POST /api/v1/auth/logout-all
+   * End all sessions for current user
+   */
+  async logoutAll(request: APIRequest): Promise<APIResponse> {
+    if (!this.jwtProvider) {
+      return {
+        success: false,
+        error: {
+          code: 'NOT_CONFIGURED',
+          message: 'JWT authentication not configured',
+        },
+      };
+    }
+
+    if (!request.user) {
+      return {
+        success: false,
+        error: {
+          code: 'UNAUTHORIZED',
+          message: 'User not authenticated',
+        },
+      };
+    }
+
+    this.jwtProvider.endAllUserSessions(request.user.userId);
+
+    return {
+      success: true,
+      data: {
+        message: 'All sessions ended successfully',
+      },
+      metadata: {
+        timestamp: new Date(),
+      },
+    };
   }
 
   // ==================== Holon Query Endpoints ====================

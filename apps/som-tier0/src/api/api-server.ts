@@ -24,6 +24,7 @@ import {
 } from './middleware';
 import { APIRequest, APIResponse } from './api-types';
 import { ApiKeyAuthProvider } from './auth/api-key-provider';
+import { JWTAuthProvider } from './auth/jwt-provider';
 
 /**
  * API Server configuration
@@ -34,7 +35,10 @@ export interface APIServerConfig {
   maxRequestsPerMinute?: number;
   enableCORS?: boolean;
   corsOrigins?: string[];
-  authMode?: 'apikey' | 'gateway';
+  authMode?: 'apikey' | 'gateway' | 'jwt';
+  jwtSecret?: string;
+  jwtAccessTokenExpiry?: number;
+  jwtRefreshTokenExpiry?: number;
 }
 
 /**
@@ -66,6 +70,7 @@ export class APIServer {
   private errorHandler: ErrorHandlerMiddleware;
   private rateLimiter: RateLimitMiddleware;
   private routeRegistry: Map<string, Route>;
+  private jwtProvider?: JWTAuthProvider;
 
   constructor(
     config: APIServerConfig,
@@ -90,6 +95,18 @@ export class APIServer {
       ...config,
     };
 
+    // Initialize JWT provider if JWT mode is configured
+    if (this.config.authMode === 'jwt') {
+      if (!this.config.jwtSecret) {
+        throw new Error('JWT secret is required when authMode is "jwt"');
+      }
+      this.jwtProvider = new JWTAuthProvider({
+        secret: this.config.jwtSecret,
+        accessTokenExpiry: this.config.jwtAccessTokenExpiry,
+        refreshTokenExpiry: this.config.jwtRefreshTokenExpiry,
+      });
+    }
+
     this.routes = new APIRoutes(
       queryLayer,
       eventStore,
@@ -102,12 +119,15 @@ export class APIServer {
       constraintEngine,
       documentRegistry,
       projectionEngine,
+      this.jwtProvider,
     );
 
     // Select Auth Provider based on configuration
     let authProvider: import('./auth/auth-types').IAuthProvider;
 
-    if (this.config.authMode === 'gateway') {
+    if (this.config.authMode === 'jwt') {
+      authProvider = this.jwtProvider!;
+    } else if (this.config.authMode === 'gateway') {
       const { GatewayHeaderAuthProvider } = require('./auth/gateway-provider');
       authProvider = new GatewayHeaderAuthProvider();
     } else {
@@ -131,6 +151,44 @@ export class APIServer {
    * Register all API routes
    */
   private registerRoutes(): void {
+    // Authentication routes (NIST 800-53: IA-2, IA-5, AC-7, AC-11, AC-12)
+    // These routes do NOT require authentication (they provide authentication)
+    this.registerRoute({
+      method: 'POST',
+      path: '/api/v1/auth/login',
+      handler: (req) => this.routes.login(req),
+      requiresAuth: false,
+    });
+
+    this.registerRoute({
+      method: 'POST',
+      path: '/api/v1/auth/refresh',
+      handler: (req) => this.routes.refreshToken(req),
+      requiresAuth: false,
+    });
+
+    // These routes DO require authentication
+    this.registerRoute({
+      method: 'POST',
+      path: '/api/v1/auth/logout',
+      handler: (req) => this.routes.logout(req),
+      requiresAuth: true,
+    });
+
+    this.registerRoute({
+      method: 'GET',
+      path: '/api/v1/auth/session',
+      handler: (req) => this.routes.getSession(req),
+      requiresAuth: true,
+    });
+
+    this.registerRoute({
+      method: 'POST',
+      path: '/api/v1/auth/logout-all',
+      handler: (req) => this.routes.logoutAll(req),
+      requiresAuth: true,
+    });
+
     // Holon query routes
     this.registerRoute({
       method: 'POST',
