@@ -84,6 +84,7 @@ export const usePolicyStore = create<PolicyState>((set, get) => ({
 
     getPreviousVersion: (policyId) => {
         const history = get().policyVersionHistory.get(policyId) || [];
-        return history.length > 0 ? history[history.length - 1] : null;
+        // Return the second-to-last version (previous, not oldest)
+        return history.length > 1 ? history[history.length - 2] : null;
     }
 }));
