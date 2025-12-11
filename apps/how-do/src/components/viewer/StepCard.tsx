@@ -1,5 +1,5 @@
 import React from 'react';
-import { Paperclip, ShieldAlert, GitBranch, CheckCircle2, User, FileText } from 'lucide-react';
+import { Paperclip, ShieldAlert, GitBranch, Bot, User, FileText, ExternalLink } from 'lucide-react';
 
 
 interface StepCardProps {
@@ -29,41 +29,50 @@ export const StepCard: React.FC<StepCardProps> = ({
     index,
     viewMode = 'swimlane'
 }) => {
+    const isProxy = step.source === 'external';
+
     return (
         <div className={`
-            step-card-component relative bg-slate-800/50 border border-slate-700 rounded-lg p-5
-            hover:border-slate-600 hover:bg-slate-800 transition-all shadow-lg backdrop-blur-sm
+            step-card-component relative bg-slate-800/50 border rounded-lg p-5
+            hover:bg-slate-800 transition-all shadow-lg backdrop-blur-sm
+            ${isProxy ? 'border-dashed border-slate-600' : 'border-slate-700 hover:border-slate-600'}
             ${viewMode === 'swimlane' ? 'min-w-[280px] w-full' : ''}
         `}>
-            {/* Step Number Badge */}
-            <div className="absolute -top-3 -left-3 w-8 h-8 bg-slate-800 border-2 border-blue-500 rounded-full flex items-center justify-center font-bold text-blue-400 shadow-md z-10 text-sm">
+            {/* Step Number Badge - Different color for proxy */}
+            <div className={`
+                absolute -top-3 -left-3 w-8 h-8 border-2 rounded-full flex items-center justify-center font-bold shadow-md z-10 text-sm
+                ${isProxy ? 'bg-slate-700 border-slate-500 text-slate-300' : 'bg-slate-800 border-blue-500 text-blue-400'}
+            `}>
                 {index + 1}
             </div>
 
             {/* Header: Owner & Type */}
             <div className="flex items-center justify-between mb-3 border-b border-slate-700/50 pb-3 pl-4">
                 <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-400">
-                    {isAgent ? <CheckCircle2 size={14} className="text-purple-400" /> : <User size={14} className="text-blue-400" />}
+                    {isAgent ? <Bot size={14} className="text-purple-400" /> : <User size={14} className="text-blue-400" />}
                     <span className={isAgent ? "text-purple-300" : "text-blue-300"}>
                         {ownerName || step.owner}
                     </span>
                 </div>
-                {step.source === 'external' && (
-                    <span className="text-[10px] bg-slate-700/50 px-2 py-0.5 rounded text-slate-400 font-mono">
-                        {step.externalSource}
+                {isProxy && (
+                    <span className="flex items-center gap-1 text-[9px] bg-slate-900 border border-slate-700 px-1.5 py-0.5 rounded text-slate-400 font-mono uppercase">
+                        <ExternalLink size={8} />
+                        {step.externalSource || 'EXT'}
                     </span>
                 )}
             </div>
 
             {/* Title & Description */}
-            <h3 className="text-lg font-semibold text-slate-100 mb-2">{step.title}</h3>
+            <h3 className="text-lg font-semibold text-slate-100 mb-2 flex items-center gap-2">
+                {step.title}
+            </h3>
             <p className="text-slate-400 text-sm leading-relaxed mb-4">{step.description}</p>
 
             {/* Reference ID */}
-            {step.source === 'external' && step.externalId && (
-                <div className="flex items-center gap-2 text-xs text-slate-500 font-mono bg-slate-900/50 w-fit px-3 py-1.5 rounded mb-4">
+            {isProxy && step.externalId && (
+                <div className="flex items-center gap-2 text-xs text-slate-500 font-mono bg-slate-900/50 w-full px-3 py-2 rounded mb-4 border border-slate-700/50">
                     <FileText size={12} />
-                    ID: {step.externalId}
+                    <span className="select-all">{step.externalId}</span>
                 </div>
             )}
 

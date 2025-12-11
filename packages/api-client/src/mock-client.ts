@@ -69,6 +69,15 @@ export class MockSOMClient implements ISOMClient {
                     ownerId: faker.string.uuid(), // Mock owner
                 };
                 break;
+            case HolonType.Agent:
+                base.properties = {
+                    name: faker.hacker.adjective() + ' Bot',
+                    description: faker.company.buzzPhrase(),
+                    version: '1.0.0',
+                    capabilities: [faker.hacker.noun(), faker.hacker.verb()],
+                    model: 'gpt-4'
+                };
+                break;
             case HolonType.Person:
                 base.properties = {
                     name: faker.person.fullName(),

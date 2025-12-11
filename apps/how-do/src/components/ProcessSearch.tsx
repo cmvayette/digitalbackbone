@@ -62,6 +62,15 @@ const MOCK_USER_CONTEXT = {
 
 export const ProcessSearch: React.FC<ProcessSearchProps> = ({ onSelectProcess }) => {
     const { config } = useGovernanceConfig({ mode: 'mock' });
+    const [searchTerm, setSearchTerm] = useState('');
+    const [isSearching, setIsSearching] = useState(false);
+    const [displayProcesses, setDisplayProcesses] = useState<Process[]>([]);
+
+    // Use the hook to get processes (assuming it exists and returns these)
+    // If useExternalProcessData signature is different, adapt. 
+    // Based on usage in useEffect: { processes, searchProcesses }
+    // Based on previous errors: isLoading is also used.
+    const { processes, searchProcesses, isLoading } = useExternalProcessData({ mode: 'mock' });
 
     // Dynamic Scoring with Tuner Config
     const calculateRelevance = (process: Process, context: typeof MOCK_USER_CONTEXT): number => {

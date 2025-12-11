@@ -6,6 +6,16 @@
     "bin": {
         "som-lint": "./dist/index.js"
     },
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "default": "./dist/index.js"
+        },
+        "./runtime": {
+            "types": "./dist/runtime/validator.d.ts",
+            "default": "./dist/runtime/validator.js"
+        }
+    },
     "scripts": {
         "build": "tsc",
         "start": "ts-node src/index.ts",

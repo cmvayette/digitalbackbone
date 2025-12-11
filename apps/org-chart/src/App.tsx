@@ -11,7 +11,7 @@ import { useGraphNavigation } from './hooks/useGraphNavigation';
 import type { SearchResult } from './hooks/useSearch';
 import { Breadcrumb } from './components/navigation/Breadcrumb';
 import { ReactFlowProvider } from '@xyflow/react';
-import { Toaster } from 'sonner';
+import { Toaster, toast } from 'sonner';
 
 const queryClient = new QueryClient();
 
@@ -59,8 +59,14 @@ function OrgChartContent() {
   };
 
   const handleSearchResult = (result: SearchResult) => {
-    setSelectedNode(result.node);
-    focusNode(result.id);
+    const node = layoutedNodes.find(n => n.id === result.id);
+    if (node) {
+      setSelectedNode(node);
+      focusNode(result.id);
+    } else {
+      toast.error(`Node "${result.label}" found but not loaded in current view.`);
+      // Future: fetch and load node into graph
+    }
   };
 
   const getBreadcrumbPath = (nodeId: string | null): SearchResult[] => {
@@ -76,7 +82,6 @@ function OrgChartContent() {
         id: node.id,
         label: (node.data.label as string) || 'Unknown',
         type: node.type as any,
-        node: node
       });
 
       // Traverse up using domain properties
@@ -98,10 +103,10 @@ function OrgChartContent() {
         <div className="absolute top-4 left-0 right-0 pointer-events-none flex justify-center z-10 px-4">
           <div className="pointer-events-auto flex flex-col items-center gap-2 w-full max-w-2xl">
             <DiscoveryBar
-              nodes={layoutedNodes}
               onResultSelect={handleSearchResult}
               viewMode={viewMode}
               onViewModeChange={setViewMode}
+              clientOptions={{ mode: 'mock' }}
             />
             {/* Breadcrumb below search */}
             {breadcrumbPath.length > 1 && (

@@ -1,9 +1,22 @@
-import { describe, it, expect } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { vi, describe, it, expect } from 'vitest';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { SwimlaneEditor } from './SwimlaneEditorComponent';
 import { Process } from '../types/process';
 
-// Using actual mock-policy.json content which now includes agents
+// Mock api-client to return deterministic data
+vi.mock('@som/api-client', async (importOriginal) => {
+    const actual = await importOriginal<typeof import('@som/api-client')>();
+    return {
+        ...actual,
+        useExternalOrgData: () => ({
+            getCandidates: () => [
+                { id: 'pos-1', name: 'Commander', type: 'Position' },
+                { id: 'agent-1', name: 'Logistics Bot', type: 'Agent' }
+            ],
+            isLoading: false
+        })
+    };
+});
 
 describe('SwimlaneEditor', () => {
     it('renders native steps correctly', () => {
@@ -20,6 +33,8 @@ describe('SwimlaneEditor', () => {
             status: 'active',
             properties: {
                 name: 'Proxy Process',
+                description: 'Test process',
+                tags: [],
                 steps: [
                     {
                         id: 'step-jira',
@@ -56,14 +71,43 @@ describe('SwimlaneEditor', () => {
         fireEvent.click(firstEditBtn);
 
         // Now we have the OwnerPicker open
-        const agentOption = screen.getByText('Logistics Bot');
+        fireEvent.click(screen.getByText('Agents'));
+        const agentOption = await screen.findByText('Logistics Bot');
         expect(agentOption).toBeDefined();
 
         fireEvent.click(agentOption);
 
-        // Use a timeout or check if the owner text updated
-        // The picker closes on selection, and the badge should filter to the new owner
-        // We can check if "Logistics Bot" is visible in the badge
         expect(screen.getByText('Logistics Bot')).toBeDefined();
+    });
+
+    it('shows validation error for dead links', async () => {
+        const invalidProcess: Process = {
+            id: 'invalid-proc',
+            type: 'Process' as any,
+            status: 'active',
+            createdAt: new Date(),
+            createdBy: 'test',
+            sourceDocuments: [],
+            properties: {
+                name: 'Invalid Process',
+                description: '',
+                inputs: [],
+                outputs: [],
+                tags: [],
+                estimatedDuration: 100,
+                steps: [
+                    { id: '1', title: 'Start', owner: 'me', description: 'desc', nextStepId: '999', obligations: [] }
+                ]
+            }
+        };
+
+        render(<SwimlaneEditor initialProcess={invalidProcess} />);
+
+        // Click Validate
+        const validateBtn = screen.getByText('Validate & Save');
+        fireEvent.click(validateBtn);
+
+        const errorMsg = await screen.findByText(/points to non-existent next step/);
+        expect(errorMsg).toBeDefined();
     });
 });
