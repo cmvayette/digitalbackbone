@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, Activity, Edit3 } from 'lucide-react';
+import { Search, Activity, Edit3, Settings } from 'lucide-react';
 import { ViewMode } from '../App';
 
 interface HeaderProps {
@@ -8,7 +8,7 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({ view, setView }) => {
-    if (view !== 'search' && view !== 'health') return null;
+    if (view !== 'search' && view !== 'health' && view !== 'admin') return null;
 
     return (
         <div className="h-14 border-b border-border-color flex items-center px-4 justify-between bg-bg-panel/80 backdrop-blur-md z-50">
@@ -36,6 +36,14 @@ export const Header: React.FC<HeaderProps> = ({ view, setView }) => {
                     className={`flex items-center gap-2 px-3 py-1.5 rounded-sm text-xs font-bold uppercase tracking-wider transition-all border border-slate-700 bg-slate-900 text-text-secondary hover:text-white hover:border-slate-500`}
                 >
                     <Edit3 size={14} /> New Process
+                </button>
+                <div className="w-px h-6 bg-slate-800 mx-1"></div>
+                <button
+                    onClick={() => setView('admin')}
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-sm text-xs font-bold uppercase tracking-wider transition-all border ${view === 'admin' ? 'bg-slate-800 text-slate-200 border-slate-600' : 'bg-transparent text-slate-600 border-transparent hover:text-slate-400'}`}
+                    title="Governance Administration"
+                >
+                    <Settings size={14} />
                 </button>
             </div>
         </div>

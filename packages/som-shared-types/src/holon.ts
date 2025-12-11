@@ -29,7 +29,8 @@ export enum HolonType {
 
   Process = 'Process',
   Agent = 'Agent',
-  KeyResult = 'KeyResult'
+  KeyResult = 'KeyResult',
+  GovernanceConfig = 'GovernanceConfig'
 }
 
 export type Actor = Person | Agent | Position | System;
@@ -123,6 +124,7 @@ export interface ProcessProperties {
   description: string;
   inputs: string[];
   outputs: string[];
+  tags: string[];
   steps: ProcessStep[];
   estimatedDuration: number; // in milliseconds
 }
@@ -355,4 +357,39 @@ export enum ConstraintType {
   Capacity = 'Capacity',
   Dependency = 'Dependency',
   Risk = 'Risk'
+}
+
+export interface GovernanceConfig extends Holon {
+  type: HolonType.GovernanceConfig;
+  properties: {
+    // 1. Aggregation Logic
+    aggregation: {
+      weights: {
+        freshness: number;    // 0.0 - 1.0
+        completeness: number; // 0.0 - 1.0
+        compliance: number;   // 0.0 - 1.0
+      };
+      alertThresholds: {
+        critical: number;     // e.g. 50
+        warning: number;      // e.g. 75
+      };
+    };
+
+    // 2. Search Logic
+    search: {
+      weights: {
+        rankMatch: number;    // e.g. 50
+        roleMatch: number;    // e.g. 30
+        tagMatch: number;     // e.g. 10
+      };
+      recommendationMinScore: number; // e.g. 10
+    };
+
+    // 3. Drift Logic
+    drift: {
+      inspectionMode: boolean; // If true, strict checking
+      staleDays: number;       // e.g. 90
+      requiredObligationCriticality: 'high' | 'medium' | 'low';
+    };
+  };
 }

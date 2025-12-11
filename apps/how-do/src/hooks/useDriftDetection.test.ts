@@ -18,6 +18,7 @@ describe('useDriftDetection', () => {
             inputs: [],
             outputs: [],
             estimatedDuration: 0,
+            tags: [],
             steps: []
         }
     };

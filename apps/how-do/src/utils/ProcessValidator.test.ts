@@ -17,6 +17,7 @@ describe('ProcessValidator', () => {
             inputs: [],
             outputs: [],
             estimatedDuration: 0,
+            tags: [],
             steps: []
         }
     };
@@ -32,6 +33,7 @@ describe('ProcessValidator', () => {
             ...baseProcess,
             properties: {
                 ...baseProcess.properties,
+                tags: [],
                 steps: [
                     { id: 's1', title: '', owner: 'pos-1', description: 'desc', obligations: [{ id: 'o1' }] }
                 ]
@@ -47,6 +49,7 @@ describe('ProcessValidator', () => {
             ...baseProcess,
             properties: {
                 ...baseProcess.properties,
+                tags: [],
                 steps: [
                     { id: 's1', title: 'Step 1', owner: '', description: 'desc', obligations: [{ id: 'o1' }] }
                 ]
@@ -62,6 +65,7 @@ describe('ProcessValidator', () => {
             ...baseProcess,
             properties: {
                 ...baseProcess.properties,
+                tags: [],
                 steps: [
                     { id: 's1', title: 'Step 1', owner: 'pos-1', description: 'desc', obligations: [] }
                 ]

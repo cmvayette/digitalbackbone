@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { HolonType, type Objective } from '@som/shared-types';
-import { useExternalOrgData, useStrategyComposer } from '@som/api-client';
+import { useExternalOrgData } from '@som/api-client';
+import { useStrategyComposer } from '../../hooks/useStrategyComposer';
 
 export const ObjectiveComposer = ({ onClose }: { onClose: () => void }) => {
     // const { addObjective } = useStrategyData(); // Deprecated
