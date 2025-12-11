@@ -5,9 +5,10 @@ import type { PolicyDocument } from '../types/policy';
 
 interface PolicyListProps {
     onSelectPolicy: (id: string) => void;
+    onCreatePolicy: (policy: Partial<PolicyDocument>) => void;
 }
 
-export const PolicyList: React.FC<PolicyListProps & { onCreatePolicy: (policy: any) => void }> = ({ onSelectPolicy, onCreatePolicy }) => {
+export const PolicyList: React.FC<PolicyListProps> = ({ onSelectPolicy, onCreatePolicy }) => {
     const { policies, selectPolicy } = usePolicyStore();
 
     const handleCreate = () => {
