@@ -141,13 +141,38 @@ export class MockSOMClient implements ISOMClient {
                     timeframe: { start: faker.date.past(), end: faker.date.future() }
                 };
                 break;
+            case HolonType.Process:
+                const steps = Array.from({ length: faker.number.int({ min: 3, max: 8 }) }).map((_, idx) => ({
+                    id: faker.string.uuid(),
+                    title: `Step ${idx + 1}: ${faker.hacker.verb()} ${faker.hacker.noun()}`,
+                    description: faker.company.catchPhrase(),
+                    owner: faker.string.uuid(),
+                    assigneeType: faker.helpers.arrayElement(['human', 'agent', 'system']),
+                    nextStepId: idx < 3 ? faker.string.uuid() : undefined, // Simple linear or broken link simulation
+                    obligations: []
+                }));
+
+                base.properties = {
+                    name: `Process: ${faker.company.buzzPhrase()}`,
+                    description: faker.lorem.paragraph(),
+                    inputs: [faker.system.fileName(), faker.system.fileName()],
+                    outputs: [faker.system.fileName()],
+                    tags: [faker.hacker.noun(), faker.hacker.adjective()],
+                    steps,
+                    estimatedDuration: faker.number.int({ min: 1800, max: 7200 })
+                };
+                break;
+
             case HolonType.Document:
                 base.properties = {
                     title: faker.company.catchPhrase(),
-                    type: faker.helpers.arrayElement(['Policy', 'Instruction', 'Manual', 'SOP']),
+                    documentType: faker.helpers.arrayElement(['Policy', 'Order', 'SOP', 'Manual', 'Instruction']), // Valid enums
                     version: faker.system.semver(),
                     status: faker.helpers.arrayElement(['draft', 'review', 'published']),
                     content: faker.lorem.paragraphs(3),
+                    classificationMetadata: 'UNCLASSIFIED',
+                    referenceNumbers: [faker.string.alphanumeric(8).toUpperCase()],
+                    effectiveDates: { start: faker.date.past() },
                     createdAt: faker.date.past().toISOString(),
                     updatedAt: faker.date.recent().toISOString(),
                 };
