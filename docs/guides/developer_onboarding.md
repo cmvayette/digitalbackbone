@@ -113,6 +113,8 @@ npm run dev -w apps/som-tier0
 *   **Dev Key**: `dev-token-123` (Auto-registered with Admin privileges)
 
 For deep details, see [apps/som-tier0/README.md](file:///Users/baxter/devProject/digital_backbone/apps/som-tier0/README.md).
+- **Strategy**: Follow the **[Documentation Strategy](file:///Users/baxter/devProject/digital_backbone/docs/notes/template.md)**.
+- **Templates**: Always use the provided templates in `docs/adr/template.md` and `docs/notes/template.md`.
 
 ### Running Frontend Apps
 Each frontend application is a separate workspace. You can run them individually:
@@ -136,9 +138,9 @@ npm run dev -w apps/policy-governance
 ---
 
 ## 6. Where to find help
-*   **Specs**: `docs/design/specs/` (The "Bible" of requirements).
-*   **Architecture**: `docs/design/system_architecture.md` (Detailed diagrams).
-*  **UI Design System**: `docs/design/ui/design-sys.md` (If building frontends).
+*   **Specs**: `../specs/` (The "Bible" of requirements).
+*   **Architecture**: `../architecture/system_overview.md` (Detailed diagrams).
+*  **UI Design System**: `../specs/ui/ui_design_system.md` (If building frontends).
 
 ---
 
@@ -160,7 +162,7 @@ npm run lint:semantic
 ---
 
 ## 8. Agentic Workflow
-If you are an AI Agent (or a human acting like one), you must follow the **[Agent Implementation Protocol](file:///Users/baxter/devProject/digital_backbone/docs/design/process/agent_protocol.md)**.
+If you are an AI Agent (or a human acting like one), you must follow the **[Agent Implementation Protocol](agent_protocol.md)**.
 This defines the **Review-Verify-Task** cycle required to convert Strategy into Code.
 
 1.  **Context Alignment**: Read Strategy.

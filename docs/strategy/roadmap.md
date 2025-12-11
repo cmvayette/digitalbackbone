@@ -2,9 +2,9 @@
 
 This document serves as the **single source of truth** for the Digital Backbone project roadmap, consolidating tasks from:
 - `ROADMAP.md` (High Level)
-- `design/roadmap.md` (Application Phases)
-- `design/specs/som_tasks.md` (Tier-0 Implementation)
-- `way_ahead_design.md` (Infrastructure & Compliance)
+- `../specs` (Application Specs)
+- `../specs/som_tasks.md` (Tier-0 Implementation)
+- `../architecture/c_ato_readiness.md` (Infrastructure & Compliance)
 
 ---
 
@@ -58,7 +58,7 @@ Based on C-ATO requirements and the dependency graph, the following priority ord
 
 ## 3. Tier-1 Ecosystem Roadmap (Applications)
 
-*From `design/roadmap.md`*
+*From Legacy Roadmap*
 
 ### Phase 0: Foundation (Shared Infrastructure)
 - [ ] Backend simplifications complete
@@ -114,7 +114,7 @@ Based on C-ATO requirements and the dependency graph, the following priority ord
 
 ## 4. Tier-0 / Backend Implementation Plan
 
-*Derived from `design/specs/som_tasks.md`. See that file for detailed requirement validation and property test mappings.*
+*Derived from `../specs/som_tasks.md`. See that file for detailed requirement validation and property test mappings.*
 
 ### Core Architecture
 - [x] 1. Project structure & Type definitions
@@ -171,7 +171,7 @@ Based on C-ATO requirements and the dependency graph, the following priority ord
 
 ## 5. Infrastructure ## 4. Infrastructure & C-ATO Readiness C-ATO Readiness (Way Ahead)
 
-*From `way_ahead_design.md`*
+*From `../architecture/c_ato_readiness.md`*
 
 ### Authentication & Identity
 - [x] Refactor `middleware.ts` to use `IAuthProvider`.
@@ -198,7 +198,7 @@ Based on C-ATO requirements and the dependency graph, the following priority ord
 
 ## 6. Ad-Hoc / Technical Debt
 
-### Org Chart Search (from `notes/006-org-chart-search-refactor.md`)
+### Org Chart Search (from `../notes/006-org-chart-search-refactor.md`)
 - [ ] Ensure `DiscoveryBar` handles results that are just "References" (ID/Label) rather than full Nodes.
 - [ ] Consolidate local graph filtering with API-based global search.
 
@@ -206,7 +206,7 @@ Based on C-ATO requirements and the dependency graph, the following priority ord
 
 ## 7. Audit Findings ## 6. Audit Findings & Technical Debt Technical Debt
 
-*Extracted from `docs/reports/*` and `docs/notes/audit_*.md` (Dec 2025)*
+*Extracted from `../reports/*` and `../notes/audit_*.md` (Dec 2025)*
 
 ### Frontend Architecture
 - [ ] **Refactor**: Move "Deep Void" Tailwind config to `packages/ui-components` or shared config.
