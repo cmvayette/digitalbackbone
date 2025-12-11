@@ -11,8 +11,8 @@ interface ObligationsSidecarProps {
   policy: PolicyDocument;
   isReadOnly: boolean;
   pendingClauseText: string;
-  onAddObligation: (obligation: any) => void;
-  onUpdateObligation: (obligationId: string, updates: any) => void;
+  onAddObligation: (obligation: Omit<Obligation, 'id'>) => void;
+  onUpdateObligation: (obligationId: string, updates: Partial<Obligation>) => void;
   onClosePendingClause: () => void;
   onHighlightObligation?: (obligationId: string) => void;
 }
@@ -64,7 +64,7 @@ export const ObligationsSidecar: React.FC<ObligationsSidecarProps> = ({
     </button>
   );
 
-  const handleSaveObligation = (obl: any) => {
+  const handleSaveObligation = (obl: Omit<Obligation, 'id'>) => {
     onAddObligation(obl);
     setShowComposer(false);
     onClosePendingClause();

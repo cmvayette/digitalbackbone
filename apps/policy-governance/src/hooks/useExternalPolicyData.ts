@@ -18,7 +18,7 @@ export function useExternalPolicyData(options: SOMClientOptions = { mode: 'mock'
         queryFn: async () => {
             const response = await client.queryHolons(HolonType.Document);
             if (response.success && response.data) {
-                return response.data.map((h: any) => ({
+                return response.data.map((h) => ({
                     id: h.id,
                     title: h.properties.title || 'Untitled Policy',
                     documentType: h.properties.type || 'Instruction',

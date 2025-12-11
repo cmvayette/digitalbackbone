@@ -10,13 +10,14 @@ import Highlight from '@tiptap/extension-highlight';
 import BubbleMenu from '@tiptap/extension-bubble-menu';
 import { ClauseHighlighter } from './ClauseHighlighter';
 import { ActorMention } from './ActorMention';
+import type { Obligation } from '../../types/policy';
 import 'tippy.js/dist/tippy.css';
 
 interface PolicyEditorProps {
   onBack: () => void;
   onPublish: (id: string, version: string) => void;
-  onAddObligation: (policyId: string, obligation: any) => void;
-  onUpdateObligation: (policyId: string, obligationId: string, updates: any) => void;
+  onAddObligation: (policyId: string, obligation: Omit<Obligation, 'id'>) => void;
+  onUpdateObligation: (policyId: string, obligationId: string, updates: Partial<Obligation>) => void;
 }
 
 export const PolicyEditor: React.FC<PolicyEditorProps> = ({
@@ -120,14 +121,14 @@ export const PolicyEditor: React.FC<PolicyEditorProps> = ({
     }
   };
 
-  const handleAddObligation = (obligation: any) => {
+  const handleAddObligation = (obligation: Omit<Obligation, 'id'>) => {
     onAddObligation(currentPolicy.id, obligation);
     // Change highlight to green after successful extraction
     editor?.chain().focus().unsetHighlight().run();
     editor?.chain().focus().setHighlight({ color: '#22c55e' }).run();
   };
 
-  const handleUpdateObligation = (obligationId: string, updates: any) => {
+  const handleUpdateObligation = (obligationId: string, updates: Partial<Obligation>) => {
     onUpdateObligation(currentPolicy.id, obligationId, updates);
   };
 
