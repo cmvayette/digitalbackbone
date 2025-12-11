@@ -4,6 +4,7 @@ import { PolicyDocument, Obligation } from '../types/policy';
 interface PolicyState {
     policies: PolicyDocument[];
     currentPolicy: PolicyDocument | null;
+    policyVersionHistory: Map<string, PolicyDocument[]>; // policyId -> versions
 
     // Actions
     setPolicies: (policies: PolicyDocument[]) => void;
@@ -13,12 +14,18 @@ interface PolicyState {
     updatePolicy: (id: string, updates: Partial<PolicyDocument>) => void;
     updateObligation: (policyId: string, obligationId: string, updates: Partial<Obligation>) => void;
 
+    // Version History
+    saveVersion: (policyId: string, version: PolicyDocument) => void;
+    getVersionHistory: (policyId: string) => PolicyDocument[];
+    getPreviousVersion: (policyId: string) => PolicyDocument | null;
+
     // Server actions (create, publish) are handled via useExternalPolicyData hook
 }
 
-export const usePolicyStore = create<PolicyState>((set) => ({
+export const usePolicyStore = create<PolicyState>((set, get) => ({
     policies: [],
     currentPolicy: null,
+    policyVersionHistory: new Map(),
 
     setPolicies: (policies) => set((state) => {
         // Preserve selection and merge if needed? 
@@ -62,5 +69,21 @@ export const usePolicyStore = create<PolicyState>((set) => ({
                 updatedAt: new Date().toISOString()
             }
             : state.currentPolicy
-    }))
+    })),
+
+    saveVersion: (policyId, version) => set((state) => {
+        const history = state.policyVersionHistory.get(policyId) || [];
+        const newHistory = new Map(state.policyVersionHistory);
+        newHistory.set(policyId, [...history, version]);
+        return { policyVersionHistory: newHistory };
+    }),
+
+    getVersionHistory: (policyId) => {
+        return get().policyVersionHistory.get(policyId) || [];
+    },
+
+    getPreviousVersion: (policyId) => {
+        const history = get().policyVersionHistory.get(policyId) || [];
+        return history.length > 0 ? history[history.length - 1] : null;
+    }
 }));
