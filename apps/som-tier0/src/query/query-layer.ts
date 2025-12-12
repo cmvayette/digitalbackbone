@@ -85,7 +85,7 @@ export class QueryLayer {
     options?: CurrentStateQueryOptions
   ): Promise<QueryResult<Holon[]>> {
     // Query holons from graph store
-    const holons = this.graphStore.queryHolonsByType(type, options?.filters);
+    const holons = await this.graphStore.queryHolonsByType(type, options?.filters);
 
     // Apply access control
     const originalCount = holons.length;
@@ -233,7 +233,7 @@ export class QueryLayer {
       // Get all holons of type (filtered by simple property match logic)
       // Note: In a real DB, this would be a specific search query.
       // Here we fetch all and filter in memory since we are in-memory.
-      const holons = this.graphStore.queryHolonsByType(type);
+      const holons = await this.graphStore.queryHolonsByType(type);
 
       const filteredHolons = await this.accessControl.filterHolons(user, holons);
       if (filteredHolons.length < holons.length) totalFiltered = true;
@@ -384,7 +384,7 @@ export class QueryLayer {
     }
 
     // Default: Get current state
-    const holonState = this.graphStore.getHolon(holonId);
+    const holonState = await this.graphStore.getHolon(holonId);
 
     if (!holonState) {
       return { data: null, filtered: false };

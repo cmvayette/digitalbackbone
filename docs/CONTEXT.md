@@ -14,6 +14,7 @@ It links to the definitive **Source of Truth** for each domain.
 
 ## 2. Architecture: Tier-0 Core (How it Works)
 *   **[System Overview](file:///docs/architecture/system_overview.md)**: The "Glacial" layers (SAL -> Event Store -> Graph).
+*   **[ADR 014: Polyglot Persistence](file:///docs/adr/014-polyglot-persistence-neo4j-redis.md)**: The decision to split state across Postgres, Neo4j, and Redis.
 *   **[Core Principles](file:///docs/architecture/core_principles.md)**: Design philosophy (Meaning over Data, Truth through Time).
 *   **[C-ATO Readiness](file:///docs/architecture/c_ato_readiness.md)**: Security, Authentication, and Hardening requirements.
 *   **[Shared Types](file:///packages/som-shared-types/README.md)**: The Type Contract. Inspect `packages/som-shared-types/src` for actual interfaces.
@@ -32,3 +33,4 @@ It links to the definitive **Source of Truth** for each domain.
 
 ## 4. Developer Guides (How to Dev)
 *   **[Developer Onboarding](file:///docs/guides/developer_onboarding.md)**: Quick start, directory map, and tooling setup.
+*   **[Local Infrastructure](file:///docs/notes/local_infrastructure.md)**: How to run the full Docker stack locally.

@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useMemo } from 'react';
-import { HolonType, type Holon } from '@som/shared-types';
+import * as SharedTypes from '@som/shared-types';
 import { createSOMClient } from './factory';
 
 // Replicating types locally/shared for MVP (eventually refer to @som/shared-types)
@@ -28,12 +28,12 @@ export function useExternalPolicyData(options?: import('./factory').SOMClientOpt
                 options?.mode === 'mock' ? undefined : 'http://localhost:3333/api/v1',
                 options
             );
-            const response = await client.queryHolons(HolonType.Document, {
+            const response = await client.queryHolons(SharedTypes.HolonType.Document, {
                 properties: { documentType: 'Policy' }
             });
 
             if (response.success && response.data) {
-                const mappedPolicies: ExternalPolicy[] = response.data.map((h: Holon) => {
+                const mappedPolicies: ExternalPolicy[] = response.data.map((h: SharedTypes.Holon) => {
                     // Map Holon to ExternalPolicy view model
                     // Assuming obligations are linked or embedded. For MVP, we might parse text or look for linked Obligation holons.
                     // Ideally, we'd fetch linked obligations. For now, we'll default to empty or mock if not in payload.

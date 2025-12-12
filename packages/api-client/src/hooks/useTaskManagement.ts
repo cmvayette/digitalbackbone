@@ -1,6 +1,5 @@
 import { useState, useCallback } from 'react';
 import {
-    EventType,
     HolonID,
     type InitiativeCreatedPayload,
     type TaskCreatedPayload,
@@ -10,6 +9,7 @@ import {
     type TaskCompletedPayload,
     type TaskCancelledPayload
 } from '@som/shared-types';
+import * as SharedTypes from '@som/shared-types';
 import { type SubmitEventRequest } from '../client';
 import { createSOMClient } from '../factory';
 import { v4 as uuidv4 } from 'uuid';
@@ -32,8 +32,8 @@ export function useTaskManagement() {
         setLastError(null);
         try {
             const initiativeId = uuidv4();
-            const event: SubmitEventRequest<EventType.InitiativeCreated> = {
-                type: EventType.InitiativeCreated,
+            const event: SubmitEventRequest<SharedTypes.EventType.InitiativeCreated> = {
+                type: SharedTypes.EventType.InitiativeCreated,
                 occurredAt: new Date(),
                 actor: actorId,
                 subjects: [initiativeId],
@@ -83,8 +83,8 @@ export function useTaskManagement() {
             // Checking payload definition.... it has: taskId, title, description, assigneeId, priority, dueDate. 
             // It lacks parentId. We should rely on subjects linkage for graph construction.
 
-            const event: SubmitEventRequest<EventType.TaskCreated> = {
-                type: EventType.TaskCreated,
+            const event: SubmitEventRequest<SharedTypes.EventType.TaskCreated> = {
+                type: SharedTypes.EventType.TaskCreated,
                 occurredAt: new Date(),
                 actor: actorId,
                 subjects: [taskId, projectId], // Link task to project
@@ -126,7 +126,7 @@ export function useTaskManagement() {
             switch (status) {
                 case 'in-progress':
                     event = {
-                        type: EventType.TaskStarted,
+                        type: SharedTypes.EventType.TaskStarted,
                         occurredAt: new Date(),
                         actor: actorId,
                         subjects: [taskId],
@@ -138,7 +138,7 @@ export function useTaskManagement() {
                     break;
                 case 'blocked':
                     event = {
-                        type: EventType.TaskBlocked,
+                        type: SharedTypes.EventType.TaskBlocked,
                         occurredAt: new Date(),
                         actor: actorId,
                         subjects: [taskId],
@@ -150,7 +150,7 @@ export function useTaskManagement() {
                     break;
                 case 'done':
                     event = {
-                        type: EventType.TaskCompleted,
+                        type: SharedTypes.EventType.TaskCompleted,
                         occurredAt: new Date(),
                         actor: actorId,
                         subjects: [taskId],
@@ -162,7 +162,7 @@ export function useTaskManagement() {
                     break;
                 case 'cancelled':
                     event = {
-                        type: EventType.TaskCancelled,
+                        type: SharedTypes.EventType.TaskCancelled,
                         occurredAt: new Date(),
                         actor: actorId,
                         subjects: [taskId],
@@ -199,8 +199,8 @@ export function useTaskManagement() {
         setIsSubmitting(true);
         setLastError(null);
         try {
-            const event: SubmitEventRequest<EventType.TaskAssigned> = {
-                type: EventType.TaskAssigned,
+            const event: SubmitEventRequest<SharedTypes.EventType.TaskAssigned> = {
+                type: SharedTypes.EventType.TaskAssigned,
                 occurredAt: new Date(),
                 actor: actorId,
                 subjects: [taskId, assigneeId],

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { HolonType, type LOE, type Objective, type KeyResult } from '@som/shared-types';
+import { type LOE, type Objective, type KeyResult } from '@som/shared-types';
+import * as SharedTypes from '@som/shared-types';
 import { createSOMClient } from './factory';
 
 export function useStrategyData() {
@@ -12,9 +13,9 @@ export function useStrategyData() {
         try {
             const client = createSOMClient();
             const [loeRes, objRes, krRes] = await Promise.all([
-                client.queryHolons(HolonType.LOE),
-                client.queryHolons(HolonType.Objective),
-                client.queryHolons(HolonType.KeyResult)
+                client.queryHolons(SharedTypes.HolonType.LOE),
+                client.queryHolons(SharedTypes.HolonType.Objective),
+                client.queryHolons(SharedTypes.HolonType.KeyResult)
             ]);
 
             if (loeRes.success && loeRes.data) {

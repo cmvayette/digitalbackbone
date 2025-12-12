@@ -69,7 +69,18 @@ async function startServer() {
     // 2. Core Engines (Base)
     const documentRegistry = new DocumentRegistry();
     const projectionEngine = new StateProjectionEngine(eventStore);
-    const graphStore = new GraphStore(projectionEngine);
+
+    // Switch to Neo4j Graph Store for scalability
+    const { Neo4jGraphStore } = await import('./graph-store/neo4j-store');
+    const { CachedGraphStore } = await import('./graph-store/cached-store');
+    const { RedisClient } = await import('./cache/redis-client');
+
+    // Setup Stack: Cached -> Neo4j -> Projection
+    const neo4jStore = new Neo4jGraphStore(projectionEngine);
+    const redisClient = RedisClient.getInstance();
+    const graphStore: any = new CachedGraphStore(neo4jStore, redisClient);
+
+    // const graphStore = new GraphStore(projectionEngine);
     const constraintEngine = new ConstraintEngine(documentRegistry);
 
     // Load Default Constraints
@@ -102,8 +113,12 @@ async function startServer() {
     const howDoAdapter = new HowDoCalendarAdapter(eventStore);
 
     // 3. API Server (The "Brain")
+    const authMode = (process.env.AUTH_MODE as 'apikey' | 'gateway') || 'apikey';
     const apiServer = new APIServer(
-        { port: PORT },
+        {
+            port: PORT,
+            authMode
+        },
         queryLayer,
         eventStore,
         semanticAccessLayer,

@@ -1,13 +1,12 @@
 import { useState, useCallback } from 'react';
 import {
-    EventType,
     HolonID,
-    HolonType,
     type DocumentCreatedPayload,
     type ClauseExtractedPayload,
     type ObligationDefinedPayload,
     type DocumentPublishedPayload
 } from '@som/shared-types';
+import * as SharedTypes from '@som/shared-types';
 import { type SubmitEventRequest } from '../client';
 import { createSOMClient } from '../factory';
 import { v4 as uuidv4 } from 'uuid';
@@ -26,8 +25,8 @@ export function usePolicyComposer() {
         setLastError(null);
         try {
             const documentId = uuidv4();
-            const event: SubmitEventRequest<EventType.DocumentCreated> = {
-                type: EventType.DocumentCreated,
+            const event: SubmitEventRequest<SharedTypes.EventType.DocumentCreated> = {
+                type: SharedTypes.EventType.DocumentCreated,
                 occurredAt: new Date(),
                 actor: authorId,
                 subjects: [documentId],
@@ -64,8 +63,8 @@ export function usePolicyComposer() {
         setLastError(null);
         try {
             const clauseId = uuidv4();
-            const event: SubmitEventRequest<EventType.ClauseExtracted> = {
-                type: EventType.ClauseExtracted,
+            const event: SubmitEventRequest<SharedTypes.EventType.ClauseExtracted> = {
+                type: SharedTypes.EventType.ClauseExtracted,
                 occurredAt: new Date(),
                 actor: authorId,
                 subjects: [clauseId, documentId],
@@ -101,8 +100,8 @@ export function usePolicyComposer() {
         setLastError(null);
         try {
             const obligationId = uuidv4();
-            const event: SubmitEventRequest<EventType.ObligationDefined> = {
-                type: EventType.ObligationDefined,
+            const event: SubmitEventRequest<SharedTypes.EventType.ObligationDefined> = {
+                type: SharedTypes.EventType.ObligationDefined,
                 occurredAt: new Date(),
                 actor: authorId,
                 subjects: [obligationId, clauseId],
@@ -136,8 +135,8 @@ export function usePolicyComposer() {
         setIsSubmitting(true);
         setLastError(null);
         try {
-            const event: SubmitEventRequest<EventType.DocumentPublished> = {
-                type: EventType.DocumentPublished,
+            const event: SubmitEventRequest<SharedTypes.EventType.DocumentPublished> = {
+                type: SharedTypes.EventType.DocumentPublished,
                 occurredAt: new Date(),
                 actor: authorId,
                 subjects: [documentId],

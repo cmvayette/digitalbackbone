@@ -35,19 +35,20 @@ The **Semantic Operating Model (SOM)** Tier-0 is a graph-based semantic layer th
 ```mermaid
 graph LR
     Ext[External Systems] -->|Raw Data| SAL[Semantic Access Layer]
-    SAL -->|Events| ES[Event Store]
+    SAL -->|Events| ES[Event Store (Postgres)]
     ES -->|Event Stream| PROJ[State Projection]
-    PROJ -->|Current State| GRAPH[Graph Store]
-    GRAPH -->|Queries| API[API Server]
+    PROJ -->|Cypher/Write| GRAPH[Graph Store (Neo4j)]
+    GRAPH -->|Read-Through| CACHE[Cache (Redis)]
+    CACHE -->|Queries| API[API Server]
     DOC[Document Registry] -.->|Constraints| CONST[Constraint Engine]
     SAL -.->|Validation| CONST
 ```
 
 1.  **Ingestion**: External data enters via the **Semantic Access Layer (SAL)**, which translates it into semantic Events.
 2.  **Validation**: The **Constraint Engine** validates these events against rules defined by documents in the **Document Registry**.
-3.  **Persistence**: Valid events are appended to the **Event Store** (the source of truth).
-4.  **Projection**: The **State Projection Engine** replays events to derive the current state (Holons and Relationships).
-5.  **Indexing**: The **Graph Store** indexes this projected state for fast querying.
+3.  **Persistence**: Valid events are appended to the **Event Store (Postgres)**, the single source of truth.
+4.  **Projection**: The **State Projection Engine** triggers asynchronous updates to the Read Operations.
+5.  **Indexing**: The **Graph Store (Neo4j)** materializes the state for complex relationship queries. **Redis** caches hot entities.
 6.  **Querying**: The **Query Layer** (via the API) serves requests for current state, historical state (via replay), or graph traversals.
 
 ## Codebase Map
@@ -60,9 +61,10 @@ graph LR
 - **integration.test.ts**: End-to-end integration tests.
 
 #### Data & State Management
-- **event-store**: Implements the immutable event log (`InMemoryEventStore`).
+#### Data & State Management
+- **event-store**: Implements the immutable event log (Postgres/SQLite).
 - **state-projection**: Logic to fold events into current state (`StateProjectionEngine`).
-- **graph-store**: In-memory graph database for querying (`GraphStore`).
+- **graph-store**: Graph database abstraction (`ISemanticGraphStore`) backed by **Neo4j** (persistence) and **Redis** (caching).
 - **semantic-access-layer**: Transformers and adaptors for external data.
 
 #### Logic & Governance

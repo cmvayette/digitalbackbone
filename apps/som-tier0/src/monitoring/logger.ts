@@ -1,68 +1,58 @@
 /**
  * Structured Logger for C-ATO Observability (AU-2/AU-3)
  * Outputs logs in JSON format for aggregation systems (Splunk/ELK)
+ * Uses 'pino' for high-performance structured logging
  */
 
-export interface LogEntry {
-    level: 'info' | 'warn' | 'error' | 'debug';
-    message: string;
-    timestamp: string;
-    context?: Record<string, any>;
-    userId?: string;
-    traceId?: string;
-}
+import pino from 'pino';
 
-class StructuredLogger {
-    private sanitize(obj: any): any {
-        // Simple sanitization to prevent logging secrets
-        const sensitiveKeys = ['token', 'password', 'secret', 'key', 'credential'];
-        if (typeof obj !== 'object' || obj === null) return obj;
+// Configure pino
+// In development, we use pino-pretty for readability
+// In production, we use raw JSON
+const isProduction = process.env.NODE_ENV === 'production';
 
-        const sanitized: any = Array.isArray(obj) ? [] : {};
-
-        for (const [key, value] of Object.entries(obj)) {
-            if (sensitiveKeys.some(k => key.toLowerCase().includes(k))) {
-                sanitized[key] = '[REDACTED]';
-            } else if (typeof value === 'object') {
-                sanitized[key] = this.sanitize(value);
-            } else {
-                sanitized[key] = value;
-            }
+export const pinoLogger = pino({
+    level: process.env.LOG_LEVEL || 'info',
+    transport: !isProduction ? {
+        target: 'pino-pretty',
+        options: {
+            colorize: true,
+            translateTime: 'SYS:standard',
         }
-        return sanitized;
-    }
+    } : undefined,
+    base: {
+        service: 'som-tier0',
+        env: process.env.NODE_ENV
+    },
+    redact: {
+        paths: ['*.token', '*.password', '*.secret', '*.key', '*.credential', '*.authorization'],
+        censor: '[REDACTED]'
+    },
+    timestamp: pino.stdTimeFunctions.isoTime,
+});
 
-    private log(level: LogEntry['level'], message: string, context?: Record<string, any>, userId?: string, traceId?: string) {
-        const entry: LogEntry = {
-            level,
-            message,
-            timestamp: new Date().toISOString(),
-            context: context ? this.sanitize(context) : undefined,
-            userId,
-            traceId
-        };
-
-        // In production, this goes to stdout for picking up by log collector
-        console.log(JSON.stringify(entry));
-    }
-
+class PinoWrapper {
     info(message: string, context?: Record<string, any>, userId?: string) {
-        this.log('info', message, context, userId);
+        pinoLogger.info({ context, userId }, message);
     }
 
     warn(message: string, context?: Record<string, any>, userId?: string) {
-        this.log('warn', message, context, userId);
+        pinoLogger.warn({ context, userId }, message);
     }
 
     error(message: string, error?: any, userId?: string) {
-        this.log('error', message, { error: error?.message || error, stack: error?.stack }, userId);
+        // Handle error object specially for pino
+        if (error instanceof Error) {
+            pinoLogger.error({ err: error, userId }, message);
+        } else {
+            pinoLogger.error({ error, userId }, message);
+        }
     }
 
     debug(message: string, context?: Record<string, any>) {
-        if (process.env.NODE_ENV !== 'production') {
-            this.log('debug', message, context);
-        }
+        pinoLogger.debug({ context }, message);
     }
 }
 
-export const logger = new StructuredLogger();
+export const logger = new PinoWrapper();
+
