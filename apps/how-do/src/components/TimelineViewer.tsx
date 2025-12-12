@@ -2,7 +2,7 @@ import { HolonType } from '@som/shared-types';
 import React from 'react';
 import type { Process } from '../types/process';
 import { useExternalOrgData, useExternalPolicyData } from '@som/api-client';
-import { CheckCircle2, ChevronDown, Clock, FileText, ShieldAlert, User } from 'lucide-react';
+import { CheckCircle2 } from 'lucide-react';
 import { StepCard } from './viewer/StepCard';
 
 interface TimelineViewerProps {
@@ -71,7 +71,7 @@ export const TimelineViewer: React.FC<TimelineViewerProps> = ({ process, onEdit,
                                     index={index}
                                     ownerName={ownerName}
                                     isAgent={isAgent}
-                                    obligations={obligations as any}
+                                    obligations={obligations}
                                     viewMode="timeline"
                                 />
                             </div>

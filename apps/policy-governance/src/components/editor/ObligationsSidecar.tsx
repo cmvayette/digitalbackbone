@@ -46,18 +46,16 @@ export const ObligationsSidecar: React.FC<ObligationsSidecarProps> = ({
   }) => (
     <button
       onClick={() => setActiveTab(tab)}
-      className={`flex items-center gap-2 px-3 py-2 text-xs font-bold uppercase tracking-wider transition-all flex-1 border-b-2 ${
-        activeTab === tab
-          ? 'border-blue-500 text-blue-400 bg-blue-900/10'
-          : 'border-transparent text-slate-400 hover:text-white hover:bg-slate-800/50'
-      }`}
+      className={`flex items-center gap-2 px-3 py-2 text-xs font-bold uppercase tracking-wider transition-all flex-1 border-b-2 ${activeTab === tab
+        ? 'border-blue-500 text-blue-400 bg-blue-900/10'
+        : 'border-transparent text-slate-400 hover:text-white hover:bg-slate-800/50'
+        }`}
     >
       {icon}
       <span>{label}</span>
       {count !== undefined && (
-        <span className={`ml-auto px-1.5 py-0.5 rounded text-[10px] font-mono ${
-          activeTab === tab ? 'bg-blue-900/50 text-blue-300' : 'bg-slate-800 text-slate-400'
-        }`}>
+        <span className={`ml-auto px-1.5 py-0.5 rounded text-[10px] font-mono ${activeTab === tab ? 'bg-blue-900/50 text-blue-300' : 'bg-slate-800 text-slate-400'
+          }`}>
           {count}
         </span>
       )}
@@ -90,6 +88,7 @@ export const ObligationsSidecar: React.FC<ObligationsSidecarProps> = ({
         outputs: [],
         estimatedDuration: 0,
         steps: [],
+        tags: [],
       },
     };
     addProcess(newProcess);
@@ -222,13 +221,12 @@ export const ObligationsSidecar: React.FC<ObligationsSidecarProps> = ({
 
                     <div className="flex items-center justify-between">
                       <span
-                        className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider ${
-                          obl.criticality === 'high'
-                            ? 'bg-red-900/30 text-red-400 border border-red-900/50'
-                            : obl.criticality === 'medium'
+                        className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider ${obl.criticality === 'high'
+                          ? 'bg-red-900/30 text-red-400 border border-red-900/50'
+                          : obl.criticality === 'medium'
                             ? 'bg-yellow-900/30 text-yellow-400 border border-yellow-900/50'
                             : 'bg-slate-800 text-slate-400'
-                        }`}
+                          }`}
                       >
                         {obl.criticality}
                       </span>
@@ -273,11 +271,10 @@ export const ObligationsSidecar: React.FC<ObligationsSidecarProps> = ({
             {linterWarnings.map((warning) => (
               <div
                 key={warning.id}
-                className={`rounded-lg p-3 border ${
-                  warning.severity === 'error'
-                    ? 'bg-red-900/20 border-red-900/50'
-                    : 'bg-amber-900/20 border-amber-900/50'
-                }`}
+                className={`rounded-lg p-3 border ${warning.severity === 'error'
+                  ? 'bg-red-900/20 border-red-900/50'
+                  : 'bg-amber-900/20 border-amber-900/50'
+                  }`}
               >
                 <div className="flex items-start gap-2">
                   <AlertTriangle

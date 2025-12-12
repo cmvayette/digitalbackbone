@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "@som/ui-components/styles";
+@plugin "@tailwindcss/typography";
 
 @theme {
   /* Re-declaring key colors in the @theme block allows Tailwind to use them as utilities */

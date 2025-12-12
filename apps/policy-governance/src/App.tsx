@@ -30,7 +30,14 @@ function AppContent() {
 
   const handleNewPolicy = async () => {
     selectPolicy(''); // Clear selection
-    await createPolicy();
+    await createPolicy({
+      title: 'New Policy',
+      documentType: 'Instruction',
+      version: '0.1',
+      sections: [],
+      status: 'draft',
+      obligations: []
+    });
     setView('editor');
   };
 
@@ -43,7 +50,14 @@ function AppContent() {
         {view === 'list' && (
           <PolicyList
             onSelectPolicy={() => setView('editor')}
-            onCreatePolicy={createPolicy}
+            onCreatePolicy={(p) => createPolicy({
+              title: p.title || 'New Policy',
+              documentType: p.documentType || 'Instruction',
+              version: p.version || '0.1',
+              sections: p.sections || [],
+              status: 'draft',
+              obligations: []
+            })}
           />
         )}
         {view === 'editor' && (

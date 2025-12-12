@@ -33,6 +33,7 @@ export const ClauseHighlighter: React.FC<ClauseHighlighterProps> = ({ editor, on
                 <button
                     onClick={() => editor.chain().focus().toggleBold().run()}
                     className={`p-1.5 rounded hover:bg-slate-700 ${editor.isActive('bold') ? 'bg-slate-700 text-blue-400' : 'text-slate-300'}`}
+                    aria-label="Toggle Bold"
                 >
                     B
                 </button>

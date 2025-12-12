@@ -17,20 +17,29 @@ export function useExternalPolicyData(options: SOMClientOptions = { mode: 'mock'
         queryKey: ['policies'],
         queryFn: async () => {
             const response = await client.queryHolons(HolonType.Document);
-            if (response.success && response.data) {
-                return response.data.map((h) => ({
-                    id: h.id,
-                    title: h.properties.title || 'Untitled Policy',
-                    documentType: h.properties.type || 'Instruction',
-                    version: h.properties.version || '0.1',
-                    status: h.properties.status || 'draft',
-                    sections: h.properties.content ? [{ id: 'sec-1', title: 'Content', content: h.properties.content, order: 1 }] : [],
-                    obligations: [], // TODO: Link obligations
-                    createdAt: h.createdAt || new Date().toISOString(),
-                    updatedAt: new Date().toISOString()
-                })) as PolicyDocument[];
+
+            if (!response.success) {
+                const errorMessage = typeof response.error === 'string'
+                    ? response.error
+                    : response.error?.message || 'Failed to fetch policies';
+                throw new Error(errorMessage);
             }
-            return [];
+
+            if (!response.data) {
+                return [];
+            }
+
+            return response.data.map((h) => ({
+                id: h.id,
+                title: h.properties.title || 'Untitled Policy',
+                documentType: h.properties.type || 'Instruction',
+                version: h.properties.version || '0.1',
+                status: h.properties.status || 'draft',
+                sections: h.properties.content ? [{ id: 'sec-1', title: 'Content', content: h.properties.content, order: 1 }] : [],
+                obligations: [], // TODO: Link obligations
+                createdAt: h.createdAt ? new Date(h.createdAt).toISOString() : new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            })) as PolicyDocument[];
         }
     });
 

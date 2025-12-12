@@ -184,6 +184,7 @@ export const ImpactPreviewPanel: React.FC<ImpactPreviewPanelProps> = ({
             <button
               onClick={onCancel}
               className="p-2 hover:bg-slate-800 rounded text-slate-400 hover:text-white"
+              aria-label="Close preview"
             >
               <X size={20} />
             </button>
@@ -194,13 +195,12 @@ export const ImpactPreviewPanel: React.FC<ImpactPreviewPanelProps> = ({
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
           {/* Overall Status Banner */}
           <div
-            className={`rounded-lg p-4 border ${
-              overallStats.operationalViability === 'viable'
+            className={`rounded-lg p-4 border ${overallStats.operationalViability === 'viable'
                 ? 'bg-green-900/20 border-green-900/50'
                 : overallStats.operationalViability === 'at-risk'
-                ? 'bg-amber-900/20 border-amber-900/50'
-                : 'bg-red-900/20 border-red-900/50'
-            }`}
+                  ? 'bg-amber-900/20 border-amber-900/50'
+                  : 'bg-red-900/20 border-red-900/50'
+              }`}
           >
             <div className="flex items-start gap-3">
               {overallStats.operationalViability === 'viable' ? (
@@ -267,13 +267,12 @@ export const ImpactPreviewPanel: React.FC<ImpactPreviewPanelProps> = ({
                       <span className="font-mono text-sm text-blue-400 font-bold">{actor.actorName}</span>
                     </div>
                     <span
-                      className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
-                        actor.capacityStatus === 'healthy'
+                      className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${actor.capacityStatus === 'healthy'
                           ? 'bg-green-900/50 text-green-400'
                           : actor.capacityStatus === 'at-risk'
-                          ? 'bg-amber-900/50 text-amber-400'
-                          : 'bg-red-900/50 text-red-400'
-                      }`}
+                            ? 'bg-amber-900/50 text-amber-400'
+                            : 'bg-red-900/50 text-red-400'
+                        }`}
                     >
                       {actor.capacityStatus}
                     </span>
@@ -282,13 +281,12 @@ export const ImpactPreviewPanel: React.FC<ImpactPreviewPanelProps> = ({
                   {/* Workload Bar */}
                   <div className="relative h-3 bg-slate-700 rounded-full overflow-hidden mb-2">
                     <div
-                      className={`h-full transition-all ${
-                        actor.projectedLoad > 90
+                      className={`h-full transition-all ${actor.projectedLoad > 90
                           ? 'bg-red-500'
                           : actor.projectedLoad > 70
-                          ? 'bg-amber-500'
-                          : 'bg-emerald-500'
-                      }`}
+                            ? 'bg-amber-500'
+                            : 'bg-emerald-500'
+                        }`}
                       style={{ width: `${Math.min(actor.projectedLoad, 100)}%` }}
                     />
                   </div>
@@ -298,13 +296,12 @@ export const ImpactPreviewPanel: React.FC<ImpactPreviewPanelProps> = ({
                       Current: {actor.currentObligations} obligations | New: +{actor.newObligations}
                     </span>
                     <span
-                      className={`font-bold font-mono ${
-                        actor.projectedLoad > 90
+                      className={`font-bold font-mono ${actor.projectedLoad > 90
                           ? 'text-red-400'
                           : actor.projectedLoad > 70
-                          ? 'text-amber-400'
-                          : 'text-emerald-400'
-                      }`}
+                            ? 'text-amber-400'
+                            : 'text-emerald-400'
+                        }`}
                     >
                       {actor.projectedLoad}%
                     </span>
@@ -338,18 +335,16 @@ export const ImpactPreviewPanel: React.FC<ImpactPreviewPanelProps> = ({
                 {conflicts.map(conflict => (
                   <div
                     key={conflict.id}
-                    className={`rounded-lg p-3 border ${
-                      conflict.severity === 'error'
+                    className={`rounded-lg p-3 border ${conflict.severity === 'error'
                         ? 'bg-red-900/20 border-red-900/50'
                         : 'bg-amber-900/20 border-amber-900/50'
-                    }`}
+                      }`}
                   >
                     <div className="flex items-start gap-2">
                       <AlertTriangle
                         size={16}
-                        className={`mt-0.5 shrink-0 ${
-                          conflict.severity === 'error' ? 'text-red-400' : 'text-amber-400'
-                        }`}
+                        className={`mt-0.5 shrink-0 ${conflict.severity === 'error' ? 'text-red-400' : 'text-amber-400'
+                          }`}
                       />
                       <div className="flex-1">
                         <p className="text-sm text-slate-200 mb-1">{conflict.description}</p>
@@ -395,11 +390,10 @@ export const ImpactPreviewPanel: React.FC<ImpactPreviewPanelProps> = ({
             <button
               onClick={onApprove}
               disabled={overallStats.operationalViability === 'not-viable'}
-              className={`px-4 py-2 rounded font-bold transition-colors ${
-                overallStats.operationalViability === 'not-viable'
+              className={`px-4 py-2 rounded font-bold transition-colors ${overallStats.operationalViability === 'not-viable'
                   ? 'bg-slate-800 text-slate-600 cursor-not-allowed opacity-50'
                   : 'bg-blue-600 hover:bg-blue-500 text-white'
-              }`}
+                }`}
             >
               Approve & Publish
             </button>

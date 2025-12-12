@@ -102,6 +102,12 @@ return [];  // ❌ Silent failure - no error indication
 | Tailwind | 3.4.17 vs 4.1.17 | task-management (outdated) |
 | React Query | ^5.0.0 vs ^5.90.12 | objectives-okr, policy-governance |
 
+> **Verification (2025-12-12)**:
+> *   Confirmed `any` types in `ActorMention.tsx` and `ObligationsSidecar.tsx`.
+> *   Confirmed silent failure in `useExternalPolicyData.ts`.
+> *   Confirmed React v19 usage in `task-management` and `policy-governance`.
+> *   Confirmed Tailwind v4 usage in `task-management` and `policy-governance`.
+
 ---
 
 ## ⚠️ HIGH PRIORITY ISSUES (P1 - Before Beta)
@@ -259,7 +265,7 @@ Despite issues, the codebase has excellent foundations:
 4. Complete accessibility audit
 
 ### Long-term Improvements
-1. Consider PostgreSQL for production (vs SQLite)
+1. ✅ **DONE**: Consider PostgreSQL for production (vs SQLite)
 2. Add E2E testing with Playwright
 3. Implement i18n for global deployment
 4. Set up monitoring and observability

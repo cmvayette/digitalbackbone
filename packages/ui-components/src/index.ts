@@ -42,3 +42,6 @@ export { useDebounce } from './hooks/useDebounce';
 // Auth
 export { AuthGuard, type AuthGuardProps } from './components/auth/AuthGuard';
 export { AuthCallback, type AuthCallbackProps } from './components/auth/AuthCallback';
+
+export { GlobalErrorBoundary } from './components/GlobalErrorBoundary';
+

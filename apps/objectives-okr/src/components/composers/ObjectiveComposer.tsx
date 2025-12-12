@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { HolonType, type Objective } from '@som/shared-types';
+// HolonType, Objective unused
 import { useExternalOrgData } from '@som/api-client';
 import { useStrategyComposer } from '../../hooks/useStrategyComposer';
 
 export const ObjectiveComposer = ({ onClose }: { onClose: () => void }) => {
     // const { addObjective } = useStrategyData(); // Deprecated
-    const { createObjective, isSubmitting } = useStrategyComposer();
+    const { createObjective } = useStrategyComposer();
     const { getCandidates } = useExternalOrgData();
 
     const [statement, setStatement] = useState('');
@@ -69,7 +69,7 @@ export const ObjectiveComposer = ({ onClose }: { onClose: () => void }) => {
                             <select
                                 className="w-full bg-slate-800 border border-slate-700 rounded p-2 text-white"
                                 value={level}
-                                onChange={(e) => setLevel(e.target.value as any)}
+                                onChange={(e) => setLevel(e.target.value as 'strategic' | 'operational' | 'tactical')}
                             >
                                 <option value="strategic">Strategic</option>
                                 <option value="operational">Operational</option>

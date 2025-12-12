@@ -2,7 +2,7 @@ import { ReactRenderer } from '@tiptap/react';
 import Mention from '@tiptap/extension-mention';
 import tippy, { Instance as TippyInstance } from 'tippy.js';
 import { SuggestionOptions, SuggestionProps } from '@tiptap/suggestion';
-import { MentionList } from './MentionList';
+import { MentionList, MentionListHandle } from './MentionList';
 import type { OwnerRef } from '../../types/policy';
 
 // Mock actor data (replace with real API call)
@@ -32,12 +32,12 @@ export const ActorMention = Mention.configure({
     class: 'mention',
   },
   suggestion: {
-    items: async ({ query }) => {
+    items: async ({ query }: { query: string }) => {
       return await fetchActors(query);
     },
 
     render: () => {
-      let component: ReactRenderer<any>;
+      let component: ReactRenderer<MentionListHandle>;
       let popup: TippyInstance[];
 
       return {
@@ -52,7 +52,7 @@ export const ActorMention = Mention.configure({
           }
 
           popup = tippy('body', {
-            getReferenceClientRect: props.clientRect as any,
+            getReferenceClientRect: props.clientRect as () => DOMRect, // Fix cast
             appendTo: () => document.body,
             content: component.element,
             showOnCreate: true,
@@ -69,22 +69,28 @@ export const ActorMention = Mention.configure({
             return;
           }
 
-          popup[0].setProps({
-            getReferenceClientRect: props.clientRect as any,
-          });
+          if (popup && popup[0]) {
+            popup[0].setProps({
+              getReferenceClientRect: props.clientRect as () => DOMRect,
+            });
+          }
         },
 
-        onKeyDown(props: any) {
+        onKeyDown(props: { event: KeyboardEvent }) {
           if (props.event.key === 'Escape') {
-            popup[0].hide();
+            if (popup && popup[0]) {
+              popup[0].hide();
+            }
             return true;
           }
 
-          return (component.ref as any)?.onKeyDown(props);
+          return component.ref?.onKeyDown(props) || false;
         },
 
         onExit() {
-          popup[0].destroy();
+          if (popup && popup[0]) {
+            popup[0].destroy();
+          }
           component.destroy();
         },
       };

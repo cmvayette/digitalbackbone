@@ -12,7 +12,7 @@ export function useStrategyData(options: SOMClientOptions = { mode: 'mock' }) {
         queryFn: async () => {
             const res = await client.queryHolons(HolonType.LOE);
             return res.success && res.data
-                ? res.data.map((h: any) => ({ ...h, properties: h.properties } as LOE))
+                ? res.data.map((h) => ({ ...h, properties: h.properties as unknown }) as LOE)
                 : [];
         }
     });
@@ -22,7 +22,7 @@ export function useStrategyData(options: SOMClientOptions = { mode: 'mock' }) {
         queryFn: async () => {
             const res = await client.queryHolons(HolonType.Objective);
             return res.success && res.data
-                ? res.data.map((h: any) => ({ ...h, properties: h.properties } as Objective))
+                ? res.data.map((h) => ({ ...h, properties: h.properties as unknown }) as Objective)
                 : [];
         }
     });
@@ -32,7 +32,7 @@ export function useStrategyData(options: SOMClientOptions = { mode: 'mock' }) {
         queryFn: async () => {
             const res = await client.queryHolons(HolonType.KeyResult);
             return res.success && res.data
-                ? res.data.map((h: any) => ({ ...h, properties: h.properties } as KeyResult))
+                ? res.data.map((h) => ({ ...h, properties: h.properties as unknown }) as KeyResult)
                 : [];
         }
     });

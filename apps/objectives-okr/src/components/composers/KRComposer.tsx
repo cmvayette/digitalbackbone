@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { HolonType, type KeyResult } from '@som/shared-types';
+// HolonType, KeyResult unused
 import { useExternalOrgData } from '@som/api-client';
 import { useStrategyComposer } from '../../hooks/useStrategyComposer';
 
@@ -10,7 +10,7 @@ interface KRComposerProps {
 
 export const KRComposer: React.FC<KRComposerProps> = ({ objectiveId, onClose }) => {
     // const { addKR } = useStrategyData(); // Deprecated
-    const { createKeyResult, isSubmitting } = useStrategyComposer();
+    const { createKeyResult } = useStrategyComposer();
     const { getCandidates } = useExternalOrgData();
 
     const [statement, setStatement] = useState('');
@@ -84,7 +84,7 @@ export const KRComposer: React.FC<KRComposerProps> = ({ objectiveId, onClose }) 
                             <select
                                 className="w-full bg-slate-800 border border-slate-700 rounded p-2 text-white"
                                 value={cadence}
-                                onChange={(e) => setCadence(e.target.value as any)}
+                                onChange={(e) => setCadence(e.target.value as 'weekly' | 'monthly' | 'quarterly')}
                             >
                                 <option value="weekly">Weekly</option>
                                 <option value="monthly">Monthly</option>

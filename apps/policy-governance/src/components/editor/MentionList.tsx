@@ -7,7 +7,11 @@ interface MentionListProps {
   command: (item: any) => void;
 }
 
-export const MentionList = forwardRef<any, MentionListProps>((props, ref) => {
+export interface MentionListHandle {
+  onKeyDown: (props: { event: KeyboardEvent }) => boolean;
+}
+
+export const MentionList = forwardRef<MentionListHandle, MentionListProps>((props, ref) => {
   const [selectedIndex, setSelectedIndex] = useState(0);
 
   const selectItem = (index: number) => {
@@ -79,18 +83,16 @@ export const MentionList = forwardRef<any, MentionListProps>((props, ref) => {
         <button
           key={item.id}
           onClick={() => selectItem(index)}
-          className={`w-full flex items-center gap-3 px-3 py-2 rounded text-left transition-colors ${
-            index === selectedIndex
+          className={`w-full flex items-center gap-3 px-3 py-2 rounded text-left transition-colors ${index === selectedIndex
               ? 'bg-blue-900/30 border border-blue-900/50'
               : 'hover:bg-slate-800 border border-transparent'
-          }`}
+            }`}
         >
           <div className="shrink-0">{getIcon(item.type)}</div>
           <div className="flex-1 min-w-0">
             <p
-              className={`text-sm font-medium truncate ${
-                index === selectedIndex ? 'text-blue-400' : 'text-slate-200'
-              }`}
+              className={`text-sm font-medium truncate ${index === selectedIndex ? 'text-blue-400' : 'text-slate-200'
+                }`}
             >
               {item.name}
             </p>
