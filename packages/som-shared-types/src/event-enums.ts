@@ -77,5 +77,10 @@ export enum EventType {
     // Process
     ProcessDefined = 'ProcessDefined',
     ProcessUpdated = 'ProcessUpdated',
-    ProcessArchived = 'ProcessArchived'
+    ProcessArchived = 'ProcessArchived',
+
+    // Calendar
+    CalendarEventCreated = 'CalendarEventCreated',
+    CalendarEventModified = 'CalendarEventModified',
+    CalendarEventCancelled = 'CalendarEventCancelled'
 }

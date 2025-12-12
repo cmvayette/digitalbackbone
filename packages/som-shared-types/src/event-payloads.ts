@@ -285,6 +285,11 @@ export interface ObligationDefinedPayload extends BasePayload {
     sourceClauseId: HolonID;
     description: string;
     responsibleRole: string;
+    // Scheduling (Optional for now to match legacy)
+    frequency?: 'one-time' | 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'annual';
+    recurrenceRule?: string; // Standard Cron or RRULE if needed
+    firstDueDate?: string;
+    windowDays?: number; // How many days in advance it appears
 }
 
 export interface DocumentIssuedPayload extends BasePayload {
@@ -340,6 +345,26 @@ export interface ProcessArchivedPayload extends BasePayload {
     reason?: string;
 }
 
+
+// --- Calendar ---
+
+export interface CalendarEventCreatedPayload extends BasePayload {
+    eventId: HolonID;
+    title: string;
+    startTime: string;
+    endTime: string;
+    type: string;
+    participants: Array<{ id: string; type: string; role: string }>;
+    classification: string;
+}
+
+export interface CalendarEventModifiedPayload extends BasePayload {
+    changes: Record<string, unknown>;
+}
+
+export interface CalendarEventCancelledPayload extends BasePayload {
+    reason: string;
+}
 
 // --- Utility Types ---
 
@@ -400,4 +425,7 @@ export type PayloadFor<T extends EventType> =
     T extends EventType.ProcessDefined ? ProcessDefinedPayload :
     T extends EventType.ProcessUpdated ? ProcessUpdatedPayload :
     T extends EventType.ProcessArchived ? ProcessArchivedPayload :
+    T extends EventType.CalendarEventCreated ? CalendarEventCreatedPayload :
+    T extends EventType.CalendarEventModified ? CalendarEventModifiedPayload :
+    T extends EventType.CalendarEventCancelled ? CalendarEventCancelledPayload :
     BasePayload;

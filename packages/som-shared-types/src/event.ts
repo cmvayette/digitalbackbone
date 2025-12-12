@@ -88,4 +88,7 @@ export type Event =
   | TypedEvent<EventType.LensEvaluated>
   | TypedEvent<EventType.ProcessDefined>
   | TypedEvent<EventType.ProcessUpdated>
-  | TypedEvent<EventType.ProcessArchived>;
+  | TypedEvent<EventType.ProcessArchived>
+  | TypedEvent<EventType.CalendarEventCreated>
+  | TypedEvent<EventType.CalendarEventModified>
+  | TypedEvent<EventType.CalendarEventCancelled>;

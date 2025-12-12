@@ -14,6 +14,7 @@ import { RelationshipRegistry } from '../relationship-registry';
 import { ConstraintEngine } from '../constraint-engine';
 import { DocumentRegistry } from '../document-registry';
 import { StateProjectionEngine } from '../state-projection';
+import { CalendarIndex, AvailabilityService } from '../calendar';
 import { HolonType, HolonID } from '@som/shared-types';
 import { RelationshipType } from '@som/shared-types';
 import { Event } from '@som/shared-types';
@@ -54,6 +55,9 @@ export class APIRoutes {
   private documentRegistry: DocumentRegistry;
   private projectionEngine: StateProjectionEngine;
 
+  private calendarIndex: CalendarIndex;
+  private availabilityService: AvailabilityService;
+
   constructor(
     queryLayer: QueryLayer,
     eventStore: EventStore,
@@ -65,7 +69,10 @@ export class APIRoutes {
     relationshipRegistry: RelationshipRegistry,
     constraintEngine: ConstraintEngine,
     documentRegistry: DocumentRegistry,
-    projectionEngine: StateProjectionEngine
+
+    projectionEngine: StateProjectionEngine,
+    calendarIndex: CalendarIndex,
+    availabilityService: AvailabilityService
   ) {
     this.queryLayer = queryLayer;
     this.eventStore = eventStore;
@@ -78,6 +85,9 @@ export class APIRoutes {
     this.constraintEngine = constraintEngine;
     this.documentRegistry = documentRegistry;
     this.projectionEngine = projectionEngine;
+
+    this.calendarIndex = calendarIndex;
+    this.availabilityService = availabilityService;
   }
 
   // ==================== Holon Query Endpoints ====================
@@ -801,12 +811,53 @@ export class APIRoutes {
       success: true,
       data: limitedData,
       metadata: {
-        filtered: result.filtered || result.data.length > maxResults,
-        totalCount: result.data.length,
-        timestamp: new Date(),
-      },
+        timestamp: new Date()
+      }
     };
   }
+
+  // ==================== Calendar Endpoints ====================
+
+  /**
+   * GET /api/v1/calendar/events
+   * Query calendar events by time range
+   */
+  async queryCalendarEvents(request: APIRequest): Promise<APIResponse> {
+    const startStr = request.query?.start;
+    const endStr = request.query?.end;
+
+    if (!startStr || !endStr) {
+      return {
+        success: false,
+        error: {
+          code: 'INVALID_REQUEST',
+          message: 'Start and end query parameters are required'
+        }
+      };
+    }
+
+    const start = new Date(startStr);
+    const end = new Date(endStr);
+    const classification = request.query?.classification;
+    const type = request.query?.type;
+    const participantId = request.query?.participantId;
+
+    const events = this.calendarIndex.queryEvents(start, end, {
+      classification,
+      type,
+      participantId
+    });
+
+    return {
+      success: true,
+      data: events,
+      metadata: {
+        totalCount: events.length,
+        timestamp: new Date()
+      }
+    };
+  }
+
 
   // ==================== Schema Management Endpoints ====================
 
@@ -1034,6 +1085,40 @@ export class APIRoutes {
       data: {
         eventMetrics,
       },
+      metadata: {
+        timestamp: new Date(),
+      },
+    };
+  }
+
+
+  // ==================== Availability Endpoints ====================
+
+  /**
+   * POST /api/v1/availability/check
+   * Check availability for a resource
+   */
+  async checkAvailability(request: APIRequest): Promise<APIResponse> {
+    const { resourceId, start, end } = request.body!;
+
+    if (!resourceId || !start || !end) {
+      return {
+        success: false,
+        error: {
+          code: 'INVALID_REQUEST',
+          message: 'Missing required parameters: resourceId, start, end',
+        },
+      };
+    }
+
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+
+    const result = await this.availabilityService.checkAvailability(resourceId, startDate, endDate);
+
+    return {
+      success: true,
+      data: result,
       metadata: {
         timestamp: new Date(),
       },

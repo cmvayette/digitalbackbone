@@ -14,6 +14,7 @@ import { RelationshipRegistry } from '../relationship-registry';
 import { ConstraintEngine } from '../constraint-engine';
 import { DocumentRegistry } from '../document-registry';
 import { StateProjectionEngine } from '../state-projection';
+import { CalendarIndex, AvailabilityService } from '../calendar';
 import { APIRoutes } from './routes';
 import {
   AuthenticationMiddleware,
@@ -60,6 +61,7 @@ export interface Route {
 export class APIServer {
   private config: APIServerConfig;
   private routes: APIRoutes;
+  private availabilityService: AvailabilityService;
   private authMiddleware: AuthenticationMiddleware;
   private authzMiddleware: AuthorizationMiddleware;
   private validationMiddleware: RequestValidationMiddleware;
@@ -79,7 +81,11 @@ export class APIServer {
     relationshipRegistry: RelationshipRegistry,
     constraintEngine: ConstraintEngine,
     documentRegistry: DocumentRegistry,
-    projectionEngine: StateProjectionEngine
+
+
+    projectionEngine: StateProjectionEngine,
+    calendarIndex: CalendarIndex,
+    availabilityService: AvailabilityService
   ) {
     this.config = {
       port: 3000,
@@ -101,7 +107,10 @@ export class APIServer {
       relationshipRegistry,
       constraintEngine,
       documentRegistry,
+
       projectionEngine,
+      calendarIndex,
+      availabilityService
     );
 
     // Select Auth Provider based on configuration
@@ -125,6 +134,7 @@ export class APIServer {
     this.errorHandler = new ErrorHandlerMiddleware();
     this.rateLimiter = new RateLimitMiddleware(this.config.maxRequestsPerMinute);
     this.routeRegistry = new Map();
+    this.availabilityService = availabilityService;
 
     this.registerRoutes();
   }
@@ -249,6 +259,21 @@ export class APIServer {
       method: 'GET',
       path: '/api/v1/holons/:id/history',
       handler: (req) => this.routes.getHolonHistory(req),
+      requiresAuth: true,
+    });
+
+    // Calendar events
+    this.registerRoute({
+      method: 'GET',
+      path: '/api/v1/calendar/events',
+      handler: (req) => this.routes.queryCalendarEvents(req),
+      requiresAuth: true,
+    });
+
+    this.registerRoute({
+      method: 'POST',
+      path: '/api/v1/availability/check',
+      handler: (req) => this.routes.checkAvailability(req),
       requiresAuth: true,
     });
 
@@ -531,7 +556,10 @@ export function createAPIServer(
   relationshipRegistry: RelationshipRegistry,
   constraintEngine: ConstraintEngine,
   documentRegistry: DocumentRegistry,
-  projectionEngine: StateProjectionEngine
+
+  projectionEngine: StateProjectionEngine,
+  calendarIndex: CalendarIndex,
+  availabilityService: AvailabilityService
 ): APIServer {
   return new APIServer(
     config,
@@ -545,6 +573,9 @@ export function createAPIServer(
     relationshipRegistry,
     constraintEngine,
     documentRegistry,
-    projectionEngine
+
+    projectionEngine,
+    calendarIndex,
+    availabilityService
   );
 }

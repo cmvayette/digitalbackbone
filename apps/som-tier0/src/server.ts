@@ -22,6 +22,7 @@ import { RelationshipRegistry } from './relationship-registry';
 import { ConstraintEngine } from './constraint-engine';
 import { DocumentRegistry } from './document-registry';
 import { APIServer } from './api/api-server';
+import { CalendarIndex, AvailabilityService, GovernanceCalendarAdapter, HowDoCalendarAdapter } from './calendar';
 
 dotenv.config();
 
@@ -90,7 +91,15 @@ async function startServer() {
     // 5. Access Layers (Aggregation)
     const queryLayer = new QueryLayer(temporalQueryEngine, graphStore, accessControl, eventStore);
     const semanticAccessLayer = new SemanticAccessLayer(eventStore, constraintEngine, holonRegistry, documentRegistry);
+
     const governance = new GovernanceEngine(documentRegistry, schemaVersioning);
+
+    // Calendar
+    // Calendar
+    const calendarIndex = new CalendarIndex(eventStore);
+    const availabilityService = new AvailabilityService(calendarIndex, graphStore);
+    const governanceAdapter = new GovernanceCalendarAdapter(eventStore);
+    const howDoAdapter = new HowDoCalendarAdapter(eventStore);
 
     // 3. API Server (The "Brain")
     const apiServer = new APIServer(
@@ -104,8 +113,12 @@ async function startServer() {
         holonRegistry,
         relationshipRegistry,
         constraintEngine,
+
         documentRegistry,
         projectionEngine,
+
+        calendarIndex,
+        availabilityService
     );
 
     // Register Dev Key
@@ -121,6 +134,27 @@ async function startServer() {
     console.log('Replaying events to build state...');
     await graphStore.initialize();
     console.log(`Graph Store initialized.`);
+
+    // Initialize Calendar
+    await calendarIndex.rebuild();
+    console.log('Calendar Index initialized.');
+
+    // Wire up subscriptions (The "SOM" Logic)
+    // When Projection Engine processes an event (State Update), notify indices
+    projectionEngine.subscribe(async (event) => {
+        // Update Calendar
+        await calendarIndex.processEvent(event);
+
+        // Trigger Governance Calendar Adapter (creates derived events)
+        await governanceAdapter.handleEvent(event);
+
+        // Trigger How-Do Calendar Adapter
+        await howDoAdapter.handleEvent(event);
+
+        // Update Graph Store
+        await graphStore.updateFromNewEvent();
+    });
+    console.log('Orchestration wired internally.');
 
     const allEvents = await eventStore.getAllEvents();
     console.log(`Current Event Count: ${allEvents.length}`);

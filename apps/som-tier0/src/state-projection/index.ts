@@ -42,6 +42,7 @@ export interface ProjectedState {
 export class StateProjectionEngine {
   private eventStore: IEventStore;
   private currentState: ProjectedState;
+  private listeners: Array<(event: Event) => void | Promise<void>> = [];
 
   constructor(eventStore: IEventStore) {
     this.eventStore = eventStore;
@@ -142,6 +143,30 @@ export class StateProjectionEngine {
   applyNewEvent(event: Event): void {
     this.applyEvent(event);
     this.currentState.asOfTimestamp = new Date();
+    this.notifyListeners(event);
+  }
+
+  /**
+   * Subscribe to new events
+   */
+  subscribe(listener: (event: Event) => void | Promise<void>): void {
+    this.listeners.push(listener);
+  }
+
+  /**
+   * Notify all listeners of a new event
+   */
+  private notifyListeners(event: Event): void {
+    this.listeners.forEach(listener => {
+      try {
+        const result = listener(event);
+        if (result instanceof Promise) {
+          result.catch(err => console.error('Error in projection listener:', err));
+        }
+      } catch (error) {
+        console.error('Error notifying projection listener:', error);
+      }
+    });
   }
 
   /**
