@@ -1,6 +1,2 @@
-export default {
-    plugins: {
-        '@tailwindcss/postcss': {},
-        autoprefixer: {},
-    },
-}
+import sharedConfig from '@som/build-config/postcss';
+export default sharedConfig;

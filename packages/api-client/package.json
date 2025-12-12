@@ -1,18 +1,12 @@
 {
   "name": "@som/api-client",
   "version": "0.1.0",
+  "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "require": "./dist/index.js",
-      "default": "./dist/index.js"
-    },
-    "./mock": {
-      "types": "./dist/mock-client.d.ts",
-      "default": "./dist/mock-client.js"
-    }
+    ".": "./dist/index.js",
+    "./mock": "./dist/mock-client.js"
   },
   "scripts": {
     "build": "tsc",
