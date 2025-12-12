@@ -1,9 +1,9 @@
 import { useState, useCallback, useEffect } from 'react';
-import { HolonType, type Process, type Holon } from '@som/shared-types';
+import * as SharedTypes from '@som/shared-types';
 import { createSOMClient } from './factory';
 
 export function useExternalProcessData(options?: import('./factory').SOMClientOptions) {
-    const [processes, setProcesses] = useState<Process[]>([]);
+    const [processes, setProcesses] = useState<SharedTypes.Process[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -19,14 +19,14 @@ export function useExternalProcessData(options?: import('./factory').SOMClientOp
             }
 
             const result = await client.queryHolons(
-                HolonType.Process,
+                SharedTypes.HolonType.Process,
                 undefined,
                 { page: 1, pageSize: 100 }
             );
 
             if (result.success && result.data) {
                 // Type guard or cast
-                const processHolons = result.data.filter((h: Holon) => h.type === HolonType.Process) as Process[];
+                const processHolons = result.data.filter((h: SharedTypes.Holon) => h.type === SharedTypes.HolonType.Process) as SharedTypes.Process[];
                 setProcesses(processHolons);
                 setError(null);
             } else {
@@ -48,7 +48,7 @@ export function useExternalProcessData(options?: import('./factory').SOMClientOp
         return () => clearInterval(interval);
     }, [fetchProcesses]);
 
-    const addProcess = useCallback(async (process: Process) => {
+    const addProcess = useCallback(async (process: SharedTypes.Process) => {
         // Optimistic update
         setProcesses(prev => [...prev, process]);
 
@@ -72,7 +72,7 @@ export function useExternalProcessData(options?: import('./factory').SOMClientOp
         return processes.find(p => p.id === id);
     }, [processes]);
 
-    const searchProcesses = useCallback(async (query: string): Promise<Process[]> => {
+    const searchProcesses = useCallback(async (query: string): Promise<SharedTypes.Process[]> => {
         if (!query.trim()) return processes;
 
         setIsLoading(true);
@@ -86,19 +86,19 @@ export function useExternalProcessData(options?: import('./factory').SOMClientOp
             }
 
             // Assuming client.search exists and returns SearchResult[]
-            const response = await client.search(query, [HolonType.Process]);
+            const response = await client.search(query, [SharedTypes.HolonType.Process]);
 
             if (response.success && response.data) {
                 // Map SearchResult back to Process structure
                 return response.data.map(result => ({
                     id: result.id,
-                    type: HolonType.Process,
+                    type: SharedTypes.HolonType.Process,
                     properties: result.properties,
                     createdAt: new Date(), // Mock or missing from search result
                     createdBy: 'system',
                     status: (result.properties?.status || 'active') as any, // Fallback
                     sourceDocuments: []
-                } as Process));
+                } as SharedTypes.Process));
             }
             return [];
         } catch (e) {

@@ -43,15 +43,11 @@ function ProcessViewerWrapper() {
     // Actually, I'll assume I can just use the mock client or a hook if available.
     // For now, I'll put a placeholder loader hook.
 
-    const [process, setProcess] = useState<any>(null); // Type 'Process'
-    const { processes } = useExternalProcessData(); // Assuming this lists them?
-
-    useEffect(() => {
-        if (processes && processId) {
-            const found = processes.find((p: any) => p.id === processId);
-            if (found) setProcess(found);
-        }
-    }, [processes, processId]);
+    const { processes } = useExternalProcessData();
+    const process = React.useMemo(() =>
+        processes?.find((p: any) => p.id === processId),
+        [processes, processId]
+    );
 
     if (!process) return <div className="p-8 text-slate-500">Loading process {processId}...</div>;
 
@@ -97,14 +93,10 @@ function ProcessEditorWrapper() {
     const { processId } = useParams();
     const navigate = useNavigate();
     const { processes } = useExternalProcessData();
-    const [process, setProcess] = useState<any>(undefined);
-
-    useEffect(() => {
-        if (processId && processes) {
-            const found = processes.find((p: any) => p.id === processId);
-            setProcess(found);
-        }
-    }, [processId, processes]);
+    const process = React.useMemo(() =>
+        processes?.find((p: any) => p.id === processId),
+        [processes, processId]
+    );
 
     if (processId && !process) return <div>Loading...</div>;
 

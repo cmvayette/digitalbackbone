@@ -5,14 +5,11 @@ import type { HistoricalEvent } from '../scripts/seed-history';
 import { useStrategyData } from '../hooks/useStrategyData';
 
 export const Dashboard: React.FC = () => {
-    const [history, setHistory] = useState<HistoricalEvent[]>([]);
+    const [history, setHistory] = useState<HistoricalEvent[]>(() => generateTaskHistory(20));
     const { objectives, loading } = useStrategyData();
 
-    useEffect(() => {
-        // "Seed" the history on mount (Simulated Analytics)
-        const data = generateTaskHistory(20);
-        setHistory(data);
-    }, []);
+    // useEffect removed - initialization handled in useState
+
 
     const maxVal = Math.max(...history.map(h => h.count), 1);
 

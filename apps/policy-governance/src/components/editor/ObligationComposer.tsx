@@ -31,7 +31,7 @@ export const ObligationComposer: React.FC<ObligationComposerProps> = ({ initialS
         const ownerRef: OwnerRef = {
             id: actor.id,
             name: actor.name,
-            type: actor.type
+            type: actor.type as 'Organization' | 'Position' | 'RoleTag' | 'Person'
         };
 
         onSave({
@@ -85,7 +85,7 @@ export const ObligationComposer: React.FC<ObligationComposerProps> = ({ initialS
                     <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Criticality</label>
                     <select
                         value={criticality}
-                        onChange={(e) => setCriticality(e.target.value as any)}
+                        onChange={(e) => setCriticality(e.target.value as Obligation['criticality'])}
                         className="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm text-slate-200 focus:border-blue-500 outline-none"
                     >
                         <option value="low">Low</option>

@@ -6,7 +6,8 @@
 // Note: These hooks are designed to work with @tanstack/react-query
 // Apps should install react-query and wrap their app with QueryClientProvider
 
-import { HolonType, HolonID, Holon, RelationshipType, Relationship } from '@som/shared-types';
+import type { HolonID, Holon, Relationship } from '@som/shared-types';
+import * as SharedTypes from '@som/shared-types';
 import { SOMClient, HolonFilters, SearchResult, OrgStructure } from './client';
 
 /**
@@ -14,11 +15,11 @@ import { SOMClient, HolonFilters, SearchResult, OrgStructure } from './client';
  */
 export const queryKeys = {
   holon: (id: HolonID) => ['holon', id] as const,
-  holons: (type: HolonType, filters?: HolonFilters) =>
+  holons: (type: SharedTypes.HolonType, filters?: HolonFilters) =>
     ['holons', type, filters] as const,
-  search: (query: string, types?: HolonType[]) =>
+  search: (query: string, types?: SharedTypes.HolonType[]) =>
     ['search', query, types] as const,
-  relationships: (holonId: HolonID, type?: RelationshipType) =>
+  relationships: (holonId: HolonID, type?: SharedTypes.RelationshipType) =>
     ['relationships', holonId, type] as const,
   orgStructure: (orgId: HolonID, asOf?: Date) =>
     ['orgStructure', orgId, asOf?.toISOString()] as const,
@@ -55,7 +56,7 @@ export const queryFns = {
 
   queryHolons: async (
     client: SOMClient,
-    type: HolonType,
+    type: SharedTypes.HolonType,
     filters?: HolonFilters
   ): Promise<Holon[]> => {
     const response = await client.queryHolons(type, filters);
@@ -66,7 +67,7 @@ export const queryFns = {
   search: async (
     client: SOMClient,
     query: string,
-    types?: HolonType[]
+    types?: SharedTypes.HolonType[]
   ): Promise<SearchResult[]> => {
     const response = await client.search(query, types);
     if (!response.success) throw new Error(response.error?.message);
@@ -76,7 +77,7 @@ export const queryFns = {
   getRelationships: async (
     client: SOMClient,
     holonId: HolonID,
-    type?: RelationshipType
+    type?: SharedTypes.RelationshipType
   ): Promise<Relationship[]> => {
     const response = await client.getRelationships(holonId, type);
     if (!response.success) throw new Error(response.error?.message);

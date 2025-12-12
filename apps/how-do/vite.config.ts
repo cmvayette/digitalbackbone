@@ -23,8 +23,9 @@ export default defineConfig({
   resolve: {
     alias: {
       '@som/ui-components/styles': path.resolve(__dirname, '../../packages/ui-components/src/styles/blueprint.css'),
-      '@som/ui-components': path.resolve(__dirname, '../../packages/ui-components/src/index.ts'),
-      '@som/api-client': path.resolve(__dirname, '../../packages/api-client/src/index.ts')
+      '@som/ui-components': path.resolve(__dirname, '../../packages/ui-components/src'),
+      '@som/api-client': path.resolve(__dirname, '../../packages/api-client/src'),
+      '@som/shared-types': path.resolve(__dirname, '../../packages/som-shared-types/src'),
     }
   }
 })

@@ -1,5 +1,5 @@
 import { createSOMClient } from './factory';
-import { HolonType } from '@som/shared-types';
+import * as SharedTypes from '@som/shared-types';
 
 async function verify() {
     console.log('Verifying SOM Client connectivity...');
@@ -19,7 +19,7 @@ async function verify() {
 
     // 2. Query Orgs
     console.log('Querying Organizations...');
-    const result = await client.queryHolons(HolonType.Organization);
+    const result = await client.queryHolons(SharedTypes.HolonType.Organization);
 
     if (result.success && result.data) {
         console.log(`Success! Found ${result.data.length} organizations.`);

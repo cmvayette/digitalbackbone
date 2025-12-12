@@ -1,0 +1,117 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://som.nsw.mil/schemas/v1/calendar-event.schema.json",
+    "title": "Calendar Event",
+    "description": "A time-bound event representing a commitment, meeting, or operational window.",
+    "type": "object",
+    "properties": {
+        "title": {
+            "type": "string",
+            "minLength": 1
+        },
+        "description": {
+            "type": "string"
+        },
+        "startTime": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "endTime": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "timeZone": {
+            "type": "string",
+            "default": "UTC"
+        },
+        "type": {
+            "type": "string",
+            "enum": [
+                "Operational",
+                "Administrative",
+                "Governance",
+                "Process",
+                "Meeting",
+                "Personal"
+            ]
+        },
+        "classification": {
+            "type": "string",
+            "enum": [
+                "Unclassified",
+                "Restricted",
+                "Confidential",
+                "Secret",
+                "TopSecret"
+            ],
+            "default": "Unclassified"
+        },
+        "participants": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "Person",
+                            "Position",
+                            "Organization",
+                            "Asset"
+                        ]
+                    },
+                    "role": {
+                        "type": "string",
+                        "enum": [
+                            "Required",
+                            "Optional",
+                            "FYI"
+                        ]
+                    }
+                },
+                "required": [
+                    "id",
+                    "type"
+                ]
+            }
+        },
+        "recurrence": {
+            "type": "object",
+            "properties": {
+                "frequency": {
+                    "type": "string",
+                    "enum": [
+                        "Daily",
+                        "Weekly",
+                        "Monthly",
+                        "Yearly"
+                    ]
+                },
+                "interval": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "until": {
+                    "type": "string",
+                    "format": "date-time"
+                }
+            }
+        },
+        "sourceSystem": {
+            "type": "string"
+        },
+        "externalReferenceId": {
+            "type": "string"
+        }
+    },
+    "required": [
+        "title",
+        "startTime",
+        "endTime",
+        "type",
+        "classification"
+    ]
+}

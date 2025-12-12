@@ -27,8 +27,6 @@ export class PostgresEventStore implements IEventStore {
                     subjects JSONB NOT NULL,
                     payload JSONB NOT NULL,
                     causal_links JSONB,
-                    payload JSONB NOT NULL,
-                    causal_links JSONB,
                     metadata JSONB,
                     source_system TEXT,
                     source_document TEXT,

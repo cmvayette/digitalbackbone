@@ -1,8 +1,11 @@
 # C-ATO Hardened Dockerfile
 # Multi-stage build for minimal surface area
 
+# ARG for Base Image (Defaults to Docker Hub Alpine for Dev, Override for Iron Bank)
+ARG NODE_IMAGE=node:20-alpine
+
 # Stage 1: Build
-FROM node:20-alpine AS builder
+FROM ${NODE_IMAGE} AS builder
 WORKDIR /app
 
 # Copy workspace root files
@@ -25,11 +28,12 @@ RUN npm run build --workspace packages/som-shared-types
 RUN npm run build --workspace apps/som-tier0
 
 # Stage 2: Runner
-FROM node:20-alpine
+FROM ${NODE_IMAGE}
 WORKDIR /app
 
 # Harden: Create non-root user
-RUN addgroup -S somgroup && adduser -S somuser -G somgroup
+# Check if user exists first to handle different base OS (Alpine vs UBI)
+RUN if ! id -u somuser > /dev/null 2>&1; then addgroup -S somgroup && adduser -S somuser -G somgroup; fi
 
 # Copy only necessary artifacts (before changing to non-root user)
 # Copy root workspace files first

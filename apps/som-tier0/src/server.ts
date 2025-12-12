@@ -7,7 +7,7 @@ import dotenv from 'dotenv';
 
 // Import Core Components
 import { SQLiteEventStore } from './event-store/sqlite-store';
-import { IEventStore } from './core/interfaces/event-store';
+import { IEventStore, ISnapshotStore } from './core/interfaces/event-store';
 import { StateProjectionEngine } from './state-projection';
 import { GraphStore } from './graph-store';
 import { QueryLayer } from './query/query-layer';
@@ -22,6 +22,7 @@ import { RelationshipRegistry } from './relationship-registry';
 import { ConstraintEngine } from './constraint-engine';
 import { DocumentRegistry } from './document-registry';
 import { APIServer } from './api/api-server';
+import { CalendarIndex, AvailabilityService, GovernanceCalendarAdapter, HowDoCalendarAdapter } from './calendar';
 
 dotenv.config();
 
@@ -40,6 +41,7 @@ async function startServer() {
     // 1. Persistence
     // 1. Persistence
     let eventStore: IEventStore;
+    let snapshotStore: ISnapshotStore;
 
     // Import config dynamically or assume it's available. 
     // Since imports are static at top, I should add import at top if possible or just use process.env for simplicity if I can't easily add import at top without messing up lines.
@@ -56,19 +58,47 @@ async function startServer() {
 
     if (dbType === 'postgres') {
         const { PostgresEventStore } = await import('./event-store/postgres-event-store');
+        const { PostgresSnapshotStore } = await import('./event-store/snapshot-store');
         const dbUrl = process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/som?schema=public';
         console.log(`Initializing Postgres Event Store...`);
-        eventStore = new PostgresEventStore(dbUrl);
+        const pgStore = new PostgresEventStore(dbUrl); // Keep ref to pool?
+        eventStore = pgStore;
+        // PostgresSnapshotStore needs global pool or similar? 
+        // PostgresEventStore implementation creates its own pool. 
+        // Ideally we share the pool. But for now let's create a new one or modify PostgresEventStore to expose it?
+        // Checking PostgresEventStore: it has private pool.
+        // I should probably just pass the connection string to SnapshotStore too for now to avoid refactoring PostgresEventStore.
+        // Wait, PostgresSnapshotStore constructor I wrote takes a Pool.
+        // I need to create a pool here and pass it to both or create separate pools.
+        // Let's create separate pool for SnapshotStore for now to minimize changes to PostgresEventStore logic which is internal.
+        const { Pool } = await import('pg');
+        const snapshotPool = new Pool({ connectionString: dbUrl });
+        snapshotStore = new PostgresSnapshotStore(snapshotPool);
+
     } else {
         const dbPath = process.env.DB_PATH || path.resolve(__dirname, '../som.db');
+        const { SQLiteEventStore } = await import('./event-store/sqlite-store');
+        const { SQLiteSnapshotStore } = await import('./event-store/snapshot-store');
         eventStore = new SQLiteEventStore(dbPath);
+        snapshotStore = new SQLiteSnapshotStore(dbPath);
         console.log(`Event Store initialized at ${dbPath}`);
     }
 
     // 2. Core Engines (Base)
     const documentRegistry = new DocumentRegistry();
-    const projectionEngine = new StateProjectionEngine(eventStore);
-    const graphStore = new GraphStore(projectionEngine);
+    const projectionEngine = new StateProjectionEngine(eventStore, snapshotStore);
+
+    // Switch to Neo4j Graph Store for scalability
+    const { Neo4jGraphStore } = await import('./graph-store/neo4j-store');
+    const { CachedGraphStore } = await import('./graph-store/cached-store');
+    const { RedisClient } = await import('./cache/redis-client');
+
+    // Setup Stack: Cached -> Neo4j -> Projection
+    const neo4jStore = new Neo4jGraphStore(projectionEngine);
+    const redisClient = RedisClient.getInstance();
+    const graphStore: any = new CachedGraphStore(neo4jStore, redisClient);
+
+    // const graphStore = new GraphStore(projectionEngine);
     const constraintEngine = new ConstraintEngine(documentRegistry);
 
     // Load Default Constraints
@@ -90,11 +120,23 @@ async function startServer() {
     // 5. Access Layers (Aggregation)
     const queryLayer = new QueryLayer(temporalQueryEngine, graphStore, accessControl, eventStore);
     const semanticAccessLayer = new SemanticAccessLayer(eventStore, constraintEngine, holonRegistry, documentRegistry);
+
     const governance = new GovernanceEngine(documentRegistry, schemaVersioning);
 
+    // Calendar
+    // Calendar
+    const calendarIndex = new CalendarIndex(eventStore);
+    const availabilityService = new AvailabilityService(calendarIndex, graphStore);
+    const governanceAdapter = new GovernanceCalendarAdapter(eventStore);
+    const howDoAdapter = new HowDoCalendarAdapter(eventStore);
+
     // 3. API Server (The "Brain")
+    const authMode = (process.env.AUTH_MODE as 'apikey' | 'gateway') || 'apikey';
     const apiServer = new APIServer(
-        { port: PORT },
+        {
+            port: PORT,
+            authMode
+        },
         queryLayer,
         eventStore,
         semanticAccessLayer,
@@ -104,8 +146,12 @@ async function startServer() {
         holonRegistry,
         relationshipRegistry,
         constraintEngine,
+
         documentRegistry,
         projectionEngine,
+
+        calendarIndex,
+        availabilityService
     );
 
     // Register Dev Key
@@ -122,11 +168,42 @@ async function startServer() {
     await graphStore.initialize();
     console.log(`Graph Store initialized.`);
 
+    // Initialize Calendar
+    await calendarIndex.rebuild();
+    console.log('Calendar Index initialized.');
+
+    // Wire up subscriptions (The "SOM" Logic)
+    // When Projection Engine processes an event (State Update), notify indices
+    projectionEngine.subscribe(async (event) => {
+        // Update Calendar
+        await calendarIndex.processEvent(event);
+
+        // Trigger Governance Calendar Adapter (creates derived events)
+        await governanceAdapter.handleEvent(event);
+
+        // Trigger How-Do Calendar Adapter
+        await howDoAdapter.handleEvent(event);
+
+        // Update Graph Store
+        await graphStore.updateFromNewEvent();
+    });
+    console.log('Orchestration wired internally.');
+
     const allEvents = await eventStore.getAllEvents();
     console.log(`Current Event Count: ${allEvents.length}`);
 
 
-    // 5. Hono -> APIServer Bridge
+    // 5. Background Jobs
+    // Initialize Snapshot Worker
+    console.log('Initializing Background Jobs...');
+    const { createSnapshotWorker } = await import('./background-jobs/worker');
+    const { scheduleSnapshotJob } = await import('./background-jobs/scheduler');
+
+    const snapshotWorker = createSnapshotWorker(projectionEngine);
+    await scheduleSnapshotJob();
+    console.log('Background Jobs Initialized.');
+
+    // 6. Hono -> APIServer Bridge
     // We catch all routes and pass them to the internal APIServer router
     app.all('/api/*', async (c) => {
         const method = c.req.method;

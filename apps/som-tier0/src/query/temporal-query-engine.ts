@@ -125,12 +125,27 @@ export class TemporalQueryEngine {
    * Reconstruct organizational structure at a specific timestamp
    * Shows which organizations, positions, and assignments existed at that time
    */
+  /**
+   * Reconstruct organizational structure at a specific timestamp
+   * Shows which organizations, positions, and assignments existed at that time
+   */
   async getOrganizationStructureAsOf(
     organizationId: HolonID,
     timestamp: Timestamp
   ): Promise<OrganizationalStructure | undefined> {
+    // Optimization: Fetch state once
     const historicalState = await this.stateProjection.replayEventsAsOf(timestamp);
+    return this.buildOrganizationStructure(organizationId, historicalState, timestamp);
+  }
 
+  /**
+   * Internal recursive helper using pre-fetched state
+   */
+  private async buildOrganizationStructure(
+    organizationId: HolonID,
+    historicalState: import('../state-projection').ProjectedState,
+    timestamp: Timestamp
+  ): Promise<OrganizationalStructure | undefined> {
     // Get the organization holon
     const orgState = historicalState.holons.get(organizationId);
     if (!orgState || orgState.holon.type !== HolonType.Organization) {
@@ -148,7 +163,7 @@ export class TemporalQueryEngine {
         rel.effectiveStart <= timestamp &&
         (!rel.effectiveEnd || rel.effectiveEnd >= timestamp)
       ) {
-        const subOrgStructure = await this.getOrganizationStructureAsOf(rel.targetHolonID, timestamp);
+        const subOrgStructure = await this.buildOrganizationStructure(rel.targetHolonID, historicalState, timestamp);
         if (subOrgStructure) {
           subOrganizations.push(subOrgStructure);
         }

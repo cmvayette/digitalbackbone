@@ -1,11 +1,11 @@
 import { useState, useCallback } from 'react';
 import {
-    EventType,
     HolonID,
     type ProcessDefinedPayload,
     type ProcessUpdatedPayload,
     type ProcessStep
 } from '@som/shared-types';
+import * as SharedTypes from '@som/shared-types';
 import { type SubmitEventRequest } from '../client';
 import { createSOMClient } from '../factory';
 import { v4 as uuidv4 } from 'uuid';
@@ -26,8 +26,8 @@ export function useProcessEditor() {
         setLastError(null);
         try {
             const processId = uuidv4();
-            const event: SubmitEventRequest<EventType.ProcessDefined> = {
-                type: EventType.ProcessDefined,
+            const event: SubmitEventRequest<SharedTypes.EventType.ProcessDefined> = {
+                type: SharedTypes.EventType.ProcessDefined,
                 occurredAt: new Date(),
                 actor: actorId,
                 subjects: [processId],
@@ -61,8 +61,8 @@ export function useProcessEditor() {
         setIsSubmitting(true);
         setLastError(null);
         try {
-            const event: SubmitEventRequest<EventType.ProcessUpdated> = {
-                type: EventType.ProcessUpdated,
+            const event: SubmitEventRequest<SharedTypes.EventType.ProcessUpdated> = {
+                type: SharedTypes.EventType.ProcessUpdated,
                 occurredAt: new Date(),
                 actor: actorId,
                 subjects: [processId],

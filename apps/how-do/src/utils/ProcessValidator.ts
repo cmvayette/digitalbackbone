@@ -3,7 +3,8 @@ import * as SemanticLinter from '@som/semantic-linter/runtime';
 // Extract for easier usage, while handling potential CJS interop issues
 const { validateProcess: validateProcessRules } = SemanticLinter;
 // ValidationViolation is a type, need to access differently or just use any if strictly needed, but types might work from module
-import type { ValidationViolation } from '@som/semantic-linter/runtime';
+// ValidationViolation type is inferred from usage, import removed to fix lint
+
 
 export interface ValidationIssue {
     type: 'error' | 'warning';

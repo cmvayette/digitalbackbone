@@ -30,3 +30,8 @@ yarn-error.log*
 .env.local
 .env.*.local
 semantic-operating-model/*.db
+*.db
+*.db-shm
+*.db-wal
+*.tsbuildinfo
+scripts/*.db*

@@ -17,4 +17,13 @@ export const config = {
         url: process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/som?schema=public',
         path: process.env.DB_PATH || path.resolve(__dirname, '../som.db'),
     },
+    neo4j: {
+        uri: process.env.NEO4J_URI || 'neo4j://localhost:7687',
+        user: process.env.NEO4J_USER || 'neo4j',
+        password: process.env.NEO4J_PASSWORD || 'password',
+    },
+    redis: {
+        host: process.env.REDIS_HOST || 'localhost',
+        port: process.env.REDIS_PORT ? parseInt(process.env.REDIS_PORT) : 6379,
+    },
 };

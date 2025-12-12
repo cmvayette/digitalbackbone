@@ -9,9 +9,9 @@ export const GovernanceTuner: React.FC = () => {
     const [localConfig, setLocalConfig] = useState(config?.properties);
     const [hasChanges, setHasChanges] = useState(false);
 
-    // Sync local state when config loads
+    // Sync local state when config loads - avoid unnecessary updates
     useEffect(() => {
-        if (config?.properties) {
+        if (config?.properties && JSON.stringify(config.properties) !== JSON.stringify(localConfig)) {
             setLocalConfig(config.properties);
         }
     }, [config]);
@@ -27,7 +27,7 @@ export const GovernanceTuner: React.FC = () => {
                     [key]: value
                 }
             }
-        } as any);
+        });
         setHasChanges(true);
     };
 

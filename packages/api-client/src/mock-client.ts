@@ -1,15 +1,14 @@
 
 import { faker } from '@faker-js/faker';
-import {
+import type {
     Holon,
-    HolonType,
     HolonID,
     Relationship,
-    RelationshipType,
     Event,
-    EventType,
     GovernanceConfig,
 } from '@som/shared-types';
+import * as SharedTypes from '@som/shared-types';
+
 import {
     SOMClient,
     ISOMClient,
@@ -35,7 +34,7 @@ export class MockSOMClient implements ISOMClient {
 
     // ==================== Helpers ====================
 
-    private createMockHolon(id: HolonID, type: HolonType): Holon {
+    private createMockHolon(id: HolonID, type: SharedTypes.HolonType): Holon {
         const base: Holon = {
             id,
             type,
@@ -48,7 +47,7 @@ export class MockSOMClient implements ISOMClient {
 
         // Add type-specific properties including 'name' where applicable
         switch (type) {
-            case HolonType.Organization:
+            case SharedTypes.HolonType.Organization:
                 base.properties = {
                     name: faker.company.name(),
                     missionStatement: faker.company.catchPhrase(),
@@ -58,7 +57,7 @@ export class MockSOMClient implements ISOMClient {
                     isTigerTeam: false,
                 };
                 break;
-            case HolonType.Initiative:
+            case SharedTypes.HolonType.Initiative:
                 base.properties = {
                     name: faker.company.catchPhrase(),
                     description: faker.lorem.paragraph(),
@@ -69,7 +68,7 @@ export class MockSOMClient implements ISOMClient {
                     ownerId: faker.string.uuid(), // Mock owner
                 };
                 break;
-            case HolonType.Agent:
+            case SharedTypes.HolonType.Agent:
                 base.properties = {
                     name: faker.hacker.adjective() + ' Bot',
                     description: faker.company.buzzPhrase(),
@@ -78,7 +77,7 @@ export class MockSOMClient implements ISOMClient {
                     model: 'gpt-4'
                 };
                 break;
-            case HolonType.Person:
+            case SharedTypes.HolonType.Person:
                 base.properties = {
                     name: faker.person.fullName(),
                     edipi: faker.string.numeric(10),
@@ -92,7 +91,7 @@ export class MockSOMClient implements ISOMClient {
                     capacity: 100,
                 };
                 break;
-            case HolonType.Position:
+            case SharedTypes.HolonType.Position:
                 base.properties = {
                     title: faker.person.jobTitle(),
                     billetIDs: [faker.string.uuid()],
@@ -103,7 +102,7 @@ export class MockSOMClient implements ISOMClient {
                     qualifications: [],
                 };
                 break;
-            case HolonType.Task:
+            case SharedTypes.HolonType.Task:
                 base.properties = {
                     name: faker.hacker.verb() + ' ' + faker.hacker.noun(),
                     description: faker.lorem.sentence(),
@@ -114,7 +113,7 @@ export class MockSOMClient implements ISOMClient {
                     assigneeId: faker.string.uuid(),
                 };
                 break;
-            case HolonType.Objective:
+            case SharedTypes.HolonType.Objective:
                 base.properties = {
                     statement: faker.company.catchPhrase(),
                     description: faker.lorem.paragraph(),
@@ -123,7 +122,7 @@ export class MockSOMClient implements ISOMClient {
                     ownerId: faker.string.uuid(),
                 };
                 break;
-            case HolonType.KeyResult:
+            case SharedTypes.HolonType.KeyResult:
                 base.properties = {
                     description: faker.company.buzzPhrase(),
                     metric: faker.helpers.arrayElement(['%', '#', '$']),
@@ -132,7 +131,7 @@ export class MockSOMClient implements ISOMClient {
                     status: faker.helpers.arrayElement(['on-track', 'at-risk']),
                 };
                 break;
-            case HolonType.LOE:
+            case SharedTypes.HolonType.LOE:
                 base.properties = {
                     name: faker.commerce.department() + ' Modernization',
                     description: faker.lorem.sentence(),
@@ -141,7 +140,7 @@ export class MockSOMClient implements ISOMClient {
                     timeframe: { start: faker.date.past(), end: faker.date.future() }
                 };
                 break;
-            case HolonType.Process:
+            case SharedTypes.HolonType.Process:
                 const steps = Array.from({ length: faker.number.int({ min: 3, max: 8 }) }).map((_, idx) => ({
                     id: faker.string.uuid(),
                     title: `Step ${idx + 1}: ${faker.hacker.verb()} ${faker.hacker.noun()}`,
@@ -163,7 +162,7 @@ export class MockSOMClient implements ISOMClient {
                 };
                 break;
 
-            case HolonType.Document:
+            case SharedTypes.HolonType.Document:
                 base.properties = {
                     title: faker.company.catchPhrase(),
                     documentType: faker.helpers.arrayElement(['Policy', 'Order', 'SOP', 'Manual', 'Instruction']), // Valid enums
@@ -187,7 +186,7 @@ export class MockSOMClient implements ISOMClient {
         return base;
     }
 
-    private createMockRelationship(sourceId: HolonID, targetId: HolonID, type: RelationshipType): Relationship {
+    private createMockRelationship(sourceId: HolonID, targetId: HolonID, type: SharedTypes.RelationshipType): Relationship {
         return {
             id: faker.string.uuid(),
             sourceHolonID: sourceId,
@@ -220,11 +219,11 @@ export class MockSOMClient implements ISOMClient {
 
     async getHolon(id: HolonID): Promise<APIResponse<Holon>> {
         // Infer type from random for generic get or could parse ID if it had a prefix
-        return this.mockResponse(this.createMockHolon(id, HolonType.Organization));
+        return this.mockResponse(this.createMockHolon(id, SharedTypes.HolonType.Organization));
     }
 
     async queryHolons(
-        type: HolonType,
+        type: SharedTypes.HolonType,
         filters?: HolonFilters,
         pagination?: PaginationOptions
     ): Promise<APIResponse<Holon[]>> {
@@ -237,12 +236,12 @@ export class MockSOMClient implements ISOMClient {
 
     async search(
         query: string,
-        types?: HolonType[],
+        types?: SharedTypes.HolonType[],
         limit: number = 10
     ): Promise<APIResponse<SearchResult[]>> {
         const results: SearchResult[] = Array.from({ length: limit }).map(() => ({
             id: faker.string.uuid(),
-            type: types ? faker.helpers.arrayElement(types) : HolonType.Organization,
+            type: types ? faker.helpers.arrayElement(types) : SharedTypes.HolonType.Organization,
             name: `${query} ${faker.company.buzzNoun()}`,
             description: faker.company.buzzPhrase(),
             score: faker.number.float({ min: 0, max: 1 }),
@@ -255,19 +254,19 @@ export class MockSOMClient implements ISOMClient {
 
     async getRelationships(
         holonId: HolonID,
-        type?: RelationshipType,
+        type?: SharedTypes.RelationshipType,
         direction?: 'source' | 'target' | 'both'
     ): Promise<APIResponse<Relationship[]>> {
         const count = faker.number.int({ min: 0, max: 5 });
         const relationships = Array.from({ length: count }).map(() =>
-            this.createMockRelationship(holonId, faker.string.uuid(), type || RelationshipType.CONTAINS)
+            this.createMockRelationship(holonId, faker.string.uuid(), type || SharedTypes.RelationshipType.CONTAINS)
         );
         return this.mockResponse(relationships);
     }
 
     // ==================== Event Operations ====================
 
-    async submitEvent<T extends EventType>(event: any): Promise<APIResponse<EventResult>> {
+    async submitEvent<T extends SharedTypes.EventType>(event: any): Promise<APIResponse<EventResult>> {
         return this.mockResponse({
             eventId: faker.string.uuid(),
             success: true,
@@ -277,7 +276,7 @@ export class MockSOMClient implements ISOMClient {
 
     async getEvents(
         holonId: HolonID,
-        eventTypes?: EventType[],
+        eventTypes?: SharedTypes.EventType[],
         since?: Date
     ): Promise<APIResponse<Event[]>> {
         return this.mockResponse([]);
@@ -295,12 +294,12 @@ export class MockSOMClient implements ISOMClient {
         name: string,
         echelon: 'Echelon 1' | 'Echelon 2' | 'Echelon 3' | 'Platoon',
         parentId: HolonID | null,
-        parentRel: RelationshipType = RelationshipType.ADCON
+        parentRel: SharedTypes.RelationshipType = SharedTypes.RelationshipType.ADCON
     ): { unit: Holon; rel: Relationship | null } {
         const id = faker.string.uuid();
         const unit: Holon = {
             id,
-            type: HolonType.Organization,
+            type: SharedTypes.HolonType.Organization,
             properties: {
                 name,
                 echelon,
@@ -325,7 +324,7 @@ export class MockSOMClient implements ISOMClient {
         const id = faker.string.uuid();
         const dept: Holon = {
             id,
-            type: HolonType.Organization,
+            type: SharedTypes.HolonType.Organization,
             properties: {
                 name,
                 type: 'Department',
@@ -336,7 +335,7 @@ export class MockSOMClient implements ISOMClient {
             createdBy: 'system',
             sourceDocuments: [],
         };
-        const rel = this.createMockRelationship(parentId, id, RelationshipType.ADCON);
+        const rel = this.createMockRelationship(parentId, id, SharedTypes.RelationshipType.ADCON);
         return { dept, rel };
     }
 
@@ -363,7 +362,7 @@ export class MockSOMClient implements ISOMClient {
 
         // 3. Groups (Tier 1) - ADCON to HQ
         const groups = ['Group 1', 'Group 2'].map(gName => {
-            const { unit, rel } = this.createUnit(gName, 'Echelon 2', hq.id, RelationshipType.ADCON);
+            const { unit, rel } = this.createUnit(gName, 'Echelon 2', hq.id, SharedTypes.RelationshipType.ADCON);
             orgs.push(unit);
             rels.push(rel!);
 
@@ -380,7 +379,7 @@ export class MockSOMClient implements ISOMClient {
         // 4. Troops (Tier 2) - ADCON to Group 1
         // Demonstrating Split Authority: Troop A is ADCON to Group 1, but maybe OPCON to a Task Force (not shown here for simp)
         const troops = ['Troop A', 'Troop B'].map(tName => {
-            const { unit, rel } = this.createUnit(tName, 'Echelon 3', groups[0].id, RelationshipType.ADCON);
+            const { unit, rel } = this.createUnit(tName, 'Echelon 3', groups[0].id, SharedTypes.RelationshipType.ADCON);
             orgs.push(unit);
             rels.push(rel!);
             return unit;
@@ -388,13 +387,13 @@ export class MockSOMClient implements ISOMClient {
 
         // 5. Platoons (Tier 3) - ADCON to Troop A
         const platoons = ['Platoon 1', 'Platoon 2'].map(pName => {
-            const { unit, rel } = this.createUnit(pName, 'Platoon', troops[0].id, RelationshipType.ADCON);
+            const { unit, rel } = this.createUnit(pName, 'Platoon', troops[0].id, SharedTypes.RelationshipType.ADCON);
             orgs.push(unit);
             rels.push(rel!);
 
             // Split Authority Simulation: Platoon 1 is TACON to Group 2 for a specific mission
             if (pName === 'Platoon 1') {
-                const taconRel = this.createMockRelationship(groups[1].id, unit.id, RelationshipType.TACON);
+                const taconRel = this.createMockRelationship(groups[1].id, unit.id, SharedTypes.RelationshipType.TACON);
                 rels.push(taconRel);
             }
 
@@ -424,28 +423,28 @@ export class MockSOMClient implements ISOMClient {
     // ==================== Domain-Specific Operations ====================
 
     async getProcesses(filters?: HolonFilters): Promise<APIResponse<Holon[]>> {
-        return this.queryHolons(HolonType.Process, filters);
+        return this.queryHolons(SharedTypes.HolonType.Process, filters);
     }
 
     async getTasksForPosition(
         positionId: HolonID,
         status?: string
     ): Promise<APIResponse<Holon[]>> {
-        return this.queryHolons(HolonType.Task, { properties: { ownerId: positionId, status } });
+        return this.queryHolons(SharedTypes.HolonType.Task, { properties: { ownerId: positionId, status } });
     }
 
     async getObjectivesForLOE(loeId: HolonID): Promise<APIResponse<Holon[]>> {
-        return this.queryHolons(HolonType.Objective);
+        return this.queryHolons(SharedTypes.HolonType.Objective);
     }
 
     async getPolicies(filters?: HolonFilters): Promise<APIResponse<Holon[]>> {
-        return this.queryHolons(HolonType.Document, filters);
+        return this.queryHolons(SharedTypes.HolonType.Document, filters);
     }
 
     // ==================== Governance Configuration ====================
     private governanceConfig: GovernanceConfig = {
         id: 'gov-config-singleton',
-        type: HolonType.GovernanceConfig,
+        type: SharedTypes.HolonType.GovernanceConfig,
         status: 'active',
         createdAt: new Date(),
         createdBy: 'system',

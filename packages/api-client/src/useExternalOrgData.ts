@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect } from 'react';
 import { createSOMClient, SOMClientOptions } from './factory';
-import { HolonType } from '@som/shared-types';
+import * as SharedTypes from '@som/shared-types';
 
 // Replicating types locally/shared for MVP (eventually refer to @som/shared-types)
 export interface ExternalOrganization {
@@ -55,10 +55,10 @@ export function useExternalOrgData(options?: SOMClientOptions) {
                 );
 
                 const [orgsResponse, posResponse, peopleResponse, agentsResponse] = await Promise.all([
-                    client.queryHolons(HolonType.Organization),
-                    client.queryHolons(HolonType.Position),
-                    client.queryHolons(HolonType.Person),
-                    client.queryHolons(HolonType.Agent)
+                    client.queryHolons(SharedTypes.HolonType.Organization),
+                    client.queryHolons(SharedTypes.HolonType.Position),
+                    client.queryHolons(SharedTypes.HolonType.Person),
+                    client.queryHolons(SharedTypes.HolonType.Agent)
                 ]);
 
                 if (orgsResponse.success && orgsResponse.data) {

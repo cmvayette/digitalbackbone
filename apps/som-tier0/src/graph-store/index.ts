@@ -59,11 +59,13 @@ export interface PatternMatch {
   relationships: Relationship[];
 }
 
+import { ISemanticGraphStore } from './interface';
+
 /**
  * Semantic Graph Store
  * Maintains materialized views of current state for efficient querying
  */
-export class GraphStore {
+export class GraphStore implements ISemanticGraphStore {
   private stateProjection: StateProjectionEngine;
   private relationshipRegistry?: RelationshipRegistry;
   private holonsByType: Map<HolonType, Set<HolonID>>;
@@ -183,7 +185,7 @@ export class GraphStore {
    * Query holons by type with optional filters
    * Queries from both state projection and registry
    */
-  queryHolonsByType(type: HolonType, filters?: HolonQueryFilters): Holon[] {
+  async queryHolonsByType(type: HolonType, filters?: HolonQueryFilters): Promise<Holon[]> {
     const holonIds = this.holonsByType.get(type) || new Set();
     const currentState = this.stateProjection.getCurrentState();
     const results: Holon[] = [];
@@ -208,7 +210,7 @@ export class GraphStore {
    * Get a specific holon by ID
    * Checks both state projection and registry
    */
-  getHolon(holonId: HolonID): Holon | undefined {
+  async getHolon(holonId: HolonID): Promise<Holon | undefined> {
     // Try state projection first
     const holonState = this.stateProjection.getHolonState(holonId);
     if (holonState) {
@@ -221,7 +223,7 @@ export class GraphStore {
   /**
    * Get all holons (for testing/debugging)
    */
-  getAllHolons(): Holon[] {
+  async getAllHolons(): Promise<Holon[]> {
     const currentState = this.stateProjection.getCurrentState();
     return Array.from(currentState.holons.values()).map(state => state.holon);
   }
@@ -257,7 +259,7 @@ export class GraphStore {
   /**
    * Get all relationships (for testing/debugging)
    */
-  getAllRelationships(): Relationship[] {
+  async getAllRelationships(): Promise<Relationship[]> {
     const currentState = this.stateProjection.getCurrentState();
     return Array.from(currentState.relationships.values()).map(state => state.relationship);
   }
@@ -409,7 +411,7 @@ export class GraphStore {
 
     // Start with the first holon pattern
     const firstPattern = pattern.holonPatterns[0];
-    const candidateHolons = this.findMatchingHolons(firstPattern);
+    const candidateHolons = await this.findMatchingHolons(firstPattern);
 
     // For each candidate, try to match the full pattern
     for (const holon of candidateHolons) {
@@ -425,13 +427,13 @@ export class GraphStore {
   /**
    * Find holons matching a pattern
    */
-  private findMatchingHolons(pattern: HolonPattern): Holon[] {
+  private async findMatchingHolons(pattern: HolonPattern): Promise<Holon[]> {
     let candidates: Holon[];
 
     if (pattern.type !== undefined) {
-      candidates = this.queryHolonsByType(pattern.type);
+      candidates = await this.queryHolonsByType(pattern.type);
     } else {
-      candidates = this.getAllHolons();
+      candidates = await this.getAllHolons();
     }
 
     // Filter by properties if specified

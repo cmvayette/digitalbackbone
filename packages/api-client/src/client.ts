@@ -3,17 +3,15 @@
  * Unified client for all Tier-1 applications to communicate with the SOM API
  */
 
-import {
+import type {
   Holon,
-  HolonType,
   HolonID,
   Relationship,
-  RelationshipType,
   Event,
-  EventType,
   TypedEvent,
   GovernanceConfig,
 } from '@som/shared-types';
+import * as SharedTypes from '@som/shared-types';
 
 /**
  * API response wrapper
@@ -56,7 +54,7 @@ export interface PaginationOptions {
  */
 export interface SearchResult {
   id: HolonID;
-  type: HolonType;
+  type: SharedTypes.HolonType;
   name: string;
   description?: string;
   score: number;
@@ -82,7 +80,7 @@ export interface OrgStructure {
  * Event submission request
  * Enforces strict typing against the EventType but omits server-generated fields
  */
-export type SubmitEventRequest<T extends EventType> = Omit<TypedEvent<T>, 'id' | 'recordedAt' | 'causalLinks'> & {
+export type SubmitEventRequest<T extends SharedTypes.EventType> = Omit<TypedEvent<T>, 'id' | 'recordedAt' | 'causalLinks'> & {
   causalLinks?: TypedEvent<T>['causalLinks']
 };
 
@@ -119,15 +117,15 @@ export interface ISOMClient {
 
   // Holon Operations
   getHolon(id: HolonID): Promise<APIResponse<Holon>>;
-  queryHolons(type: HolonType, filters?: HolonFilters, pagination?: PaginationOptions): Promise<APIResponse<Holon[]>>;
-  search(query: string, types?: HolonType[], limit?: number): Promise<APIResponse<SearchResult[]>>;
+  queryHolons(type: SharedTypes.HolonType, filters?: HolonFilters, pagination?: PaginationOptions): Promise<APIResponse<Holon[]>>;
+  search(query: string, types?: SharedTypes.HolonType[], limit?: number): Promise<APIResponse<SearchResult[]>>;
 
   // Relationship Operations
-  getRelationships(holonId: HolonID, type?: RelationshipType, direction?: 'source' | 'target' | 'both'): Promise<APIResponse<Relationship[]>>;
+  getRelationships(holonId: HolonID, type?: SharedTypes.RelationshipType, direction?: 'source' | 'target' | 'both'): Promise<APIResponse<Relationship[]>>;
 
   // Event Operations
-  submitEvent<T extends EventType>(event: SubmitEventRequest<T>): Promise<APIResponse<EventResult>>;
-  getEvents(holonId: HolonID, eventTypes?: EventType[], since?: Date): Promise<APIResponse<Event[]>>;
+  submitEvent<T extends SharedTypes.EventType>(event: SubmitEventRequest<T>): Promise<APIResponse<EventResult>>;
+  getEvents(holonId: HolonID, eventTypes?: SharedTypes.EventType[], since?: Date): Promise<APIResponse<Event[]>>;
 
   // Temporal Operations
   getHolonAsOf(id: HolonID, timestamp: Date): Promise<APIResponse<Holon>>;
@@ -241,7 +239,7 @@ export class RealSOMClient implements ISOMClient {
   }
 
   async queryHolons(
-    type: HolonType,
+    type: SharedTypes.HolonType,
     filters?: HolonFilters,
     pagination?: PaginationOptions
   ): Promise<APIResponse<Holon[]>> {
@@ -254,7 +252,7 @@ export class RealSOMClient implements ISOMClient {
 
   async search(
     query: string,
-    types?: HolonType[],
+    types?: SharedTypes.HolonType[],
     limit?: number
   ): Promise<APIResponse<SearchResult[]>> {
     const params = new URLSearchParams({ q: query });
@@ -268,7 +266,7 @@ export class RealSOMClient implements ISOMClient {
 
   async getRelationships(
     holonId: HolonID,
-    type?: RelationshipType,
+    type?: SharedTypes.RelationshipType,
     direction?: 'source' | 'target' | 'both'
   ): Promise<APIResponse<Relationship[]>> {
     const params = new URLSearchParams();
@@ -280,13 +278,13 @@ export class RealSOMClient implements ISOMClient {
 
   // ==================== Event Operations ====================
 
-  async submitEvent<T extends EventType>(event: SubmitEventRequest<T>): Promise<APIResponse<EventResult>> {
+  async submitEvent<T extends SharedTypes.EventType>(event: SubmitEventRequest<T>): Promise<APIResponse<EventResult>> {
     return this.request<EventResult>('POST', '/events', event);
   }
 
   async getEvents(
     holonId: HolonID,
-    eventTypes?: EventType[],
+    eventTypes?: SharedTypes.EventType[],
     since?: Date
   ): Promise<APIResponse<Event[]>> {
     return this.request<Event[]>('POST', '/events/query', {
@@ -322,7 +320,7 @@ export class RealSOMClient implements ISOMClient {
   // ==================== Domain-Specific Operations ====================
 
   async getProcesses(filters?: HolonFilters): Promise<APIResponse<Holon[]>> {
-    return this.queryHolons(HolonType.Process, filters);
+    return this.queryHolons(SharedTypes.HolonType.Process, filters);
   }
 
   async getTasksForPosition(
@@ -335,12 +333,12 @@ export class RealSOMClient implements ISOMClient {
     if (status) {
       filters.properties = { ...filters.properties, status };
     }
-    return this.queryHolons(HolonType.Task, filters);
+    return this.queryHolons(SharedTypes.HolonType.Task, filters);
   }
 
   async getObjectivesForLOE(loeId: HolonID): Promise<APIResponse<Holon[]>> {
     // 1. Get all 'CONTAINS' relationships from the LOE
-    const relResponse = await this.getRelationships(loeId, RelationshipType.CONTAINS, 'source');
+    const relResponse = await this.getRelationships(loeId, SharedTypes.RelationshipType.CONTAINS, 'source');
 
     if (!relResponse.success || !relResponse.data) {
       return {
@@ -363,7 +361,7 @@ export class RealSOMClient implements ISOMClient {
 
     // 4. Filter for success and specifically for Objectives
     const objectives = responses
-      .filter(res => res.success && res.data && res.data.type === HolonType.Objective)
+      .filter(res => res.success && res.data && res.data.type === SharedTypes.HolonType.Objective)
       .map(res => res.data as Holon);
 
     return {
@@ -373,7 +371,7 @@ export class RealSOMClient implements ISOMClient {
   }
 
   async getPolicies(filters?: HolonFilters): Promise<APIResponse<Holon[]>> {
-    return this.queryHolons(HolonType.Document, {
+    return this.queryHolons(SharedTypes.HolonType.Document, {
       ...filters,
       properties: { ...filters?.properties, documentType: 'Policy' },
     });
@@ -467,11 +465,11 @@ export class SOMClient implements ISOMClient {
   setAuthToken(token: string): void { this.delegate.setAuthToken(token); }
   clearAuthToken(): void { this.delegate.clearAuthToken(); }
   getHolon(id: HolonID): Promise<APIResponse<Holon>> { return this.delegate.getHolon(id); }
-  queryHolons(type: HolonType, filters?: HolonFilters, pagination?: PaginationOptions): Promise<APIResponse<Holon[]>> { return this.delegate.queryHolons(type, filters, pagination); }
-  search(query: string, types?: HolonType[], limit?: number): Promise<APIResponse<SearchResult[]>> { return this.delegate.search(query, types, limit); }
-  getRelationships(holonId: HolonID, type?: RelationshipType, direction?: 'source' | 'target' | 'both'): Promise<APIResponse<Relationship[]>> { return this.delegate.getRelationships(holonId, type, direction); }
-  submitEvent<T extends EventType>(event: SubmitEventRequest<T>): Promise<APIResponse<EventResult>> { return this.delegate.submitEvent(event); }
-  getEvents(holonId: HolonID, eventTypes?: EventType[], since?: Date): Promise<APIResponse<Event[]>> { return this.delegate.getEvents(holonId, eventTypes, since); }
+  queryHolons(type: SharedTypes.HolonType, filters?: HolonFilters, pagination?: PaginationOptions): Promise<APIResponse<Holon[]>> { return this.delegate.queryHolons(type, filters, pagination); }
+  search(query: string, types?: SharedTypes.HolonType[], limit?: number): Promise<APIResponse<SearchResult[]>> { return this.delegate.search(query, types, limit); }
+  getRelationships(holonId: HolonID, type?: SharedTypes.RelationshipType, direction?: 'source' | 'target' | 'both'): Promise<APIResponse<Relationship[]>> { return this.delegate.getRelationships(holonId, type, direction); }
+  submitEvent<T extends SharedTypes.EventType>(event: SubmitEventRequest<T>): Promise<APIResponse<EventResult>> { return this.delegate.submitEvent(event); }
+  getEvents(holonId: HolonID, eventTypes?: SharedTypes.EventType[], since?: Date): Promise<APIResponse<Event[]>> { return this.delegate.getEvents(holonId, eventTypes, since); }
   getHolonAsOf(id: HolonID, timestamp: Date): Promise<APIResponse<Holon>> { return this.delegate.getHolonAsOf(id, timestamp); }
   getOrgStructure(orgId: HolonID, asOf?: Date): Promise<APIResponse<OrgStructure>> { return this.delegate.getOrgStructure(orgId, asOf); }
   getProcesses(filters?: HolonFilters): Promise<APIResponse<Holon[]>> { return this.delegate.getProcesses(filters); }

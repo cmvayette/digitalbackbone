@@ -1,10 +1,10 @@
 import { useState, useCallback } from 'react';
 import {
-    EventType,
     HolonID,
     type ObjectiveCreatedPayload,
     type KeyResultDefinedPayload
 } from '@som/shared-types';
+import * as SharedTypes from '@som/shared-types';
 import { type SubmitEventRequest } from '../client';
 import { createSOMClient } from '../factory';
 import { v4 as uuidv4 } from 'uuid';
@@ -27,8 +27,8 @@ export function useStrategyComposer() {
         setLastError(null);
         try {
             const objectiveId = uuidv4();
-            const event: SubmitEventRequest<EventType.ObjectiveCreated> = {
-                type: EventType.ObjectiveCreated,
+            const event: SubmitEventRequest<SharedTypes.EventType.ObjectiveCreated> = {
+                type: SharedTypes.EventType.ObjectiveCreated,
                 occurredAt: new Date(),
                 actor: actorId,
                 subjects: [objectiveId],
@@ -70,8 +70,8 @@ export function useStrategyComposer() {
         try {
             const krId = uuidv4();
             // This event links KR to Objective via subjects or payload
-            const event: SubmitEventRequest<EventType.KeyResultDefined> = {
-                type: EventType.KeyResultDefined,
+            const event: SubmitEventRequest<SharedTypes.EventType.KeyResultDefined> = {
+                type: SharedTypes.EventType.KeyResultDefined,
                 occurredAt: new Date(),
                 actor: actorId,
                 subjects: [krId, objectiveId],
