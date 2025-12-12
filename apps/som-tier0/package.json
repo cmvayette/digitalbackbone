@@ -5,13 +5,14 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
+    "dev": "tsx watch src/server.ts --max-old-space-size=800",
     "build": "tsc",
-    "dev": "tsx watch src/server.ts",
-    "seed:dev": "tsx src/seed/run-seed.ts",
+    "start": "node --max-old-space-size=800 dist/src/server.js",
     "test": "vitest",
-    "test:watch": "vitest",
-    "test:coverage": "vitest --coverage",
-    "lint": "eslint ."
+    "test:coverage": "vitest run --coverage",
+    "lint": "eslint src --ext .ts",
+    "format": "prettier --write \"src/**/*.{ts,json}\"",
+    "clean": "rm -rf dist"
   },
   "keywords": [
     "semantic-model",
@@ -26,6 +27,7 @@
     "@som/shared-types": "*",
     "@types/pg": "^8.16.0",
     "better-sqlite3": "^12.5.0",
+    "bullmq": "^5.29.0",
     "dotenv": "^17.2.3",
     "hono": "^4.10.7",
     "ioredis": "^5.8.2",

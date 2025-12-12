@@ -23,6 +23,11 @@ services:
     read_only: true # Hardening: Read-only root filesystem
     tmpfs:
       - /tmp # Allow write to tmp for logs/pid if needed
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
     depends_on:
       postgres:
         condition: service_healthy

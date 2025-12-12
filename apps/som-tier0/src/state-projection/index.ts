@@ -6,7 +6,7 @@
 import { Event, EventType } from '@som/shared-types';
 import { Holon, HolonID, HolonType, Timestamp } from '@som/shared-types';
 import { Relationship, RelationshipID } from '@som/shared-types';
-import { IEventStore } from '../core/interfaces/event-store';
+import { IEventStore, ISnapshotStore } from '../core/interfaces/event-store';
 
 /**
  * Projected state of a holon at a specific point in time
@@ -44,8 +44,9 @@ export class StateProjectionEngine {
   private currentState: ProjectedState;
   private listeners: Array<(event: Event) => void | Promise<void>> = [];
 
-  constructor(eventStore: IEventStore) {
+  constructor(eventStore: IEventStore, snapshotStore?: ISnapshotStore) {
     this.eventStore = eventStore;
+    this.snapshotStore = snapshotStore;
     this.currentState = {
       holons: new Map(),
       relationships: new Map(),
@@ -53,13 +54,14 @@ export class StateProjectionEngine {
     };
   }
 
+  private snapshotStore?: ISnapshotStore;
+
   /**
    * Replay all events to compute current state
    * Events are processed in time order
    */
   async replayAllEvents(): Promise<ProjectedState> {
     const allEvents = await this.eventStore.getAllEvents();
-
 
     // Sort events by occurredAt timestamp to ensure correct ordering
     const sortedEvents = [...allEvents].sort((a, b) =>
@@ -78,7 +80,8 @@ export class StateProjectionEngine {
       this.applyEvent(event);
     }
 
-    // Update as-of timestamp to current time
+    // Update as-of timestamp to current time (or max event time?)
+    // Original code used new Date().
     this.currentState.asOfTimestamp = new Date();
 
     return this.currentState;
@@ -88,31 +91,95 @@ export class StateProjectionEngine {
    * Replay events up to a specific timestamp to reconstruct historical state
    */
   async replayEventsAsOf(timestamp: Timestamp): Promise<ProjectedState> {
-    const allEvents = await this.eventStore.getAllEvents();
+    let baseState: ProjectedState | undefined;
+    let startTime: Date | undefined;
 
-    // Filter events up to the specified timestamp
-    const eventsUpToTimestamp = allEvents.filter(event =>
-      event.occurredAt <= timestamp
-    );
+    // 1. Try to load from snapshot
+    if (this.snapshotStore) {
+      const snapshot = await this.snapshotStore.getLatestSnapshot(timestamp);
+      if (snapshot) {
+        baseState = this.deserializeState(snapshot.state);
+        startTime = snapshot.timestamp;
+        // console.log(`[StateProjection] Loaded snapshot from ${startTime.toISOString()}`);
+      }
+    }
+
+    if (!baseState) {
+      baseState = {
+        holons: new Map(),
+        relationships: new Map(),
+        asOfTimestamp: timestamp, // Use target timestamp!
+      };
+    } else {
+      // If loaded from snapshot, update the timestamp to the target timestamp
+      // so that validity checks (which check if event is valid 'now') use the target time.
+      baseState.asOfTimestamp = timestamp;
+    }
+
+    // 2. Fetch events *after* snapshot
+    // If we have a snapshot at T, we need events where occurredAt > T AND occurredAt <= targetTimestamp
+    const allEvents = await this.eventStore.getAllEvents(); // Still fetching all? Optimization pending here too.
+
+    // Filter events
+    const relevantEvents = allEvents.filter(event => {
+      const afterStart = startTime ? event.occurredAt > startTime : true;
+      const beforeEnd = event.occurredAt <= timestamp;
+      return afterStart && beforeEnd;
+    });
 
     // Sort events by occurredAt timestamp
-    const sortedEvents = [...eventsUpToTimestamp].sort((a, b) =>
+    const sortedEvents = [...relevantEvents].sort((a, b) =>
       a.occurredAt.getTime() - b.occurredAt.getTime()
     );
 
-    // Create new state for this point in time
-    const historicalState: ProjectedState = {
-      holons: new Map(),
-      relationships: new Map(),
-      asOfTimestamp: timestamp,
-    };
-
-    // Process each event in order
+    // 3. Apply events to state
     for (const event of sortedEvents) {
-      this.applyEventToState(event, historicalState);
+      this.applyEventToState(event, baseState);
     }
 
-    return historicalState;
+    // Ensure final timestamp is accurate (redundant if set above, but safe)
+    baseState.asOfTimestamp = timestamp;
+
+    return baseState;
+  }
+
+  private serializeState(state: ProjectedState): any {
+    return {
+      holons: Array.from(state.holons.entries()),
+      relationships: Array.from(state.relationships.entries()),
+      asOfTimestamp: state.asOfTimestamp
+    };
+  }
+
+  private deserializeState(serialized: any): ProjectedState {
+    // Map entries comes as [key, value][]
+    return {
+      holons: new Map(serialized.holons),
+      relationships: new Map(serialized.relationships),
+      asOfTimestamp: new Date(serialized.asOfTimestamp)
+    };
+  }
+
+  async createSnapshot(): Promise<void> {
+    if (!this.snapshotStore) return;
+    const state = this.getCurrentState();
+    // Serialize Maps
+    const serialized = this.serializeState(state);
+
+    // Find last applied event ID? 
+    // We track modificationEvents in the state objects, but not a global "last processed event".
+    // For safety, we should probably fetch the latest event from store or track it.
+    // For now, let's use a placeholder or assume the caller handles consistency, 
+    // OR we find the latest event in the modification lists (expensive).
+    // Let's use "latest" based on timestamp roughly or simple iteration.
+    const lastEventId = "calculated-at-runtime"; // TODO: Track last applied event ID globally in state
+
+    await this.snapshotStore.saveSnapshot({
+      id: `snapshot-${state.asOfTimestamp.getTime()}`,
+      timestamp: state.asOfTimestamp,
+      lastEventId,
+      state: serialized
+    });
   }
 
   /**
@@ -700,6 +767,6 @@ export class StateProjectionEngine {
 /**
  * Create a new state projection engine instance
  */
-export function createStateProjectionEngine(eventStore: IEventStore): StateProjectionEngine {
-  return new StateProjectionEngine(eventStore);
+export function createStateProjectionEngine(eventStore: IEventStore, snapshotStore?: ISnapshotStore): StateProjectionEngine {
+  return new StateProjectionEngine(eventStore, snapshotStore);
 }

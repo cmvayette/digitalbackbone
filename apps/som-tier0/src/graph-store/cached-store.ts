@@ -28,9 +28,12 @@ export class CachedGraphStore implements ISemanticGraphStore {
         if (event && event.subjects) {
             for (const subjectId of event.subjects) {
                 await this.redis.del(`holon:${subjectId}`);
-                // Also potentially invalidate relationship lists, but that's harder to track without parsing
+                await this.redis.del(`holon:${subjectId}:rels`);
             }
         }
+
+        // Invalidate type queries if necessary (e.g. on creation/deletion)
+        // For now, let's keep it simple and focused on instance logic.
 
         // 2. Delegate to inner store to update persistence
         await this.inner.updateFromNewEvent(event);
@@ -81,7 +84,27 @@ export class CachedGraphStore implements ISemanticGraphStore {
     }
 
     async getHolonRelationships(holonId: HolonID): Promise<Relationship[]> {
-        return this.inner.getHolonRelationships(holonId);
+        const key = `holon:${holonId}:rels`;
+
+        // 1. Try Cache
+        const cached = await this.redis.get(key);
+        if (cached) {
+            try {
+                return JSON.parse(cached) as Relationship[];
+            } catch (e) {
+                console.warn('Cache parse error for relationships, fetching fresh:', e);
+            }
+        }
+
+        // 2. Fallback to Inner Store
+        const relationships = await this.inner.getHolonRelationships(holonId);
+
+        // 3. Set Cache
+        if (relationships) {
+            await this.redis.set(key, JSON.stringify(relationships), this.TTL);
+        }
+
+        return relationships;
     }
 
     async traverseRelationships(
