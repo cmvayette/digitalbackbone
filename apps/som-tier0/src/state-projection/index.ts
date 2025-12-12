@@ -61,27 +61,54 @@ export class StateProjectionEngine {
    * Events are processed in time order
    */
   async replayAllEvents(): Promise<ProjectedState> {
-    const allEvents = await this.eventStore.getAllEvents();
+    let startTime: Date | undefined;
+
+    // 1. Try to load from snapshot
+    if (this.snapshotStore) {
+      // Get latest snapshot (implies no timestamp limit, or now)
+      const snapshot = await this.snapshotStore.getLatestSnapshot(new Date());
+      if (snapshot) {
+        this.currentState = this.deserializeState(snapshot.state);
+        this.currentState.asOfTimestamp = snapshot.timestamp; // Ensure consistent timestamp
+        startTime = snapshot.timestamp;
+        console.log(`[StateProjection] Loaded snapshot from ${startTime.toISOString()}`);
+      }
+    }
+
+    if (!startTime) {
+      // Reset state if no snapshot
+      this.currentState = {
+        holons: new Map(),
+        relationships: new Map(),
+        asOfTimestamp: new Date(), // Will be updated
+      };
+    }
+
+    // 2. Fetch events *after* snapshot
+    let eventsToApply: Event[];
+
+    if (startTime) {
+      // Optimized fetch: Only get events newer than snapshot
+      eventsToApply = await this.eventStore.getEvents({ startTime });
+      // Filter out strict equality if needed (snapshot timestamp is inclusive/exclusive?)
+      // If snapshot includes state at T, we need events > T.
+      eventsToApply = eventsToApply.filter(e => e.occurredAt > startTime!);
+    } else {
+      eventsToApply = await this.eventStore.getAllEvents();
+    }
 
     // Sort events by occurredAt timestamp to ensure correct ordering
-    const sortedEvents = [...allEvents].sort((a, b) =>
+    // (getEvents might already sort, but safe to ensure)
+    eventsToApply.sort((a, b) =>
       a.occurredAt.getTime() - b.occurredAt.getTime()
     );
 
-    // Reset state
-    this.currentState = {
-      holons: new Map(),
-      relationships: new Map(),
-      asOfTimestamp: new Date(),
-    };
-
     // Process each event in order
-    for (const event of sortedEvents) {
+    for (const event of eventsToApply) {
       this.applyEvent(event);
     }
 
-    // Update as-of timestamp to current time (or max event time?)
-    // Original code used new Date().
+    // Update as-of timestamp to current time
     this.currentState.asOfTimestamp = new Date();
 
     return this.currentState;

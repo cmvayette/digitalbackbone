@@ -75,10 +75,17 @@ export class AvailabilityService {
      * Find all transitive parents of a holon (e.g. Holon -> Team -> Dept -> Unit)
      * Limit recursion depth to avoid infinite loops
      */
-    private async getAllParentHolons(startHolonId: HolonID, depth = 0, maxDepth = 5): Promise<Set<HolonID>> {
+    /**
+     * Find all transitive parents of a holon (e.g. Holon -> Team -> Dept -> Unit)
+     * Limit recursion depth to avoid infinite loops
+     */
+    private async getAllParentHolons(startHolonId: HolonID, depth = 0, maxDepth = 5, visited = new Set<HolonID>()): Promise<Set<HolonID>> {
         const parents = new Set<HolonID>();
 
         if (depth >= maxDepth) return parents;
+        if (visited.has(startHolonId)) return parents;
+
+        visited.add(startHolonId);
 
         // Define relationship types that imply hierarchy/containment
         const hierarchyTypes = [
@@ -86,28 +93,38 @@ export class AvailabilityService {
             RelationshipType.ASSIGNED_TO,
             RelationshipType.PART_OF,
             RelationshipType.BELONGS_TO
-            // Checking shared-types enum definition is best. I will assume standard ones exist or I need to check.
-            // Based on linter "Did you mean MEMBER_OF", I should use the linter suggestion.
-            // Re-reading linter: "Property 'MemberOf' does not exist... Did you mean 'MEMBER_OF'?"
-            // So I should use UPPER_SNAKE_CASE.
         ];
 
-        // Find immediate parents
-        for (const type of hierarchyTypes) {
-            const connected = await this.graphStore.getConnectedHolons(
+        // 1. Fetch all connection types in parallel
+        const connectionPromises = hierarchyTypes.map(type =>
+            this.graphStore.getConnectedHolons(
                 startHolonId,
                 type,
                 'outgoing' // Outgoing from Child -> Parent (e.g. MemberOf)
-            );
+            )
+        );
 
-            for (const parent of connected) {
-                if (!parents.has(parent.id)) {
-                    parents.add(parent.id);
+        const connectionResults = await Promise.all(connectionPromises);
+        const immediateParents = connectionResults.flat();
 
-                    // Recurse
-                    const grandParents = await this.getAllParentHolons(parent.id, depth + 1, maxDepth);
-                    grandParents.forEach(gp => parents.add(gp));
-                }
+        // 2. Identify new parents to recurse on
+        const recursionPromises: Promise<Set<HolonID>>[] = [];
+
+        for (const parent of immediateParents) {
+            // Avoid adding self or already processing (though visited check handles recursion)
+            if (!parents.has(parent.id)) { // Add to result set
+                parents.add(parent.id);
+                // Recurse in parallel
+                recursionPromises.push(this.getAllParentHolons(parent.id, depth + 1, maxDepth, visited));
+            }
+        }
+
+        const ancestorSets = await Promise.all(recursionPromises);
+
+        // Merge results
+        for (const set of ancestorSets) {
+            for (const id of set) {
+                parents.add(id);
             }
         }
 

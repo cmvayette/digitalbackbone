@@ -7,7 +7,7 @@ import { SwimlaneViewer } from './components/SwimlaneViewer';
 import { TimelineViewer } from './components/TimelineViewer';
 import { SwimlaneEditor } from './components/SwimlaneEditorComponent';
 import App from './App';
-import { useExternalProcessData } from '@som/api-client';
+import { useExternalProcessData, useProcessDetail } from '@som/api-client';
 import { AuthCallback, AuthGuard } from '@som/ui-components';
 import { LayoutList, GitCommitHorizontal } from 'lucide-react';
 import { authConfig } from './config/auth';
@@ -43,13 +43,9 @@ function ProcessViewerWrapper() {
     // Actually, I'll assume I can just use the mock client or a hook if available.
     // For now, I'll put a placeholder loader hook.
 
-    const { processes } = useExternalProcessData();
-    const process = React.useMemo(() =>
-        processes?.find((p: any) => p.id === processId),
-        [processes, processId]
-    );
+    const { process, isLoading: loading } = useProcessDetail(processId);
 
-    if (!process) return <div className="p-8 text-slate-500">Loading process {processId}...</div>;
+    if (loading || !process) return <div className="p-8 text-slate-500">Loading process {processId}...</div>;
 
     const handleEdit = () => navigate(`/editor/${process.id}`);
     const handleBack = () => navigate('/');
@@ -92,18 +88,16 @@ function ProcessViewerWrapper() {
 function ProcessEditorWrapper() {
     const { processId } = useParams();
     const navigate = useNavigate();
-    const { processes } = useExternalProcessData();
-    const process = React.useMemo(() =>
-        processes?.find((p: any) => p.id === processId),
-        [processes, processId]
-    );
+    const { process, isLoading } = useProcessDetail(processId);
 
-    if (processId && !process) return <div>Loading...</div>;
+    if (processId && (!process || isLoading)) return <div>Loading...</div>;
+
+    const initialProcess = process || undefined;
 
     return (
         <div className="h-full bg-bg-canvas">
             <SwimlaneEditor
-                initialProcess={process}
+                initialProcess={initialProcess}
                 onBack={() => processId ? navigate(`/process/${processId}`) : navigate('/')}
             />
         </div>

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import orgStructure from '../mocks/org-structure.json';
 import type { ProcessStep } from '@som/shared-types';
-import { useExternalProcessData, useProcessEditor } from '@som/api-client';
+import { useExternalProcessData, useProcessEditor, useProcessDetail } from '@som/api-client';
 
 // Extend shared type for local UI needs if necessary, or just use it.
 // The app currently uses ownerType for UI icons. We'll keep it as a local extension.
@@ -12,28 +12,28 @@ export interface LocalProcessStep extends Omit<ProcessStep, 'obligations'> {
 }
 
 export function useProcess(initialProcessId?: string) {
-    const { getProcessById, isLoading } = useExternalProcessData();
+    const { process, isLoading } = useProcessDetail(initialProcessId);
+
+    // We don't need getProcessById anymore since useProcessDetail handles it
+    // const { getProcessById, isLoading } = useExternalProcessData();
+
     const [steps, setSteps] = useState<LocalProcessStep[]>([]);
     const initializedRef = useRef(false);
 
-    // Load mock data or initialize empty
+    // Load process data when available
     useEffect(() => {
-        if (initialProcessId && !isLoading && !initializedRef.current) {
-            const process = getProcessById(initialProcessId);
-            if (process) {
-                // Map shared process steps to local UI steps
-                // In a real app, this mapping might happen in the API layer or specific view model adapters
-                const mappedSteps: LocalProcessStep[] = process.properties.steps.map(s => ({
-                    ...s,
-                    ownerType: 'Position', // Defaulting for now
-                    obligations: s.obligations
-                }));
-                // eslint-disable-next-line react-hooks/set-state-in-effect
-                setSteps(mappedSteps);
-                initializedRef.current = true;
-            }
+        if (process && !isLoading) {
+            // Map shared process steps to local UI steps
+            // In a real app, this mapping might happen in the API layer or specific view model adapters
+            const mappedSteps: LocalProcessStep[] = (process.properties.steps || []).map((s: ProcessStep) => ({
+                ...s,
+                ownerType: 'Position', // Defaulting for now
+                obligations: s.obligations
+            }));
+            setSteps(mappedSteps);
+            initializedRef.current = true;
         }
-    }, [initialProcessId, isLoading, getProcessById]);
+    }, [process, isLoading]);
 
     const addStep = (ownerId: string, ownerType: 'Position' | 'Organization' | 'RoleTag') => {
         const newStep: LocalProcessStep = {

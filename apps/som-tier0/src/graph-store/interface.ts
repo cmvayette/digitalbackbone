@@ -5,7 +5,7 @@ import { HolonQueryFilters, RelationshipQueryFilters, GraphPattern, PatternMatch
 export interface ISemanticGraphStore {
     initialize(): Promise<void>;
     rebuildIndices(): Promise<void>;
-    updateFromNewEvent(event?: any): Promise<void>;
+    updateFromNewEvent(event: any): Promise<void>;
 
     getHolon(holonId: HolonID): Promise<Holon | undefined>;
     queryHolonsByType(type: HolonType, filters?: HolonQueryFilters): Promise<Holon[]>;

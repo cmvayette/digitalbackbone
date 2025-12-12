@@ -175,10 +175,68 @@ export class GraphStore implements ISemanticGraphStore {
    * Update indices when a new event is processed
    * This is more efficient than full rebuild for incremental updates
    */
-  async updateFromNewEvent(): Promise<void> {
-    // For now, just rebuild indices
-    // In production, this would be optimized to only update affected indices
-    await this.rebuildIndices();
+  /**
+   * Update indices when a new event is processed
+   * This updates only the affected indices (O(1)) instead of full rebuild
+   */
+  async updateFromNewEvent(event: any): Promise<void> {
+    if (!event) return;
+
+    // 1. Handle Holon Changes (Creation/Update)
+    // Structure changes usually imply we should check if the Holon exists and index it
+    if (event.subjects && event.subjects.length > 0) {
+      const holonId = event.subjects[0];
+      const holon = await this.getHolon(holonId);
+
+      if (holon) {
+        // Add to type index
+        let typeSet = this.holonsByType.get(holon.type);
+        if (!typeSet) {
+          // Ensure set exists for this type
+          typeSet = new Set();
+          this.holonsByType.set(holon.type, typeSet);
+        }
+        typeSet.add(holon.id);
+      }
+    }
+
+    // 2. Handle Relationship Changes (Assignment/Link)
+    // We check if the event payload has a relationshipId
+    const payload = event.payload as any;
+    if (payload && payload.relationshipId) {
+      // It's likely a relationship event
+      // We can't easily get the Relationship object without querying state projection
+      // But we can try to fetch it from state projection directly
+      const relationshipState = this.stateProjection.getRelationshipState(payload.relationshipId);
+
+      if (relationshipState) {
+        const rel = relationshipState.relationship;
+
+        // Index by Type
+        let typeSet = this.relationshipsByType.get(rel.type);
+        if (!typeSet) {
+          typeSet = new Set();
+          this.relationshipsByType.set(rel.type, typeSet);
+        }
+        typeSet.add(rel.id);
+
+        // Index by Source
+        let sourceSet = this.relationshipsBySource.get(rel.sourceHolonID);
+        if (!sourceSet) {
+          sourceSet = new Set();
+          this.relationshipsBySource.set(rel.sourceHolonID, sourceSet);
+        }
+        sourceSet.add(rel.id);
+
+        // Index by Target
+        let targetSet = this.relationshipsByTarget.get(rel.targetHolonID);
+        if (!targetSet) {
+          targetSet = new Set();
+          this.relationshipsByTarget.set(rel.targetHolonID, targetSet);
+        }
+        targetSet.add(rel.id);
+      }
+    }
   }
 
   /**

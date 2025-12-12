@@ -113,19 +113,76 @@ export class Neo4jGraphStore implements ISemanticGraphStore {
         }
     }
 
-    async updateFromNewEvent(): Promise<void> {
-        // Optimized: In a real Event Sourcing setup, we would take the *single* event passed here
-        // and apply just that change.
-        // However, the GraphStore interface signature for updateFromNewEvent currently takes void
-        // and relies on StateProjection having the latest state.
-        // To match the interface without changing it yet, we *could* rebuild, but that's slow.
-        // Ideally we update the generic `updateFromNewEvent(event: DomainEvent)` signature.
-        // For this POC, we will just call rebuildIndices() as the interface implies a refresh.
-        // See `server.ts`: projectionEngine.subscribe(async (event) => ... graphStore.updateFromNewEvent())
+    /**
+     * Incrementally update Neo4j based on the specific event
+     */
+    async updateFromNewEvent(event: any): Promise<void> {
+        if (!event) return;
+        const session = this.driver.session();
 
-        // NOTE: To make this performant for 20k, we MUST eventually consume the specific event.
-        // I will implement a "Smart Refresh" here if I can get the Diff, or fallback to Rebuild.
-        await this.rebuildIndices();
+        try {
+            // 1. Holon Updates
+            if (event.subjects && event.subjects.length > 0) {
+                const holonId = event.subjects[0];
+                const holonState = this.stateProjection.getHolonState(holonId);
+
+                if (holonState) {
+                    const h = holonState.holon;
+                    // Upsert Holon
+                    await session.run(
+                        `
+                        MERGE (h:Holon {id: $id})
+                        SET h += $props, h.type = $type, h.updatedAt = $updatedAt
+                        `,
+                        {
+                            id: h.id,
+                            props: this.serializeProperties(h.properties),
+                            type: h.type,
+                            updatedAt: new Date().toISOString()
+                        }
+                    );
+                    // Ensure generic label matches type if safe
+                    if (/^[a-zA-Z0-9_]+$/.test(h.type)) {
+                        // We can't easily remove old labels dynamically without knowing them, 
+                        // so we just add the new one. Is that okay? 
+                        // Ideally we remove all other labels except Holon.
+                        // For MVP, adding is fine.
+                        await session.run(`MATCH (h:Holon {id: $id}) SET h:${h.type}`, { id: h.id });
+                    }
+                }
+            }
+
+            // 2. Relationship Updates
+            const payload = event.payload as any;
+            if (payload && payload.relationshipId) {
+                const relationshipState = this.stateProjection.getRelationshipState(payload.relationshipId);
+
+                if (relationshipState) {
+                    const r = relationshipState.relationship;
+                    // Upsert Relationship
+                    await session.run(
+                        `
+                        MATCH (a:Holon {id: $sourceId}), (b:Holon {id: $targetId})
+                        MERGE (a)-[r:REL {id: $id}]->(b)
+                        SET r += $props, r.type = $type
+                        `,
+                        {
+                            sourceId: r.sourceHolonID,
+                            targetId: r.targetHolonID,
+                            id: r.id,
+                            props: this.serializeProperties(r.properties),
+                            type: r.type
+                        }
+                    );
+                }
+            }
+
+        } catch (error) {
+            console.error('Failed to incremental update Neo4j:', error);
+            // Fallback?
+        } finally {
+            await session.close();
+        }
     }
 
     // --- Read API (Cypher) ---

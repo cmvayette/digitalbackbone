@@ -45,7 +45,15 @@ async function verify() {
         const event = await eventStore.getEvent(eventId);
         projectionEngine.applyNewEvent(event!);
 
-        await store.updateFromNewEvent(); // Should trigger write to DB
+        await store.updateFromNewEvent({
+            id: 'test-event-1',
+            type: 'TestEvent',
+            occurredAt: new Date(),
+            recordedAt: new Date(),
+            actor: 'system',
+            subjects: ['test-holon'],
+            payload: {}
+        } as any); // Should trigger write to DB
 
         // 5. Query
         console.log('Querying Store...');

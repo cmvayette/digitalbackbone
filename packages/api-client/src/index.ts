@@ -22,6 +22,7 @@ export { queryKeys, queryFns, staleTimes } from './hooks';
 export { useExternalOrgData, type ExternalOrganization, type ExternalPosition, type ExternalPerson } from './useExternalOrgData';
 export * from './useExternalProcessData';
 export * from './hooks/useProcessEditor';
+export * from './hooks/useProcessDetail';
 export * from './useExternalPolicyData';
 export * from './hooks/useStrategyComposer';
 export * from './useStrategyData';

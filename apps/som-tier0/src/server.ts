@@ -185,7 +185,7 @@ async function startServer() {
         await howDoAdapter.handleEvent(event);
 
         // Update Graph Store
-        await graphStore.updateFromNewEvent();
+        await graphStore.updateFromNewEvent(event);
     });
     console.log('Orchestration wired internally.');
 

@@ -23,7 +23,7 @@ export class CachedGraphStore implements ISemanticGraphStore {
         await this.redis.delPattern('holon:*');
     }
 
-    async updateFromNewEvent(event?: any): Promise<void> {
+    async updateFromNewEvent(event: any): Promise<void> {
         // 1. Invalidate cache based on event subjects
         if (event && event.subjects) {
             for (const subjectId of event.subjects) {
