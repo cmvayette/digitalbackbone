@@ -21,7 +21,10 @@
       "node",
       "vitest/globals"
     ],
-    "baseUrl": "."
+    "baseUrl": "../..",
+    "paths": {
+      "@som/shared-types": ["./packages/som-shared-types/dist/index.d.ts"]
+    }
   },
   "include": [
     "src/**/*"

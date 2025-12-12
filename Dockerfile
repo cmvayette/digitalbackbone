@@ -21,9 +21,12 @@ COPY --chown=node:node apps/som-tier0/ apps/som-tier0/
 # Install dependencies (for all workspaces in monorepo)
 RUN npm ci
 
-# Build all workspaces (shared packages first, then apps)
-# This ensures @som/shared-types is built before som-tier0 tries to import it
-RUN npm run build
+# Build only shared-types (required dependency)
+RUN npm run build --workspace packages/som-shared-types
+
+# Build only som-tier0 (the app we're containerizing)
+# Skip other packages (ui-components, api-client, etc.) that aren't needed for backend
+RUN npm run build --workspace apps/som-tier0
 
 # Stage 2: Runtime
 FROM registry1.dso.mil/ironbank/opensource/nodejs/nodejs20:latest
