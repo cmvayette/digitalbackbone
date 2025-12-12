@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@som/api-client": "*",
+    "@som/build-config": "^0.1.0",
     "@som/shared-types": "*",
     "@tanstack/react-query": "^5.90.12",
     "clsx": "^2.1.1",
