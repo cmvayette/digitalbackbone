@@ -185,8 +185,10 @@ async function startServer() {
         return c.json(response, response.success ? 200 : 400); // Simple status mapping
     });
 
-    // Health Check (Direct Hono route)
+    // Health Check (Direct Hono routes)
     app.get('/health', (c) => c.json({ status: 'ok', events: allEvents.length }));
+    app.get('/health/liveness', (c) => c.json({ status: 'UP' }));
+    app.get('/health/readiness', (c) => c.json({ status: 'ok', events: allEvents.length }));
 
     console.log(`SOM Tier-0 running on http://localhost:${PORT}`);
 

@@ -1,5 +1,4 @@
 {
-  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "target": "ES2020",
     "module": "commonjs",
@@ -21,7 +20,10 @@
       "node",
       "vitest/globals"
     ],
-    "baseUrl": "."
+    "baseUrl": ".",
+    "paths": {
+      "@som/shared-types": ["../../packages/som-shared-types/dist"]
+    }
   },
   "include": [
     "src/**/*"
@@ -30,5 +32,8 @@
     "node_modules",
     "dist",
     "**/*.test.ts"
+  ],
+  "references": [
+    { "path": "../../packages/som-shared-types" }
   ]
 }
