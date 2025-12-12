@@ -164,7 +164,7 @@ export class MeasureLensEngine {
     }
 
     // Create the MeasureEmitted event
-    const eventId = this.eventStore.submitEvent({
+    const eventId = await this.eventStore.submitEvent({
       type: EventType.MeasureEmitted,
       occurredAt: measureValue.timestamp,
       actor,
@@ -206,7 +206,7 @@ export class MeasureLensEngine {
     }
 
     // Gather input measure values
-    const inputValues = this.gatherInputMeasures(
+    const inputValues = await this.gatherInputMeasures(
       lensDef.properties.inputMeasures,
       holonID,
       timestamp
@@ -226,7 +226,7 @@ export class MeasureLensEngine {
     };
 
     // Create the LensEvaluated event
-    const eventId = this.eventStore.submitEvent({
+    const eventId = await this.eventStore.submitEvent({
       type: EventType.LensEvaluated,
       occurredAt: timestamp,
       actor,
@@ -375,15 +375,15 @@ export class MeasureLensEngine {
   /**
    * Gather input measure values for lens evaluation
    */
-  private gatherInputMeasures(
+  private async gatherInputMeasures(
     inputMeasureIds: string[],
     holonID: HolonID,
     timestamp: Timestamp
-  ): MeasureValue[] {
+  ): Promise<MeasureValue[]> {
     const inputValues: MeasureValue[] = [];
 
     // Get all MeasureEmitted events for this holon
-    const events = this.eventStore.getEvents({ subjects: [holonID] });
+    const events = await this.eventStore.getEvents({ subjects: [holonID] });
     const measureEvents = events.filter(e => e.type === EventType.MeasureEmitted);
 
     // For each required input measure, find the most recent value before timestamp

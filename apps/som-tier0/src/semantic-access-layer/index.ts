@@ -277,10 +277,10 @@ export class SemanticAccessLayer {
    * Transform external data into SOM events
    * Validates events before acceptance
    */
-  submitExternalData(
+  async submitExternalData(
     data: ExternalData,
     strategy: ConflictResolutionStrategy = ConflictResolutionStrategy.DocumentPrecedence
-  ): TransformationResult {
+  ): Promise<TransformationResult> {
     const errors: string[] = [];
     const conflicts: DataConflict[] = [];
     const events: Event[] = [];
@@ -363,8 +363,8 @@ export class SemanticAccessLayer {
       }
 
       // Only submit to event store after validation passes
-      const eventID = this.eventStore.submitEvent(partialEvent);
-      const submittedEvent = this.eventStore.getEvent(eventID);
+      const eventID = await this.eventStore.submitEvent(partialEvent);
+      const submittedEvent = await this.eventStore.getEvent(eventID);
 
       if (!submittedEvent) {
         errors.push('Failed to create event in event store');

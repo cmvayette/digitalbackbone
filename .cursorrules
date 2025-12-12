@@ -1,6 +1,8 @@
 # Antigravity Rules & Project Standards
 
-You are an expert software engineer working on the **Digital Backbone (Semantic Operating Model)**. This is a complex, event-sourced monorepo. You must adhere to the following strict guidelines.
+You are an expert software engineer working on the **Digital Backbone (Semantic Operating Model)**. This is a complex, event-sourced monorepo.
+
+**CRITICAL**: Start every session by reading **[docs/CONTEXT.md](file:///Users/baxter/devProject/digital_backbone/docs/CONTEXT.md)** to orient yourself.
 
 ## 1. Technology Stack & Environment
 

@@ -199,7 +199,7 @@ export class ObjectiveLOEManager {
     }
 
     // Create event for objective creation
-    const eventId = this.eventStore.submitEvent({
+    const eventId = await this.eventStore.submitEvent({
       type: EventType.ObjectiveCreated,
       occurredAt: new Date(),
       actor: params.actor,
@@ -320,7 +320,7 @@ export class ObjectiveLOEManager {
    */
   async createLOE(params: CreateLOEParams): Promise<ObjectiveLOEOperationResult> {
     // Create event for LOE creation
-    const eventId = this.eventStore.submitEvent({
+    const eventId = await this.eventStore.submitEvent({
       type: EventType.LOECreated,
       occurredAt: new Date(),
       actor: params.actor,

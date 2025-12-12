@@ -5,13 +5,13 @@ import {
     type ObjectiveCreatedPayload,
     type KeyResultDefinedPayload
 } from '@som/shared-types';
-import { type SubmitEventRequest } from '@som/api-client';
-import { createSOMClient } from '@som/api-client';
+import { type SubmitEventRequest, SOMClientOptions } from '@som/api-client';
 import { v4 as uuidv4 } from 'uuid';
+import { getClient } from '../api/client';
 
-export function useStrategyComposer() {
+export function useStrategyComposer(options: SOMClientOptions = { mode: 'mock' }) {
     const queryClient = useQueryClient();
-    const client = createSOMClient();
+    const client = getClient(options.mode);
 
     const createObjectiveMutation = useMutation({
         mutationFn: async (vars: {

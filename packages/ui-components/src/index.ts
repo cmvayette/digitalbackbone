@@ -25,5 +25,20 @@ export type { EmptyStateProps, EmptyStateVariant } from './components/EmptyState
 export { OwnerPicker } from './components/OwnerPicker';
 export type { OwnerPickerProps } from './components/OwnerPicker';
 
+
+// Atoms
+export { Button } from './components/atoms/Button';
+export type { ButtonProps } from './components/atoms/Button';
+
+export { Badge } from './components/atoms/Badge';
+export type { BadgeProps, BadgeVariant, BadgeIntent } from './components/atoms/Badge';
+
+export { HolonCard } from './components/atoms/HolonCard';
+export type { HolonCardProps } from './components/atoms/HolonCard';
+
 // Hooks
 export { useDebounce } from './hooks/useDebounce';
+
+// Auth
+export { AuthGuard, type AuthGuardProps } from './components/auth/AuthGuard';
+export { AuthCallback, type AuthCallbackProps } from './components/auth/AuthCallback';

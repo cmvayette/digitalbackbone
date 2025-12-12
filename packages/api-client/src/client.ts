@@ -145,9 +145,16 @@ export interface ISOMClient {
 
   // Health
   healthCheck(): Promise<{ healthy: boolean; latencyMs: number }>;
+
+  // Auth
+  login?(): void;
+
+  // OPA
+  checkAccess(input: import('./services/OPAClient').OPAInput): Promise<boolean>;
 }
 
 import { MockSOMClient } from './mock-client';
+import { OPAClient } from './services/OPAClient';
 
 /**
  * Real SOM API Client Implementation
@@ -178,6 +185,11 @@ export class RealSOMClient implements ISOMClient {
    */
   clearAuthToken(): void {
     delete this.defaultHeaders['Authorization'];
+  }
+
+  login(): void {
+    // Real implementation doesn't handle login directly, the facade does
+    console.warn('RealSOMClient login not implemented directly');
   }
 
   /**
@@ -389,6 +401,13 @@ export class RealSOMClient implements ISOMClient {
       return { healthy: false, latencyMs: Date.now() - start };
     }
   }
+
+  async checkAccess(input: import('./services/OPAClient').OPAInput): Promise<boolean> {
+    // Real client could delegate to backend or call OPA directly (if sidecar)
+    // For specific architecture "Sidecar", client calls OPA.
+    const opa = new OPAClient();
+    return opa.checkAccess(input);
+  }
 }
 
 /**
@@ -398,7 +417,18 @@ export interface SOMClientOptions {
   headers?: Record<string, string>;
   includeCredentials?: boolean;
   mode?: 'real' | 'mock';
+  /**
+   * Configuration for OIDC/Auth
+   */
+  authConfig?: {
+    authority: string;
+    clientId: string;
+    redirectUri: string;
+  };
 }
+
+
+export type { OPAInput } from './services/OPAClient';
 
 /**
  * SOM API Client Facade
@@ -406,13 +436,32 @@ export interface SOMClientOptions {
  */
 export class SOMClient implements ISOMClient {
   private delegate: ISOMClient;
+  private authConfig?: SOMClientOptions['authConfig'];
 
   constructor(baseUrl: string, options?: SOMClientOptions) {
+    this.authConfig = options?.authConfig;
     if (options?.mode === 'mock') {
       this.delegate = new MockSOMClient();
     } else {
       this.delegate = new RealSOMClient(baseUrl, options);
     }
+  }
+
+  /**
+   * Initiates the login flow if authConfig is present
+   */
+  login(): void {
+    if (!this.authConfig) {
+      console.warn('Auth config not provided. Cannot initiate login.');
+      return;
+    }
+    const params = new URLSearchParams({
+      client_id: this.authConfig.clientId,
+      redirect_uri: this.authConfig.redirectUri,
+      response_type: 'code',
+      scope: 'openid profile email',
+    });
+    window.location.href = `${this.authConfig.authority}/protocol/openid-connect/auth?${params.toString()}`;
   }
 
   setAuthToken(token: string): void { this.delegate.setAuthToken(token); }
@@ -431,6 +480,16 @@ export class SOMClient implements ISOMClient {
   getPolicies(filters?: HolonFilters): Promise<APIResponse<Holon[]>> { return this.delegate.getPolicies(filters); }
   getGovernanceConfig(): Promise<APIResponse<GovernanceConfig>> { return this.delegate.getGovernanceConfig(); }
   updateGovernanceConfig(config: Partial<GovernanceConfig['properties']>): Promise<APIResponse<GovernanceConfig>> { return this.delegate.updateGovernanceConfig(config); }
+
+  // Health
   healthCheck(): Promise<{ healthy: boolean; latencyMs: number }> { return this.delegate.healthCheck(); }
+
+  // OPA
+  checkAccess(input: import('./services/OPAClient').OPAInput): Promise<boolean> {
+    const opa = new OPAClient();
+    return opa.checkAccess(input);
+  }
 }
+
+
 

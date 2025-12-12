@@ -80,7 +80,7 @@ export class RelationshipRegistry implements IRelationshipRepository {
     }
 
     // Generate event for relationship creation
-    const eventId = this.generateRelationshipCreationEvent(relationship, params.actor);
+    const eventId = await this.generateRelationshipCreationEvent(relationship, params.actor);
     relationship.createdBy = eventId;
 
     // Store relationship
@@ -134,7 +134,7 @@ export class RelationshipRegistry implements IRelationshipRepository {
     filters?: RelationshipQueryFilters
   ): Promise<Relationship[]> {
     const relationshipIds = this.relationshipsBySource.get(holonID) || new Set();
-    let relationships: Relationship[] = [];
+    const relationships: Relationship[] = [];
 
     for (const id of relationshipIds) {
       const rel = this.relationships.get(id);
@@ -155,7 +155,7 @@ export class RelationshipRegistry implements IRelationshipRepository {
     filters?: RelationshipQueryFilters
   ): Promise<Relationship[]> {
     const relationshipIds = this.relationshipsByTarget.get(holonID) || new Set();
-    let relationships: Relationship[] = [];
+    const relationships: Relationship[] = [];
 
     for (const id of relationshipIds) {
       const rel = this.relationships.get(id);
@@ -175,7 +175,7 @@ export class RelationshipRegistry implements IRelationshipRepository {
     filters?: RelationshipQueryFilters
   ): Promise<Relationship[]> {
     const relationshipIds = this.relationshipsByType.get(type) || new Set();
-    let relationships: Relationship[] = [];
+    const relationships: Relationship[] = [];
 
     for (const id of relationshipIds) {
       const rel = this.relationships.get(id);
@@ -245,7 +245,7 @@ export class RelationshipRegistry implements IRelationshipRepository {
     this.relationships.set(params.relationshipID, relationship);
 
     // Generate event for relationship modification
-    const eventId = this.generateRelationshipModificationEvent(
+    const eventId = await this.generateRelationshipModificationEvent(
       relationship,
       params.actor,
       params.reason,
@@ -343,7 +343,7 @@ export class RelationshipRegistry implements IRelationshipRepository {
   /**
    * Generate an event for relationship creation
    */
-  private generateRelationshipCreationEvent(relationship: Relationship, actor: HolonID): EventID {
+  private async generateRelationshipCreationEvent(relationship: Relationship, actor: HolonID): Promise<EventID> {
     const event: Omit<Event, 'id' | 'recordedAt'> = {
       type: EventType.AssignmentStarted, // Using AssignmentStarted as a generic relationship creation event
       occurredAt: relationship.effectiveStart,
@@ -359,18 +359,18 @@ export class RelationshipRegistry implements IRelationshipRepository {
       causalLinks: {},
     };
 
-    return this.eventStore.submitEvent(event);
+    return await this.eventStore.submitEvent(event);
   }
 
   /**
    * Generate an event for relationship modification
    */
-  private generateRelationshipModificationEvent(
+  private async generateRelationshipModificationEvent(
     relationship: Relationship,
     actor: HolonID,
     reason: string,
     sourceSystem: string
-  ): EventID {
+  ): Promise<EventID> {
     const event: Omit<Event, 'id' | 'recordedAt'> = {
       type: EventType.AssignmentEnded, // Using AssignmentEnded as a generic relationship end event
       occurredAt: relationship.effectiveEnd!,
@@ -389,7 +389,7 @@ export class RelationshipRegistry implements IRelationshipRepository {
       },
     };
 
-    return this.eventStore.submitEvent(event);
+    return await this.eventStore.submitEvent(event);
   }
 }
 

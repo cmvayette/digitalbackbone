@@ -2,8 +2,8 @@
  * Specific payload definitions for SOM Events
  */
 
-import { EventType } from './event-enums';
-import { HolonID } from './holon';
+import { EventType } from './event-enums.js';
+import { HolonID } from './holon.js';
 
 export interface BasePayload {
     [key: string]: unknown;
@@ -323,7 +323,7 @@ export interface LensEvaluatedPayload extends BasePayload {
 
 // --- Process ---
 
-import { ProcessStep } from './holon';
+import { ProcessStep } from './holon.js';
 
 export interface ProcessDefinedPayload extends BasePayload {
     processId: HolonID;

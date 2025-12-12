@@ -56,8 +56,8 @@ export class StateProjectionEngine {
    * Replay all events to compute current state
    * Events are processed in time order
    */
-  replayAllEvents(): ProjectedState {
-    const allEvents = this.eventStore.getAllEvents();
+  async replayAllEvents(): Promise<ProjectedState> {
+    const allEvents = await this.eventStore.getAllEvents();
 
 
     // Sort events by occurredAt timestamp to ensure correct ordering
@@ -86,8 +86,8 @@ export class StateProjectionEngine {
   /**
    * Replay events up to a specific timestamp to reconstruct historical state
    */
-  replayEventsAsOf(timestamp: Timestamp): ProjectedState {
-    const allEvents = this.eventStore.getAllEvents();
+  async replayEventsAsOf(timestamp: Timestamp): Promise<ProjectedState> {
+    const allEvents = await this.eventStore.getAllEvents();
 
     // Filter events up to the specified timestamp
     const eventsUpToTimestamp = allEvents.filter(event =>
@@ -250,6 +250,7 @@ export class StateProjectionEngine {
       case EventType.TaskBlocked:
       case EventType.TaskCompleted:
       case EventType.TaskCancelled:
+      case EventType.InitiativeCreated: // Added from below
         this.handleTaskInitiativeChange(event, state);
         break;
 
@@ -287,19 +288,9 @@ export class StateProjectionEngine {
         break;
 
       // New Task/Initiative Events
-      case EventType.InitiativeCreated:
-      case EventType.TaskCreated:
+      // New Governance events
       case EventType.KeyResultDefined: // KR is a Holon
         this.handleHolonCreation(event, state);
-        break;
-
-      // Task & Initiative Updates
-      case EventType.InitiativeStageChange:
-      case EventType.TaskStarted:
-      case EventType.TaskBlocked:
-      case EventType.TaskCompleted:
-      case EventType.TaskCancelled:
-        this.handleTaskInitiativeChange(event, state);
         break;
 
       default:
@@ -667,8 +658,7 @@ export class StateProjectionEngine {
       case EventType.InitiativeStageChange:
         return HolonType.Initiative;
 
-      case EventType.TaskCreated:
-        return HolonType.Task;
+
 
       case EventType.KeyResultDefined:
         return HolonType.KeyResult;

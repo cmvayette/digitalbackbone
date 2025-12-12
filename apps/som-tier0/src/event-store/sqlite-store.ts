@@ -19,6 +19,12 @@ export class SQLiteEventStore implements IEventStore {
 
         try {
             if (fs.existsSync(schemaPath)) {
+                try {
+                    this.db.exec("PRAGMA journal_mode = WAL");
+                } catch { /* ignore */ }
+                try {
+                    this.db.exec("PRAGMA synchronous = NORMAL");
+                } catch { /* ignore */ }
                 const schema = fs.readFileSync(schemaPath, 'utf-8');
                 this.db.exec(schema);
             } else {
@@ -33,11 +39,19 @@ export class SQLiteEventStore implements IEventStore {
                         actor TEXT NOT NULL,
                         subjects TEXT NOT NULL,
                         payload TEXT NOT NULL,
-                        causal_links TEXT
+                        causal_links TEXT,
+                        source_system TEXT,
+                        source_document TEXT,
+                        validity_window TEXT
                     );
                     CREATE INDEX IF NOT EXISTS idx_events_type ON events(type);
                     CREATE INDEX IF NOT EXISTS idx_events_occurred_at ON events(occurred_at);
                  `);
+
+                // Auto-migration for existing databases
+                try { this.db.exec('ALTER TABLE events ADD COLUMN source_system TEXT'); } catch { /* ignore */ }
+                try { this.db.exec('ALTER TABLE events ADD COLUMN source_document TEXT'); } catch { /* ignore */ }
+                try { this.db.exec('ALTER TABLE events ADD COLUMN validity_window TEXT'); } catch { /* ignore */ }
             }
         } catch (e) {
             console.error("[SQLiteEventStore] Failed to initialize schema", e);
@@ -45,15 +59,16 @@ export class SQLiteEventStore implements IEventStore {
         }
     }
 
-    submitEvent(eventData: Omit<Event, 'id' | 'recordedAt'>): EventID {
+    async submitEvent(eventData: Omit<Event, 'id' | 'recordedAt'>): Promise<EventID> {
         const id = randomUUID();
         const recordedAt = new Date();
 
         const stmt = this.db.prepare(`
-            INSERT INTO events (id, type, occurred_at, recorded_at, actor, subjects, payload, causal_links)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO events (id, type, occurred_at, recorded_at, actor, subjects, payload, causal_links, source_system, source_document, validity_window)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `);
 
+        // Wrapping internal sync call
         const info = stmt.run(
             id,
             eventData.type,
@@ -62,19 +77,22 @@ export class SQLiteEventStore implements IEventStore {
             eventData.actor,
             JSON.stringify(eventData.subjects),
             JSON.stringify(eventData.payload),
-            JSON.stringify(eventData.causalLinks || {})
+            JSON.stringify(eventData.causalLinks || {}),
+            eventData.sourceSystem,
+            eventData.sourceDocument || null,
+            eventData.validityWindow ? JSON.stringify(eventData.validityWindow) : null
         );
 
         return id;
     }
 
-    getEvent(id: EventID): Event | undefined {
+    async getEvent(id: EventID): Promise<Event | undefined> {
         const row = this.db.prepare('SELECT * FROM events WHERE id = ?').get(id) as any;
         if (!row) return undefined;
         return this.mapRowToEvent(row);
     }
 
-    getEvents(filter?: EventFilter): Event[] {
+    async getEvents(filter?: EventFilter): Promise<Event[]> {
         let sql = 'SELECT * FROM events WHERE 1=1';
         const params: any[] = [];
 
@@ -115,7 +133,7 @@ export class SQLiteEventStore implements IEventStore {
         return events;
     }
 
-    getAllEvents(): Event[] {
+    async getAllEvents(): Promise<Event[]> {
         const rows = this.db.prepare('SELECT * FROM events ORDER BY occurred_at ASC').all() as any[];
         return rows.map(this.mapRowToEvent);
     }
@@ -129,7 +147,16 @@ export class SQLiteEventStore implements IEventStore {
             actor: row.actor,
             subjects: JSON.parse(row.subjects),
             payload: JSON.parse(row.payload),
-            causalLinks: row.causal_links ? JSON.parse(row.causal_links) : undefined
+            causalLinks: row.causal_links ? JSON.parse(row.causal_links) : undefined,
+            sourceSystem: row.source_system,
+            sourceDocument: row.source_document,
+            validityWindow: row.validity_window ? (() => {
+                const parsed = JSON.parse(row.validity_window);
+                return {
+                    start: new Date(parsed.start),
+                    end: new Date(parsed.end)
+                };
+            })() : undefined
         } as Event;
     }
 }

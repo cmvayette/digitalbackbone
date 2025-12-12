@@ -17,7 +17,7 @@ const queryClient = new QueryClient();
 
 // Inner component to access ReactFlow Context
 function OrgChartContent() {
-  const { organizations } = useExternalOrgData({ mode: 'mock' });
+  const { organizations } = useExternalOrgData({ mode: 'real' });
 
   const [viewMode, setViewMode] = useState<'reporting' | 'mission'>('reporting');
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
@@ -106,7 +106,7 @@ function OrgChartContent() {
               onResultSelect={handleSearchResult}
               viewMode={viewMode}
               onViewModeChange={setViewMode}
-              clientOptions={{ mode: 'mock' }}
+              clientOptions={{ mode: 'real' }}
             />
             {/* Breadcrumb below search */}
             {breadcrumbPath.length > 1 && (

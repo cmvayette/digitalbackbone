@@ -1,12 +1,12 @@
 {
     "name": "@som/shared-types",
     "version": "0.1.0",
-    "type": "module",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "exports": {
         ".": {
             "types": "./dist/index.d.ts",
+            "require": "./dist/index.js",
             "default": "./dist/index.js"
         }
     },

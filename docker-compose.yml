@@ -8,16 +8,74 @@ services:
     environment:
       - NODE_ENV=development
       - AUTH_MODE=apikey # Or 'gateway' to test C-ATO path
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/som?schema=public
     healthcheck:
-      test: ["CMD", "wget", "-q", "-O", "-", "http://localhost:3000/health/liveness"]
+      test: [ "CMD", "wget", "-q", "-O", "-", "http://localhost:3000/health/liveness" ]
       interval: 10s
       timeout: 5s
       retries: 3
     read_only: true # Hardening: Read-only root filesystem
     tmpfs:
       - /tmp # Allow write to tmp for logs/pid if needed
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: som
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Identity Provider (Keycloak)
+  keycloak:
+    image: quay.io/keycloak/keycloak:23.0
+    command: start-dev
+    ports:
+      - "8080:8080"
+    environment:
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+    volumes:
+      - ./keycloak_data:/opt/keycloak/data
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/health/ready" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # Gateway Simulation (Optional, e.g. mock Envoy)
   # gateway:
   #   image: envoyproxy/envoy:distroless-v1.25
   #   ...
+
+  opa:
+    image: openpolicyagent/opa:latest
+    ports:
+      - "8181:8181"
+    volumes:
+      - ./policies:/policies
+    command:
+      - "run"
+      - "--server"
+      - "--addr=0.0.0.0:8181"
+      - "--log-format=json-pretty"
+      - "/policies"
+    healthcheck:
+      test: [ "CMD", "wget", "--spider", "http://localhost:8181/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+volumes:
+  postgres_data:
+  keycloak_data:
+  policies:

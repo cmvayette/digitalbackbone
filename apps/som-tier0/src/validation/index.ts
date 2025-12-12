@@ -95,7 +95,7 @@ export class ValidationEngine {
    * Validate an event with detailed error reporting
    * Uses documents in force at the event timestamp for validation
    */
-  validateEventWithDetails(event: Event): EnhancedValidationResult {
+  async validateEventWithDetails(event: Event): Promise<EnhancedValidationResult> {
     const timestamp = event.occurredAt;
 
     // Get documents in force at event timestamp
@@ -149,7 +149,7 @@ export class ValidationEngine {
    * Validate a batch of events atomically
    * All events must be valid or the entire batch is rejected
    */
-  validateBatch(events: Omit<Event, 'id' | 'recordedAt'>[]): BatchValidationResult {
+  async validateBatch(events: Omit<Event, 'id' | 'recordedAt'>[]): Promise<BatchValidationResult> {
     const timestamp = new Date();
     const errors = new Map<number, DetailedValidationError[]>();
     let allValid = true;
@@ -165,7 +165,7 @@ export class ValidationEngine {
         recordedAt: timestamp,
       } as Event;
 
-      const result = this.validateEventWithDetails(tempEvent);
+      const result = await this.validateEventWithDetails(tempEvent);
 
       if (!result.valid && result.errors) {
         errors.set(i, result.errors);
@@ -184,12 +184,12 @@ export class ValidationEngine {
   /**
    * Create a compensating event to correct a previous event
    */
-  createCompensatingEvent(
+  async createCompensatingEvent(
     originalEventId: EventID,
     metadata: CompensatingEventMetadata,
     correctionPayload: Record<string, any>
-  ): Omit<Event, 'id' | 'recordedAt'> {
-    const originalEvent = this.eventStore.getEvent(originalEventId);
+  ): Promise<Omit<Event, 'id' | 'recordedAt'>> {
+    const originalEvent = await this.eventStore.getEvent(originalEventId);
 
     if (!originalEvent) {
       throw new Error(`Original event ${originalEventId} not found`);
@@ -230,7 +230,7 @@ export class ValidationEngine {
   /**
    * Validate temporal constraints using documents in force at event timestamp
    */
-  validateTemporalConstraints(event: Event): EnhancedValidationResult {
+  async validateTemporalConstraints(event: Event): Promise<EnhancedValidationResult> {
     const timestamp = event.occurredAt;
 
     // Validate timestamp is within acceptable range
@@ -278,7 +278,7 @@ export class ValidationEngine {
       ];
 
       for (const precedingId of precedingEventIds) {
-        const precedingEvent = this.eventStore.getEvent(precedingId);
+        const precedingEvent = await this.eventStore.getEvent(precedingId);
 
         if (precedingEvent && precedingEvent.occurredAt > timestamp) {
           errors.push({

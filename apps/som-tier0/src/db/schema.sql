@@ -7,7 +7,10 @@ CREATE TABLE IF NOT EXISTS events (
     actor TEXT NOT NULL,
     subjects TEXT NOT NULL, -- JSON Array of HolonIDs
     payload TEXT NOT NULL, -- JSON Object
-    causal_links TEXT -- JSON Object
+    causal_links TEXT, -- JSON Object
+    source_system TEXT,
+    source_document TEXT, -- DocumentID
+    validity_window TEXT -- JSON Object {start, end}
 );
 
 -- Indices for efficient querying

@@ -13,20 +13,20 @@ export interface IEventStore {
     /**
      * Submit a new event to the store
      */
-    submitEvent(event: Omit<Event, 'id' | 'recordedAt'>): EventID;
+    submitEvent(event: Omit<Event, 'id' | 'recordedAt'>): Promise<EventID>;
 
     /**
      * Get an event by ID
      */
-    getEvent(id: EventID): Event | undefined;
+    getEvent(id: EventID): Promise<Event | undefined>;
 
     /**
      * Get all events matching filter
      */
-    getEvents(filter?: EventFilter): Event[];
+    getEvents(filter?: EventFilter): Promise<Event[]>;
 
     /**
      * Get all events (for state replay)
      */
-    getAllEvents(): Event[];
+    getAllEvents(): Promise<Event[]>;
 }

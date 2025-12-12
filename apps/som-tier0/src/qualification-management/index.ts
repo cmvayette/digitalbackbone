@@ -157,7 +157,7 @@ export class QualificationManager {
     }
 
     // Create event for qualification creation
-    const eventId = this.eventStore.submitEvent({
+    const eventId = await this.eventStore.submitEvent({
       type: EventType.QualificationDefined, // Changed event type
       occurredAt: new Date(),
       actor: params.actor,
@@ -261,7 +261,7 @@ export class QualificationManager {
     });
 
     if (result.relationship) {
-      this.eventStore.submitEvent({
+      await this.eventStore.submitEvent({
         type: EventType.QualificationAwarded,
         occurredAt: params.effectiveStart,
         actor: params.actor,
@@ -392,7 +392,7 @@ export class QualificationManager {
     }
 
     // Generate qualification expiration event
-    const eventId = this.eventStore.submitEvent({
+    const eventId = await this.eventStore.submitEvent({
       type: EventType.QualificationExpired,
       occurredAt: params.expirationDate,
       actor: params.actor,

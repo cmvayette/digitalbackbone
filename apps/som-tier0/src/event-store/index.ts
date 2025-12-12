@@ -13,10 +13,10 @@ import { randomUUID } from 'crypto';
 import { IEventStore, EventFilter } from '../core/interfaces/event-store';
 
 export { IEventStore, EventFilter };
-// export { InMemoryEventStore } from './index'; // Removed duplicate
-// export { InMemoryEventStore } from './index'; // Removed duplicate
+
 import { SQLiteEventStore } from './sqlite-store';
-export { SQLiteEventStore };
+import { PostgresEventStore } from './postgres-event-store';
+export { SQLiteEventStore, PostgresEventStore };
 
 
 /**
@@ -60,7 +60,7 @@ export class InMemoryEventStore implements IEventStore {
    * Submit a new event to the store
    * Events are immutable once submitted
    */
-  submitEvent(eventData: Omit<Event, 'id' | 'recordedAt'>): EventID {
+  async submitEvent(eventData: Omit<Event, 'id' | 'recordedAt'>): Promise<EventID> {
     // Validate timestamp
     this.validateTimestamp(eventData.occurredAt);
 
@@ -109,14 +109,14 @@ export class InMemoryEventStore implements IEventStore {
    * Get an event by its ID
    * Returns a frozen copy to maintain immutability
    */
-  getEvent(eventId: EventID): Event | undefined {
+  async getEvent(eventId: EventID): Promise<Event | undefined> {
     return this.events.get(eventId);
   }
 
   /**
    * Get all events matching filter
    */
-  getEvents(filter?: EventFilter): Event[] {
+  async getEvents(filter?: EventFilter): Promise<Event[]> {
     let events = this.eventsInOrder.map(id => this.events.get(id)!);
 
     if (filter) {
@@ -143,7 +143,7 @@ export class InMemoryEventStore implements IEventStore {
     * Legacy strict methods (can delegate to getEvents)
     */
 
-  getEventsByHolon(holonId: HolonID, timeRange?: { start: Timestamp; end: Timestamp }): Event[] {
+  async getEventsByHolon(holonId: HolonID, timeRange?: { start: Timestamp; end: Timestamp }): Promise<Event[]> {
     return this.getEvents({
       subjects: [holonId],
       startTime: timeRange?.start,
@@ -151,7 +151,7 @@ export class InMemoryEventStore implements IEventStore {
     });
   }
 
-  getEventsByType(eventType: EventType, timeRange?: { start: Timestamp; end: Timestamp }): Event[] {
+  async getEventsByType(eventType: EventType, timeRange?: { start: Timestamp; end: Timestamp }): Promise<Event[]> {
     return this.getEvents({
       type: [eventType],
       startTime: timeRange?.start,
@@ -159,7 +159,7 @@ export class InMemoryEventStore implements IEventStore {
     });
   }
 
-  getEventsByTimeRange(timeRange: { start: Timestamp; end: Timestamp }): Event[] {
+  async getEventsByTimeRange(timeRange: { start: Timestamp; end: Timestamp }): Promise<Event[]> {
     return this.getEvents({
       startTime: timeRange.start,
       endTime: timeRange.end
@@ -171,7 +171,7 @@ export class InMemoryEventStore implements IEventStore {
   /**
    * Get all events (for testing/debugging)
    */
-  getAllEvents(): Event[] {
+  async getAllEvents(): Promise<Event[]> {
     return this.eventsInOrder.map(id => this.events.get(id)!);
   }
 }
@@ -181,9 +181,12 @@ export class InMemoryEventStore implements IEventStore {
  * Defaults to SQLiteEventStore unless configured otherwise
  */
 export function createEventStore(): IEventStore {
-  // Check env var if we wanted to support switching back
-  // const type = process.env.SOM_EVENT_STORE || 'sqlite';
-  // if (type === 'memory') return new InMemoryEventStore();
+  const dbType = process.env.DB_TYPE || 'sqlite';
+
+  if (dbType === 'postgres') {
+    const connectionString = process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/som';
+    return new PostgresEventStore(connectionString);
+  }
 
   return new SQLiteEventStore();
 }

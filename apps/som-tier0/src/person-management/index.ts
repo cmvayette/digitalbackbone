@@ -96,7 +96,7 @@ export class PersonManager {
     const id = randomUUID();
 
     // Create event
-    const eventId = this.eventStore.submitEvent({
+    const eventId = await this.eventStore.submitEvent({
       type: EventType.PersonCreated, // Using generic type if specific not available, or reuse existing
       occurredAt: new Date(),
       actor: params.actor,
@@ -302,7 +302,7 @@ export class PersonManager {
     }
 
     // Generate qualification change event
-    const eventId = this.eventStore.submitEvent({
+    const eventId = await this.eventStore.submitEvent({
       type: EventType.QualificationAwarded,
       occurredAt: params.effectiveStart,
       actor: params.actor,
@@ -376,7 +376,7 @@ export class PersonManager {
     }
 
     // Generate qualification change event
-    const eventId = this.eventStore.submitEvent({
+    const eventId = await this.eventStore.submitEvent({
       type: EventType.QualificationExpired,
       occurredAt: endDate,
       actor,
