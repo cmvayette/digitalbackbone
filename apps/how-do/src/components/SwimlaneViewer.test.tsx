@@ -15,9 +15,11 @@ vi.mock('@som/api-client', () => ({
         getObligationsForOwner: () => []
     }),
     // Mock SOMClient constructor for the permission check inside useEffect
-    SOMClient: vi.fn().mockImplementation(() => ({
-        checkAccess: vi.fn().mockResolvedValue(true)
-    })),
+    SOMClient: vi.fn().mockImplementation(function () {
+        return {
+            checkAccess: vi.fn().mockResolvedValue(true)
+        }
+    }),
     createSOMClient: vi.fn()
 }));
 
