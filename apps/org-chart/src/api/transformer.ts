@@ -1,47 +1,36 @@
 import type { OrgStructure } from '@som/api-client';
 import type { GraphData, GraphNode, GraphEdge } from '../types/graph';
 
-export function transformStructureToGraph(data: OrgStructure): GraphData {
-    const nodes: GraphNode[] = [];
-    const edges: GraphEdge[] = [];
-    const processedIds = new Set<string>();
+class GraphBuilder {
+    private nodes: GraphNode[] = [];
+    private edges: GraphEdge[] = [];
+    private processedIds = new Set<string>();
+    private yOffset = 0;
 
-    // Helper to add node if not defined
-    const addNode = (node: GraphNode) => {
-        if (!processedIds.has(node.id)) {
-            nodes.push(node);
-            processedIds.add(node.id);
+    constructor() { }
+
+    public build(): GraphData {
+        return { nodes: this.nodes, edges: this.edges };
+    }
+
+    private addNode(node: GraphNode) {
+        if (!this.processedIds.has(node.id)) {
+            this.nodes.push(node);
+            this.processedIds.add(node.id);
         }
-    };
+    }
 
-    // Helper to add edge
-    const addEdge = (edge: GraphEdge) => {
-        edges.push(edge);
-    };
+    private addEdge(edge: GraphEdge) {
+        this.edges.push(edge);
+    }
 
-    // Processing Queue
-    // const queue = [data]; 
-
-    // Starting position (simple layout placeholder, dagre will run later)
-    let yOffset = 0;
-
-    function processStructure(structure: OrgStructure, parentOrgId?: string) {
+    public processStructure(structure: OrgStructure, parentOrgId?: string) {
         const org = structure.organization;
 
-        // 1. Add Organization Node
-        addNode({
-            id: org.id,
-            type: 'organization',
-            data: {
-                label: org.properties.name || 'Unknown Org',
-                subtitle: org.properties.uics?.join(', '),
-                properties: org
-            },
-            position: { x: 0, y: yOffset * 100 }
-        });
+        this.addOrganizationNode(org);
 
         if (parentOrgId) {
-            addEdge({
+            this.addEdge({
                 id: `${parentOrgId}-${org.id}`,
                 source: parentOrgId,
                 target: org.id,
@@ -49,61 +38,76 @@ export function transformStructureToGraph(data: OrgStructure): GraphData {
             });
         }
 
-        yOffset++;
+        this.yOffset++;
 
-        // 2. Add Positions and Assignments
-        structure.positions.forEach(pos => {
+        this.processPositions(structure.positions, structure.assignments, org.id);
+
+        // Recurse for Sub-Orgs
+        structure.subOrganizations.forEach(sub => this.processStructure(sub, org.id));
+    }
+
+    private addOrganizationNode(org: any) {
+        this.addNode({
+            id: org.id,
+            type: 'organization',
+            data: {
+                label: org.properties.name || 'Unknown Org',
+                subtitle: org.properties.uics?.join(', '),
+                properties: org
+            },
+            position: { x: 0, y: this.yOffset * 100 }
+        });
+    }
+
+    private processPositions(positions: any[], assignments: any[], orgId: string) {
+        positions.forEach(pos => {
             // Find assignment for this position
-            const assignment = structure.assignments.find(a => a.position.id === pos.id);
+            const assignment = assignments.find(a => a.position.id === pos.id);
             const person = assignment?.person;
 
-            // Add Position Node
-            addNode({
-                id: pos.id,
-                type: 'position',
-                data: {
-                    label: pos.properties.title,
-                    subtitle: 'Vacant', // Will be overwritten if filled
-                    isVacant: true,
-                    properties: pos,
-                    isBillet: pos.properties.billetStatus === 'billet',
-                    billetIDs: pos.properties.billetIDs?.join(', ')
-                },
-                position: { x: 100, y: yOffset * 100 }
-            });
+            this.addPositionNode(pos, person);
 
             // Edge: Org -> Position
-            addEdge({
-                id: `${org.id}-${pos.id}`,
-                source: org.id,
+            this.addEdge({
+                id: `${orgId}-${pos.id}`,
+                source: orgId,
                 target: pos.id,
                 type: 'smoothstep'
             });
-
-            // If occupied, do we show person as separate node? 
-            // Spec says "Position Card" shows identity. So Person Node might be implicit in Position Node.
-            // BUT for graph purity, let's keep them separate if we want "Person" entities to be clickable independent of position.
-            // However, the "Position Card" UI spec combines them.
-            // Let's stick to the spec: Position Card shows the person.
-            // We will inject the person data INTO the position node data.
-            if (person) {
-                // Update node with person data
-                const nodeIndex = nodes.findIndex(n => n.id === pos.id);
-                if (nodeIndex >= 0 && nodes[nodeIndex].data) {
-                    nodes[nodeIndex].data.subtitle = person.properties.name;
-                    if (nodes[nodeIndex].data.properties) {
-                        nodes[nodeIndex].data.properties['rank'] = person.properties.designatorRating;
-                    }
-                    nodes[nodeIndex].data.isVacant = false;
-                }
-            }
         });
-
-        // 3. Recurse for Sub-Orgs
-        structure.subOrganizations.forEach(sub => processStructure(sub, org.id));
     }
 
-    processStructure(data);
+    private addPositionNode(pos: any, person: any) {
+        const node: GraphNode = {
+            id: pos.id,
+            type: 'position',
+            data: {
+                label: pos.properties.title,
+                subtitle: 'Vacant', // Will be overwritten if filled
+                isVacant: true,
+                properties: pos,
+                isBillet: pos.properties.billetStatus === 'billet',
+                billetIDs: pos.properties.billetIDs?.join(', ')
+            },
+            position: { x: 100, y: this.yOffset * 100 }
+        };
 
-    return { nodes, edges };
+        // If occupied, inject person data into the position node.
+        // "Position Card" shows identity, effectively merging Person into Position for the graph view.
+        if (person) {
+            node.data.subtitle = person.properties.name;
+            if (node.data.properties) {
+                node.data.properties['rank'] = person.properties.designatorRating;
+            }
+            node.data.isVacant = false;
+        }
+
+        this.addNode(node);
+    }
+}
+
+export function transformStructureToGraph(data: OrgStructure): GraphData {
+    const builder = new GraphBuilder();
+    builder.processStructure(data);
+    return builder.build();
 }

@@ -18,6 +18,22 @@ export interface APIRequest<T = any> {
 }
 
 /**
+ * Route handler function
+ */
+export type RouteHandler = (request: APIRequest) => Promise<APIResponse>;
+
+/**
+ * Route definition
+ */
+export interface Route {
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
+  path: string;
+  handler: RouteHandler;
+  requiresAuth?: boolean;
+  requiresPermission?: (user: any) => boolean;
+}
+
+/**
  * API Response wrapper
  */
 export interface APIResponse<T = any> {

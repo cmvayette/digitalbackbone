@@ -23,8 +23,9 @@ import {
   ErrorHandlerMiddleware,
   RateLimitMiddleware,
 } from './middleware';
-import { APIRequest, APIResponse } from './api-types';
+import { APIRequest, APIResponse, Route, RouteHandler } from './api-types';
 import { ApiKeyAuthProvider } from './auth/api-key-provider';
+import { defineRoutes } from './route-config';
 
 /**
  * API Server configuration
@@ -38,21 +39,7 @@ export interface APIServerConfig {
   authMode?: 'apikey' | 'gateway';
 }
 
-/**
- * Route handler function
- */
-export type RouteHandler = (request: APIRequest) => Promise<APIResponse>;
 
-/**
- * Route definition
- */
-export interface Route {
-  method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
-  path: string;
-  handler: RouteHandler;
-  requiresAuth?: boolean;
-  requiresPermission?: (user: any) => boolean;
-}
 
 /**
  * API Server
@@ -122,8 +109,6 @@ export class APIServer {
       authProvider = new GatewayHeaderAuthProvider();
     } else {
       // Default to API Key
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const { ApiKeyAuthProvider } = require('./auth/api-key-provider');
       authProvider = new ApiKeyAuthProvider();
     }
 
@@ -142,225 +127,14 @@ export class APIServer {
   /**
    * Register all API routes
    */
+  /*
+   * Register all API routes
+   */
   private registerRoutes(): void {
-    // Holon query routes
-    this.registerRoute({
-      method: 'POST',
-      path: '/api/v1/holons/query',
-      handler: (req) => this.routes.queryHolons(req),
-      requiresAuth: true,
-    });
-
-    this.registerRoute({
-      method: 'GET',
-      path: '/api/v1/holons/:id',
-      handler: (req) => this.routes.getHolon(req),
-      requiresAuth: true,
-    });
-
-    // Relationship query routes
-    this.registerRoute({
-      method: 'POST',
-      path: '/api/v1/relationships/query',
-      handler: (req) => this.routes.queryRelationships(req),
-      requiresAuth: true,
-    });
-
-    this.registerRoute({
-      method: 'POST',
-      path: '/api/v1/relationships', // Alias for Client Contract
-      handler: (req) => this.routes.queryRelationships(req),
-      requiresAuth: true,
-    });
-
-    this.registerRoute({
-      method: 'GET',
-      path: '/api/v1/holons/:id/relationships',
-      handler: (req) => this.routes.getHolonRelationships(req),
-      requiresAuth: true,
-    });
-
-    this.registerRoute({
-      method: 'GET',
-      path: '/api/v1/holons/:id/connected',
-      handler: (req) => this.routes.getConnectedHolons(req),
-      requiresAuth: true,
-    });
-
-    // Event submission routes
-    this.registerRoute({
-      method: 'POST',
-      path: '/api/v1/events',
-      handler: (req) => this.routes.submitEvent(req),
-      requiresAuth: true,
-      requiresPermission: (user) => this.authzMiddleware.canSubmitEvents(user).authorized,
-    });
-
-    this.registerRoute({
-      method: 'POST',
-      path: '/api/v1/events/batch',
-      handler: (req) => this.routes.submitEventsBatch(req),
-      requiresAuth: true,
-      requiresPermission: (user) => this.authzMiddleware.canSubmitEvents(user).authorized,
-    });
-
-    // Event query routes
-    this.registerRoute({
-      method: 'POST',
-      path: '/api/v1/events/query',
-      handler: (req) => this.routes.queryEvents(req),
-      requiresAuth: true,
-    });
-
-    this.registerRoute({
-      method: 'GET',
-      path: '/api/v1/events/:id',
-      handler: (req) => this.routes.getEvent(req),
-      requiresAuth: true,
-    });
-
-    // Temporal query routes
-    this.registerRoute({
-      method: 'POST',
-      path: '/api/v1/temporal/holons',
-      handler: (req) => this.routes.queryHolonsAsOf(req),
-      requiresAuth: true,
-    });
-
-    this.registerRoute({
-      method: 'POST',
-      path: '/api/v1/temporal/relationships',
-      handler: (req) => this.routes.queryRelationshipsAsOf(req),
-      requiresAuth: true,
-    });
-
-    this.registerRoute({
-      method: 'GET',
-      path: '/api/v1/temporal/holons/:id',
-      handler: (req) => this.routes.getHolonAsOf(req),
-      requiresAuth: true,
-    });
-
-    this.registerRoute({
-      method: 'POST',
-      path: '/api/v1/temporal/organizations/structure',
-      handler: (req) => this.routes.getOrganizationStructureAsOf(req),
-      requiresAuth: true,
-    });
-
-    this.registerRoute({
-      method: 'POST',
-      path: '/api/v1/events/causal-chain',
-      handler: (req) => this.routes.traceCausalChain(req),
-      requiresAuth: true,
-    });
-
-    this.registerRoute({
-      method: 'GET',
-      path: '/api/v1/holons/:id/history',
-      handler: (req) => this.routes.getHolonHistory(req),
-      requiresAuth: true,
-    });
-
-    // Calendar events
-    this.registerRoute({
-      method: 'GET',
-      path: '/api/v1/calendar/events',
-      handler: (req) => this.routes.queryCalendarEvents(req),
-      requiresAuth: true,
-    });
-
-    this.registerRoute({
-      method: 'POST',
-      path: '/api/v1/availability/check',
-      handler: (req) => this.routes.checkAvailability(req),
-      requiresAuth: true,
-    });
-
-    // Unified Search Route (Client Contract)
-    this.registerRoute({
-      method: 'GET',
-      path: '/api/v1/search',
-      handler: (req) => this.routes.unifiedSearch(req),
-      requiresAuth: true,
-    });
-
-    // Pattern matching routes
-    this.registerRoute({
-      method: 'POST',
-      path: '/api/v1/patterns/match',
-      handler: (req) => this.routes.matchPattern(req),
-      requiresAuth: true,
-    });
-
-    // Schema management routes
-    this.registerRoute({
-      method: 'POST',
-      path: '/api/v1/schema/proposals',
-      handler: (req) => this.routes.submitSchemaProposal(req),
-      requiresAuth: true,
-      requiresPermission: (user) => this.authzMiddleware.canProposeSchemaChanges(user).authorized,
-    });
-
-    this.registerRoute({
-      method: 'POST',
-      path: '/api/v1/schema/versions',
-      handler: (req) => this.routes.getSchemaVersions(req),
-      requiresAuth: true,
-    });
-
-    this.registerRoute({
-      method: 'GET',
-      path: '/api/v1/schema/current',
-      handler: (req) => this.routes.getCurrentSchema(req),
-      requiresAuth: true,
-    });
-
-    // External system integration routes
-    this.registerRoute({
-      method: 'POST',
-      path: '/api/v1/external/data',
-      handler: (req) => this.routes.submitExternalData(req),
-      requiresAuth: true,
-      requiresPermission: (user) => this.authzMiddleware.canSubmitEvents(user).authorized,
-    });
-
-    this.registerRoute({
-      method: 'POST',
-      path: '/api/v1/external/mappings',
-      handler: (req) => this.routes.queryIDMapping(req),
-      requiresAuth: true,
-    });
-
-    // System health routes
-    this.registerRoute({
-      method: 'GET',
-      path: '/api/v1/health',
-      handler: (req) => this.routes.getHealth(req),
-      requiresAuth: false, // Public endpoint
-    });
-
-    this.registerRoute({
-      method: 'GET',
-      path: '/health/liveness',
-      handler: async () => ({ success: true, data: { status: 'UP' } }),
-      requiresAuth: false,
-    });
-
-    this.registerRoute({
-      method: 'GET',
-      path: '/health/readiness',
-      handler: (req) => this.routes.getHealth(req),
-      requiresAuth: false,
-    });
-
-    this.registerRoute({
-      method: 'GET',
-      path: '/api/v1/metrics',
-      handler: (req) => this.routes.getMetrics(req),
-      requiresAuth: true,
-      requiresPermission: (user) => this.authzMiddleware.canAccessSystemHealth(user).authorized,
-    });
+    const routeDefinitions = defineRoutes(this.routes, this.authzMiddleware);
+    for (const route of routeDefinitions) {
+      this.registerRoute(route);
+    }
   }
 
   /**
@@ -507,7 +281,7 @@ export class APIServer {
       const response = await route.handler(request);
 
       return response;
-    } catch (error: any) {
+    } catch (error: unknown) {
       return this.errorHandler.handleError(error);
     }
   }

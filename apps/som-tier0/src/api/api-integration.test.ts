@@ -250,7 +250,7 @@ describe('API Server Integration Tests', () => {
 
       // Verify event was stored
       const eventId = response.data.eventId;
-      const storedEvent = eventStore.getEvent(eventId);
+      const storedEvent = await eventStore.getEvent(eventId);
       expect(storedEvent).toBeDefined();
       expect(storedEvent?.type).toBe(EventType.QualificationAwarded);
       expect(storedEvent?.subjects).toContain(personId);

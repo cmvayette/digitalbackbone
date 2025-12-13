@@ -109,7 +109,7 @@ export class InMemoryHolonRepository implements IHolonRepository {
 
   /**
    * Get all holons of a specific type
-   * @param type - The holon
+   * @param type - The holon type to query
    * @param filters - Optional filters to apply
    * @returns Array of holons matching the type and filters
    */

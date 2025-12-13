@@ -207,7 +207,13 @@ export class RequestValidationMiddleware {
         };
       }
       return { valid: true };
-    } catch {
+    } catch (error: unknown) {
+      // Log the error for debugging purposes even if we return a sanitized response
+      if (error instanceof Error) {
+        console.warn('Timestamp validation error:', error.message);
+      } else {
+        console.warn('Timestamp validation error:', String(error));
+      }
       return {
         valid: false,
         error: 'Invalid timestamp format',
@@ -250,61 +256,66 @@ export class ErrorHandlerMiddleware {
   /**
    * Handle error and convert to API response
    */
-  handleError(error: any): APIResponse {
+  handleError(error: unknown): APIResponse {
+    // Helper to safely access error properties
+    const errorRecord = error as Record<string, any>;
+    const errorName = errorRecord?.name;
+    const errorMessage = errorRecord?.message || String(error);
+
     // Validation errors
-    if (error.name === 'ValidationError') {
+    if (errorName === 'ValidationError') {
       return {
         success: false,
         error: {
           code: 'VALIDATION_ERROR',
-          message: error.message,
-          details: error.details,
-          validationErrors: error.validationErrors,
+          message: errorMessage,
+          details: errorRecord.details,
+          validationErrors: errorRecord.validationErrors,
         },
       };
     }
 
     // Authorization errors
-    if (error.name === 'AuthorizationError') {
+    if (errorName === 'AuthorizationError') {
       return {
         success: false,
         error: {
           code: 'AUTHORIZATION_ERROR',
-          message: error.message,
+          message: errorMessage,
         },
       };
     }
 
     // Authentication errors
-    if (error.name === 'AuthenticationError') {
+    if (errorName === 'AuthenticationError') {
       return {
         success: false,
         error: {
           code: 'AUTHENTICATION_ERROR',
-          message: error.message,
+          message: errorMessage,
         },
       };
     }
 
     // Not found errors
-    if (error.name === 'NotFoundError') {
+    if (errorName === 'NotFoundError') {
       return {
         success: false,
         error: {
           code: 'NOT_FOUND',
-          message: error.message,
+          message: errorMessage,
         },
       };
     }
 
     // Constraint violation errors
-    if (error.name === 'ConstraintViolationError') {
+    if (errorName === 'ConstraintViolationError') {
       return {
         success: false,
         error: {
           code: 'CONSTRAINT_VIOLATION',
-          message: error.message,
-          details: error.details,
+          message: errorMessage,
+          details: errorRecord.details,
         },
       };
     }
@@ -314,8 +325,8 @@ export class ErrorHandlerMiddleware {
       success: false,
       error: {
         code: 'INTERNAL_ERROR',
-        message: error.message || 'An unexpected error occurred',
-        details: process.env.NODE_ENV === 'development' ? error.stack : undefined,
+        message: errorMessage || 'An unexpected error occurred',
+        details: process.env.NODE_ENV === 'development' ? (errorRecord?.stack || String(error)) : undefined,
       },
     };
   }
