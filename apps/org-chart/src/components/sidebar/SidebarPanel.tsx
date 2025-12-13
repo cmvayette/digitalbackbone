@@ -10,7 +10,11 @@ interface SidebarPanelProps {
 
 export function SidebarPanel({ selectedNode, onClose }: SidebarPanelProps) {
     if (!selectedNode) {
-        return null;
+        return (
+            <div className="h-full w-full flex items-center justify-center text-text-secondary p-8 text-center italic opacity-60">
+                Select an organization to view details.
+            </div>
+        );
     }
     console.log('SidebarPanel rendering for:', selectedNode.id);
 

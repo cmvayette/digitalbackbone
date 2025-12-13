@@ -64,12 +64,12 @@ describe('calculateProcessHealth', () => {
             createdAt: staleDate
         };
 
-        // Freshness 40 * 0.3 = 12
+        // Freshness 50 * 0.3 = 15
         // Completeness 100 * 0.3 = 30
         // Compliance 100 * 0.4 = 40
-        // Total 82
+        // Total 85
         const result = calculateProcessHealth(staleProcess);
-        expect(result.score).toBe(82);
+        expect(result.score).toBe(85);
         // Level logic: Owned (2) -> Governed (3) [Yes] -> Compliant (4) [Yes] -> Optimized (5) [No, Freshness < 80]
         // Actually freshnessScore is 50. 
         // Level 5 requires freshnessScore >= 80.

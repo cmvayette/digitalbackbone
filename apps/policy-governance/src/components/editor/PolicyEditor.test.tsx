@@ -50,8 +50,22 @@ vi.mock('lucide-react', () => ({
     Bold: () => <span>Bold</span>,
     List: () => <span>List</span>,
     Heading1: () => <span>H1</span>,
+    Heading2: () => <span>H2</span>,
     ShieldCheck: () => <span>Shield</span>,
-    ChevronDown: () => <span>ChevronDown</span>
+    ChevronDown: () => <span>ChevronDown</span>,
+    Italic: () => <span>Italic</span>,
+    Code: () => <span>Code</span>,
+    GitCompare: () => <span>GitCompare</span>,
+    Activity: () => <span>Activity</span>,
+    AlertCircle: () => <span>AlertCircle</span>,
+    AlertTriangle: () => <span>AlertTriangle</span>,
+    CheckCircle: () => <span>CheckCircle</span>,
+    ChevronRight: () => <span>ChevronRight</span>,
+    Info: () => <span>Info</span>,
+    ListChecks: () => <span>ListChecks</span>,
+    TrendingUp: () => <span>TrendingUp</span>,
+    Users: () => <span>Users</span>,
+    X: () => <span>X</span>
 }));
 
 describe('PolicyEditor', () => {
@@ -84,19 +98,19 @@ describe('PolicyEditor', () => {
 
     it('switches tabs', () => {
         render(<PolicyEditor onBack={() => { }} onPublish={() => { }} onAddObligation={() => { }} onUpdateObligation={() => { }} />);
-        // Default is Document Text
-        expect(screen.getByText('Document Text')).toBeInTheDocument();
+        // Default is Document Text - This text is no longer in the UI
+        // expect(screen.getByText('Document Text')).toBeInTheDocument();
 
         // Switch to Obligations
-        fireEvent.click(screen.getByText(/Obligations \(/));
-        expect(screen.getByText('Extracted Obligations')).toBeInTheDocument();
+        fireEvent.click(screen.getByText('Obligations'));
+        expect(screen.getByText('Add Obligation')).toBeInTheDocument();
     });
 
     it('opens and closes obligation composer', () => {
         render(<PolicyEditor onBack={() => { }} onPublish={() => { }} onAddObligation={() => { }} onUpdateObligation={() => { }} />);
-        fireEvent.click(screen.getByText(/Obligations \(/)); // Switch tab
+        fireEvent.click(screen.getByText('Obligations')); // Switch tab
 
-        fireEvent.click(screen.getByText('Add'));
+        fireEvent.click(screen.getByText('Add Obligation'));
         // We look for parts of the composed form
         expect(screen.getByText('Requirement Statement')).toBeInTheDocument();
 

@@ -1,7 +1,78 @@
+
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ProcessSearch } from './ProcessSearch';
 import { mockProcesses } from '../mocks/mock-processes';
+import { HolonType } from '@som/shared-types';
+
+// Mock dependencies
+// Mock dependencies
+const mocks = vi.hoisted(() => ({
+    searchProcesses: vi.fn(),
+    processes: [
+        {
+            id: 'proc-1',
+            type: 'Process' as any,
+            status: 'active',
+            properties: {
+                name: 'Onboarding Checklist',
+                description: 'Get started',
+                tags: ['Logistics'],
+                steps: []
+            }
+        },
+        {
+            id: 'proc-2',
+            type: 'Process' as any,
+            status: 'draft',
+            properties: {
+                name: 'New Operational Workflow',
+                description: 'Draft process',
+                tags: ['HR'],
+                steps: []
+            }
+        }
+    ]
+}));
+
+vi.mock('@som/api-client', () => ({
+    useExternalProcessData: () => ({
+        processes: mocks.processes,
+        searchProcesses: mocks.searchProcesses,
+        isLoading: false
+    })
+}));
+
+// Define mock implementation for searchProcesses after imports
+mocks.searchProcesses.mockResolvedValue([
+    {
+        id: 'proc-1',
+        type: HolonType.Process,
+        status: 'active',
+        properties: {
+            name: 'Onboarding Checklist',
+            description: 'Get started',
+            tags: ['Logistics'],
+            steps: []
+        }
+    }
+]);
+
+vi.mock('../hooks/useGovernanceConfig', () => {
+    const stableConfig = {
+        config: {
+            properties: {
+                search: {
+                    weights: { rankMatch: 1, roleMatch: 1, tagMatch: 1 },
+                    recommendationMinScore: 10
+                }
+            }
+        }
+    };
+    return {
+        useGovernanceConfig: () => stableConfig
+    };
+});
 
 // Mock useDriftDetection to force a drift state
 vi.mock('../hooks/useDriftDetection', () => ({
@@ -29,13 +100,15 @@ describe('ProcessSearch', () => {
         expect(driftBadges.length).toBeGreaterThan(0);
     });
 
-    it('filters processes by search term', () => {
+    it('filters processes by search term', async () => {
         render(<ProcessSearch onSelectProcess={() => { }} />);
 
-        const input = screen.getByPlaceholderText('Search for a process...');
+        const input = screen.getByPlaceholderText(/search processes/i);
         fireEvent.change(input, { target: { value: 'Onboarding' } });
 
-        expect(screen.queryByText('New Operational Workflow')).toBeNull();
+        await waitFor(() => {
+            expect(screen.queryByText('New Operational Workflow')).toBeNull();
+        });
         expect(screen.getByText('Onboarding Checklist')).toBeDefined();
     });
 

@@ -25,7 +25,7 @@ describe('PositionNode', () => {
                 <PositionNode {...vacantNode} />
             </ReactFlowProvider>
         );
-        expect(screen.getByText('VACANT')).toBeInTheDocument();
+        expect(screen.getByText(/vacant/i)).toBeInTheDocument();
     });
 
     it('does not render VACANT badge when filled', () => {

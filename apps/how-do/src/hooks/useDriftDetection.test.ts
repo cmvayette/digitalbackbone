@@ -1,8 +1,36 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { useDriftDetection, DriftType } from './useDriftDetection';
 import { renderHook } from '@testing-library/react';
 import { HolonType } from '@som/shared-types';
 import { Process } from '../types/process';
+
+// Mock dependencies
+vi.mock('@som/api-client', () => ({
+    useExternalPolicyData: () => ({
+        obligations: [
+            { id: 'obl-1', statement: 'Statement 1', assignedTo: 'pos-2', criticality: 'high' }
+        ],
+        loading: false
+    }),
+    useExternalOrgData: () => ({
+        getCandidates: () => [{ id: 'pos-1' }, { id: 'pos-2' }],
+        isLoading: false
+    })
+}));
+
+vi.mock('./useGovernanceConfig', () => ({
+    useGovernanceConfig: () => ({
+        config: {
+            properties: {
+                drift: {
+                    staleDays: 30, // Using 30 to match test cases if any rely on it, but default logic is 90. Let's stick to simple defaults.
+                    requiredObligationCriticality: 'high',
+                    inspectionMode: false
+                }
+            }
+        }
+    })
+}));
 
 describe('useDriftDetection', () => {
     const baseProcess: Process = {

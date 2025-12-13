@@ -22,9 +22,11 @@ describe('Graph Transformer', () => {
         // 1. Mock Data: Root Org -> Child Org
         const mockData: OrgStructure = {
             organization: createHolon('org-root', HolonType.Organization, { name: 'Root Org' }),
+            relationships: [],
             subOrganizations: [
                 {
                     organization: createHolon('org-child', HolonType.Organization, { name: 'Child Org' }),
+                    relationships: [],
                     subOrganizations: [],
                     positions: [],
                     assignments: [],
@@ -59,6 +61,7 @@ describe('Graph Transformer', () => {
 
         const mockData: OrgStructure = {
             organization: mockOrg,
+            relationships: [],
             subOrganizations: [],
             positions: [mockPos],
             assignments: [{

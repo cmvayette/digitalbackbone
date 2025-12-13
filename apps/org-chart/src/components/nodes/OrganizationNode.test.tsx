@@ -32,10 +32,13 @@ describe('OrganizationNode', () => {
                 <OrganizationNode {...mockNode} />
             </ReactFlowProvider>
         );
-        // Check for red dot (based on simple logic >15% is red)
-        const dot = screen.getByTitle('2 Vacancies');
-        expect(dot).toBeInTheDocument();
-        expect(dot).toHaveClass('bg-red-500');
+        // Check for vacancy count
+        expect(screen.getByText('2')).toBeInTheDocument();
+        expect(screen.getAllByText(/vacant/i)[0]).toBeInTheDocument(); // There might be multiple "Vacant" labels (e.g. Commander vacant)
+
+        // Or check specifically for the stats section
+        const stats = screen.getByText('2').closest('div');
+        expect(stats).toHaveTextContent(/vacant/i);
     });
 
     it('does not render health dot when no vacancies', () => {

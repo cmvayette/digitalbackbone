@@ -2,6 +2,27 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { ObligationLinker } from './ObligationLinker';
 import { describe, it, expect, vi } from 'vitest';
 
+// Mock dependencies
+vi.mock('@som/api-client', () => ({
+    useExternalPolicyData: () => ({
+        obligations: [
+            {
+                id: 'obl-1',
+                statement: 'The Operations Officer must review all mission plans within 24 hours of submission.',
+                assignedTo: 'pos-2',
+                criticality: 'high'
+            },
+            {
+                id: 'obl-2',
+                statement: 'The Training Officer is responsible for certifying all new personnel on safety procedures.',
+                assignedTo: 'pos-4',
+                criticality: 'medium'
+            }
+        ],
+        loading: false
+    })
+}));
+
 describe('ObligationLinker', () => {
     it('renders linked obligations', () => {
         // obl-1 is in mock-policy.json

@@ -3,6 +3,25 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { SwimlaneViewer } from './SwimlaneViewer';
 import { mockProcesses } from '../mocks/mock-processes';
 
+// Mock dependencies
+vi.mock('@som/api-client', () => ({
+    useExternalOrgData: () => ({
+        getCandidates: () => [
+            { id: 'pos-1', name: 'Position 1' },
+            { id: 'agent-logistics', name: 'Logistics Bot' }
+        ]
+    }),
+    useExternalPolicyData: () => ({
+        getObligationsForOwner: () => []
+    }),
+    // Mock SOMClient constructor for the permission check inside useEffect
+    SOMClient: vi.fn().mockImplementation(() => ({
+        checkAccess: vi.fn().mockResolvedValue(true)
+    })),
+    createSOMClient: vi.fn()
+}));
+
+
 describe('SwimlaneViewer', () => {
     const mockProcess = mockProcesses[0];
 

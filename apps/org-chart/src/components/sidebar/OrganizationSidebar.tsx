@@ -10,7 +10,8 @@ import { ServiceTile } from './ServiceTile';
 import { toDomainPosition } from '../../utils/mappers';
 
 export function OrganizationSidebar({ node }: { node: Node }) {
-    const props = node.data.properties as Organization['properties'];
+    const org = node.data.properties as Organization;
+    const props = org.properties;
     const { organizations, positions } = useExternalOrgData({ mode: 'mock' });
 
     // const { getOrgChildren, getOrgPositions, addOrganization, addPosition } = useOrgStore();

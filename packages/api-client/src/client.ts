@@ -74,7 +74,7 @@ export interface SearchResult {
 
 export interface OrgStructure {
     organization: Holon;
-    subOrganizations: Holon[];
+    subOrganizations: OrgStructure[];
     positions: Holon[];
     assignments: any[]; // Todo: Define Assignment type
     relationships: Relationship[];
